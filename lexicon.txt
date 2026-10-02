@@ -646,7 +646,8 @@ omistaja | владелец | omistaja
 omistusasunto | собственная квартира | omistusasunto omistusasunnon
 ongelma | проблема | ongelma ongelmat
 olla (onko) | есть ли | onko
-opiskelija-asunto | студенческая квартира | opiskelija-asunto
+opiskelija-asunto | студенческое жильё | opiskelija-asunto
+asuntola | общежитие | asuntola asuntolassa asuntolaan opiskelija-asuntola
 opiskelija | студент | opiskelijalla
 osallistua | участвовать | osallistua osallistuin osallistuimme osallistuivat
 osittain | частично | osittain
