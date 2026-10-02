@@ -76,11 +76,16 @@
 .dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
-.totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
+.totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
   background:var(--sage);border:2px solid var(--sage-ink);color:var(--on-accent);box-shadow:0 6px 16px rgba(40,50,30,.22);display:flex;align-items:center;justify-content:center;padding:0}
 .totop::before{content:"";width:12px;height:12px;border-left:3px solid currentColor;border-top:3px solid currentColor;transform:translateY(3px) rotate(45deg)}
 .totop:hover{filter:brightness(.96)}
 .fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+.wstat{font-size:.78rem;color:var(--ink-soft);font-weight:600}
+.board{margin:0 0 18px}
+.board-h{margin:0 0 8px;font-family:var(--f-script);font-size:1.4rem;color:var(--sage-ink)}
+.board-h .note{font-family:var(--f-body)}
+.oldw{color:var(--sage-ink);font-size:.75rem}
 .learned{color:var(--sage-ink);font-size:.8rem}
 .match{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:640px}
 .mcol{display:grid;gap:8px;align-content:start}
@@ -1317,11 +1322,12 @@ async function saveDict(words) {
   renderWho();
   return cloud;
 }
-async function addWord(word, tr) {
+async function addWord(word, tr, pos) {
   word = word.trim(); tr = tr.trim(); if (!word) return;
   const old = dictWords().find(w => norm(w.w) === norm(word));
   const words = dictWords().filter(w => norm(w.w) !== norm(word));
-  words.push({ w: word, t: tr, at: new Date().toISOString(), topic: old ? old.topic : state.topic, ok: old ? old.ok || 0 : 0 });
+  const keep = old ? { stage: old.stage || 0, ex: old.ex || {}, due: old.due || null } : { stage: 0, ex: {}, due: null };
+  words.push({ w: word, t: tr, at: new Date().toISOString(), topic: old ? old.topic : state.topic, p: pos || (old && old.p) || guessPos(word), ...keep });
   const cloud = await saveDict(words);
   toast('«' + word + '» в словаре' + (cloud ? '' : ' (сохранено в браузере)'));
 }
@@ -1385,12 +1391,13 @@ function openWordSheet(word, tr) {
     <div class="row" style="justify-content:space-between"><h3>Lisää sanakirjaan</h3><button class="btn small" type="button" id="wclose">Отмена</button></div>
     <label class="note" for="wword">Слово</label><input class="field" id="wword" value="${esc(word)}" autocomplete="off" spellcheck="false" required>
     <label class="note" for="wtr">Перевод</label><input class="field" id="wtr" value="${esc(guess)}" placeholder="перевод на русский" autocomplete="off">
+    <label class="note" for="wpos">Часть речи</label><select class="field" id="wpos">${POS.map(([v, l]) => `<option value="${v}" ${(known && known.p ? known.p : guessPos(word)) === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
     <button class="btn main" type="submit">${known ? 'Обновить' : 'Добавить в словарь'}</button>
   </form>`;
   try { window.getSelection().removeAllRanges(); } catch (e) {}
   const close = () => { sh.hidden = true; };
   $('#wclose').onclick = close;
-  $('#wform').onsubmit = async e => { e.preventDefault(); await addWord($('#wword').value, $('#wtr').value); close(); if (state.view === 'dict') renderDict(); };
+  $('#wform').onsubmit = async e => { e.preventDefault(); await addWord($('#wword').value, $('#wtr').value, $('#wpos').value); close(); if (state.view === 'dict') renderDict(); };
   setTimeout(() => $('#wtr').focus(), 50);
 }
 
@@ -1408,11 +1415,12 @@ function renderDict() {
       <form class="row" id="dictAdd" style="margin-bottom:16px">
         <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
         <input class="field" id="dt" placeholder="перевод" autocomplete="off">
+        <select class="field" id="dp" style="flex:0 1 auto" aria-label="Часть речи"><option value="">часть речи: авто</option>${POS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
         <button class="btn main" type="submit">Lisää</button>
       </form>
       ${words.length ? `<input class="field" id="dq" placeholder="Поиск…" value="${esc(q)}" style="width:100%;margin-bottom:10px" autocomplete="off">` : ''}
       ${words.length ? `<div class="scroll"><table class="res-table dict"><thead><tr><th>Sana</th><th>Перевод</th><th></th></tr></thead><tbody>
-        ${shown.map(w => `<tr><td><b>${esc(w.w)}</b>${(w.ok || 0) >= LEARNED ? ' <span class="learned" title="Выучено в тренировках">●</span>' : ''}</td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
+        ${shown.map(w => `<tr><td><b>${esc(w.w)}</b> <span class="note">${esc(posName(w))}</span><div class="wstat">${wordStatus(w)}</div></td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
           <td class="dict-act">${state.dictDel === w.w
             ? `<span class="note">Точно удалить?</span> <button class="btn small main" type="button" data-delyes="${esc(w.w)}">Да</button> <button class="btn small" type="button" data-delno>Нет</button>`
             : `<button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button>`}</td></tr>`).join('')}
@@ -1421,7 +1429,7 @@ function renderDict() {
     <section class="ex" id="trainSec"></section>
     <section class="ex" id="progSec"></section>`;
   renderTrain(); renderProgress();
-  $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value); renderDict(); };
+  $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value, $('#dp').value || null); renderDict(); };
   const dq = $('#dq'); if (dq) dq.oninput = () => { state.dictQ = dq.value; const pos = dq.selectionStart; renderDict(); const n = $('#dq'); n.focus(); n.setSelectionRange(pos, pos); };
   main.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const w = dictWords().find(x => x.w === b.dataset.edit); openWordSheet(w.w, w.t); });
   main.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { state.dictDel = b.dataset.del; renderDict(); });
@@ -1433,26 +1441,60 @@ function renderDict() {
 
 /* =========================================================
    TRAINING (in the dictionary view)
-   Sources: my dictionary, or the cards of a topic.
-   A dictionary word counts as learned after LEARNED correct answers.
+   A dictionary word is learned in three rounds: every exercise right once,
+   again after 3 days, again after a week. Any mistake sends it back to the start.
+   stage 0 = learning, 1 = wait 3 days, 2 = wait a week, 3 = learned; ex = exercises done this round.
    ========================================================= */
-const LEARNED = 3;
+const DAY = 864e5;
+const MODES = ['match', 'write', 'letter'];
+const POS = [['noun', 'существительное'], ['verb', 'глагол'], ['adj', 'прилагательное'], ['other', 'другое']];
+const POS_FI = { noun: 'Substantiivit', verb: 'Verbit', adj: 'Adjektiivit', other: 'Muut' };
+const CARD_POS = { 'kipeä': 'adj', 'vuotaa': 'verb', 'kutista': 'verb', 'tutkia': 'verb', 'kuunnella': 'verb', 'mitata': 'verb', 'hoitaa': 'verb',
+  'ottaa lääkettä': 'verb', 'käydä lääkärissä': 'verb', 'kirjoittaa resepti': 'verb', 'voida hyvin / huonosti': 'verb' };
+function cardPos(group, fi) { const base = fi.split(' + ')[0]; return CARD_POS[base] || (group === 'Verbit ja rektiot' ? 'verb' : 'noun'); }
+function guessPos(word) {
+  const w = norm(word); if (!w) return 'noun';
+  for (const t of TOPICS) for (const b of t.blocks) for (const ex of b.exercises) if (ex.type === 'cards')
+    for (const g of ex.groups) for (const c of g.cards) if (norm(c[0].split(' + ')[0]) === w) return cardPos(g.name, c[0]);
+  if (/(ea|eä|kas|käs|ton|tön|ias|iäs)$/.test(w)) return 'adj';
+  if (/(da|dä|aa|ää|ia|iä|oa|ua|yä|lla|llä|nna|nnä|rra|rrä)$/.test(w) && !/inen$/.test(w)) return 'verb';
+  return 'noun';
+}
+const posName = w => (POS.find(x => x[0] === (w.p || guessPos(w.w))) || POS[0])[1];
+const stageOf = w => w.stage || 0;
+const isDue = w => stageOf(w) === 0 || ((stageOf(w) === 1 || stageOf(w) === 2) && (!w.due || Date.now() >= new Date(w.due).getTime()));
+const isLearned = w => stageOf(w) >= 3;
+const fmtDay = iso => { try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }); } catch (e) { return ''; } };
+function wordStatus(w) {
+  const st = stageOf(w), done = MODES.filter(m => (w.ex || {})[m]).length;
+  if (st >= 3) return '<span class="learned">● выучено</span>';
+  const round = ['', 'повтор 1 (через 3 дня)', 'повтор 2 (через неделю)'][st];
+  if (st > 0 && !isDue(w)) return `◔ ${round}: с ${fmtDay(w.due)}`;
+  return `◐ ${st ? round + ' · ' : ''}упражнения ${done}/3`;
+}
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function trainPool(src) {
-  if (src === 'dict') return dictWords().filter(w => (w.t || '').trim()).map(w => ({ fi: w.w, ru: w.t, dict: true }));
+  if (src === 'dict') return dictWords().filter(w => (w.t || '').trim()).map(w => ({ fi: w.w, ru: w.t, dict: true, p: w.p || guessPos(w.w), due: isDue(w), learned: isLearned(w) }));
   const t = TOPICS.find(x => x.id === src); if (!t) return [];
   const out = [];
-  t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type === 'cards') ex.groups.forEach(g => g.cards.forEach(c => out.push({ fi: c[0].split(' + ')[0], ru: c[1] }))); }));
+  t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type === 'cards') ex.groups.forEach(g => g.cards.forEach(c => out.push({ fi: c[0].split(' + ')[0], ru: c[1], p: cardPos(g.name, c[0]), due: true }))); }));
   return out;
 }
 const TRAIN_MODES = [['match', 'Yhdistä', 'соедини слово и перевод'], ['write', 'Kirjoita suomeksi', 'напиши слово по-фински'], ['letter', 'Puuttuva kirjain', 'вставь пропущенную букву']];
 function newRound() {
-  const tr = state.train; const pool = shuffle(trainPool(tr.src));
+  const tr = state.train; const pool = trainPool(tr.src);
+  const fresh = shuffle(pool.filter(x => x.due && !x.learned)), old = shuffle(pool.filter(x => x.learned));
   if (tr.mode === 'match') {
-    const pick = pool.slice(0, 5);
-    tr.round = { pick, left: shuffle(pick.map((x, i) => i)), right: shuffle(pick.map((x, i) => i)), sel: null, done: [], miss: 0, bad: null };
+    // one board per part of speech; a learned word may come back for review
+    const boards = [];
+    ['noun', 'verb', 'adj', 'other'].forEach(p => {
+      const f = fresh.filter(x => x.p === p).slice(0, 4), o = old.filter(x => x.p === p).slice(0, f.length ? 1 : 2);
+      const pick = shuffle(f.concat(o)); if (pick.length < 2) return;
+      boards.push({ p, pick, left: shuffle(pick.map((x, i) => i)), right: shuffle(pick.map((x, i) => i)), sel: null, done: [], bad: null, miss: {} });
+    });
+    tr.round = { boards, miss: 0, saved: false };
   } else {
-    const items = pool.slice(0, 10).map(x => {
+    const items = fresh.slice(0, 10).map(x => {
       if (tr.mode !== 'letter') return x;
       const pos = [...x.fi].map((ch, i) => /\p{L}/u.test(ch) ? i : -1).filter(i => i >= 0);
       return { ...x, gap: pos[Math.floor(Math.random() * pos.length)] };
@@ -1460,40 +1502,62 @@ function newRound() {
     tr.round = { items, i: 0, score: 0, answered: false, last: null, log: {} };
   }
 }
-async function recordTraining(log) {
-  // log: { fi: true/false } for dictionary words
-  const keys = Object.keys(log); if (!keys.length) return;
+async function recordTraining(mode, log) {
+  // log: { word: true (right) / false (wrong) } — only words from the dictionary
+  const keys = Object.keys(log); if (!keys.length) return [];
+  const moved = [];
   const words = dictWords().map(w => {
     if (!(w.w in log)) return w;
-    return { ...w, ok: log[w.w] ? (w.ok || 0) + 1 : Math.max(0, (w.ok || 0) - 1) };
+    const v = { ...w, ex: { ...(w.ex || {}) } };
+    if (!log[w.w]) { if (stageOf(w) > 0 || MODES.some(m => v.ex[m])) moved.push(w.w + ' → снова учим'); return { ...v, stage: 0, ex: {}, due: null }; }
+    if (isLearned(w) || !isDue(w)) return w;
+    v.ex[mode] = true;
+    if (MODES.every(m => v.ex[m])) {
+      const st = stageOf(w) + 1; v.stage = st; v.ex = {};
+      v.due = st === 1 ? new Date(Date.now() + 3 * DAY).toISOString() : st === 2 ? new Date(Date.now() + 7 * DAY).toISOString() : null;
+      moved.push(w.w + (st === 3 ? ' → выучено ●' : st === 1 ? ' → повтор через 3 дня' : ' → повтор через неделю'));
+    }
+    return v;
   });
   await saveDict(words);
+  return moved;
+}
+function nextReview() {
+  const ds = dictWords().filter(w => !isLearned(w) && !isDue(w) && w.due).map(w => w.due).sort();
+  return ds[0] || null;
 }
 function renderTrain() {
   const sec = $('#trainSec'); if (!sec) return;
   const tr = state.train || (state.train = { mode: 'match', src: null, chosen: false, round: null });
-  // until the student picks a source herself: her dictionary once it has a few words, otherwise the topic cards
   if (!tr.chosen) { const auto = dictWords().filter(w => (w.t || '').trim()).length >= 4 ? 'dict' : state.topic; if (auto !== tr.src) { tr.src = auto; tr.round = null; } }
   const pool = trainPool(tr.src);
-  const min = tr.mode === 'match' ? 3 : 1;
   const srcOpts = [['dict', 'Мой словарь']].concat(TOPICS.filter(t => !t.soon).map(t => [t.id, t.fi]));
+  const freshN = pool.filter(x => x.due && !x.learned).length;
   let body = '';
-  if (pool.length < min) {
-    body = `<p class="note">В «Моём словаре» пока мало слов с переводом (нужно хотя бы ${min}). Добавьте слова или выберите тему.</p>`;
+  if (!freshN) {
+    const nr = tr.src === 'dict' && nextReview();
+    body = `<p class="note">${tr.src === 'dict' && pool.length
+      ? 'Сейчас нечего тренировать: все слова выучены или ждут повторения.' + (nr ? ' Следующее повторение: <b>' + fmtDay(nr) + '</b>.' : '')
+      : 'В «Моём словаре» пока нет слов с переводом. Добавьте слова или выберите тему.'}</p>`;
+    tr.round = null;
   } else {
     if (!tr.round) newRound();
     const R = tr.round;
     if (tr.mode === 'match') {
-      const finished = R.done.length === R.pick.length;
-      body = `<div class="match">
-        <div class="mcol">${R.left.map(i => `<button type="button" class="mbtn ${R.done.includes(i) ? 'done' : ''} ${R.sel === i ? 'sel' : ''} ${R.bad && R.bad[0] === i ? 'bad' : ''}" data-ml="${i}" ${R.done.includes(i) ? 'disabled' : ''}>${esc(R.pick[i].fi)}</button>`).join('')}</div>
-        <div class="mcol">${R.right.map(i => `<button type="button" class="mbtn ${R.done.includes(i) ? 'done' : ''} ${R.bad && R.bad[1] === i ? 'bad' : ''}" data-mr="${i}" ${R.done.includes(i) ? 'disabled' : ''}>${esc(R.pick[i].ru)}</button>`).join('')}</div></div>
-        ${finished ? `<p class="tr-res">Valmista! Ошибок: <b>${R.miss}</b></p><button class="btn main" type="button" data-again>Новый раунд</button>`
-          : '<p class="note">Нажмите на финское слово, потом на его перевод.</p>'}`;
+      if (!R.boards.length) body = '<p class="note">Для «Yhdistä» нужно хотя бы 2 слова одной части речи. Попробуйте другое упражнение.</p>';
+      else {
+        const finished = R.boards.every(B => B.done.length === B.pick.length);
+        body = R.boards.map((B, bi) => `<div class="board"><h4 class="board-h">${POS_FI[B.p]} <span class="note">· ${(POS.find(x => x[0] === B.p) || [])[1]}</span></h4>
+          <div class="match">
+          <div class="mcol">${B.left.map(i => `<button type="button" class="mbtn ${B.done.includes(i) ? 'done' : ''} ${B.sel === i ? 'sel' : ''} ${B.bad && B.bad[0] === i ? 'bad' : ''}" data-ml="${bi}:${i}" ${B.done.includes(i) ? 'disabled' : ''}>${esc(B.pick[i].fi)}${B.pick[i].learned ? ' <span class="oldw" title="Уже выученное слово">●</span>' : ''}</button>`).join('')}</div>
+          <div class="mcol">${B.right.map(i => `<button type="button" class="mbtn ${B.done.includes(i) ? 'done' : ''} ${B.bad && B.bad[1] === i ? 'bad' : ''}" data-mr="${bi}:${i}" ${B.done.includes(i) ? 'disabled' : ''}>${esc(B.pick[i].ru)}</button>`).join('')}</div></div></div>`).join('')
+          + (finished ? `<p class="tr-res">Valmista! Ошибок: <b>${R.miss}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<button class="btn main" type="button" data-again>Новый раунд</button>`
+            : '<p class="note">Нажмите на финское слово, потом на его перевод. ● отмечены уже выученные слова для повторения.</p>');
+      }
     } else {
       const it = R.items[R.i];
       if (!it) {
-        body = `<p class="tr-res">Valmista! Правильно: <b>${R.score} из ${R.items.length}</b></p><button class="btn main" type="button" data-again>Новый раунд</button>`;
+        body = `<p class="tr-res">Valmista! Правильно: <b>${R.score} из ${R.items.length}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<button class="btn main" type="button" data-again>Новый раунд</button>`;
       } else {
         const prompt = tr.mode === 'write'
           ? `<div class="tr-q">${esc(it.ru)}</div>`
@@ -1504,12 +1568,12 @@ function renderTrain() {
             <input class="field ${tr.mode === 'letter' ? 'one' : ''}" id="trIn" autocomplete="off" autocapitalize="off" spellcheck="false" ${tr.mode === 'letter' ? 'maxlength="1"' : ''} ${R.answered ? 'disabled' : ''} placeholder="${tr.mode === 'letter' ? '?' : 'suomeksi'}" value="${esc(L && R.answered ? L.given : '')}">
             ${R.answered ? '<button class="btn main" type="button" data-next>Дальше →</button>' : '<button class="btn main" type="submit">Tarkista!</button>'}
           </form>
-          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: <b>' + esc(L.right) + '</b>'}</p>` : ''}`;
+          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: <b>' + esc(L.right) + '</b>' + (it.dict ? ' <span class="why">· слово вернулось к изучению</span>' : '')}</p>` : ''}`;
       }
     }
   }
-  sec.innerHTML = `<div class="ex-head"><h3>Harjoittele</h3></div>
-    <p class="ex-task">Тренируйте слова. За каждое правильное слово из «Моего словаря» засчитывается шаг; после ${LEARNED} правильных ответов слово отмечается как выученное ●.</p>
+  sec.innerHTML = `<div class="ex-head"><h3>Harjoittelu</h3></div>
+    <p class="ex-task">Слово из «Моего словаря» становится выученным в три шага: правильно сделайте с ним все три упражнения, потом ещё раз через 3 дня и ещё раз через неделю. После ошибки слово начинает учиться заново.</p>
     <div class="row" style="margin-bottom:10px">${TRAIN_MODES.map(([id, fi, ru]) => `<button type="button" class="btn small ${tr.mode === id ? 'main' : ''}" data-mode="${id}" title="${ru}">${fi}</button>`).join('')}</div>
     <div class="row" style="margin-bottom:14px"><label class="note" for="trSrc">Слова:</label>
       <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
@@ -1521,14 +1585,16 @@ function renderTrain() {
   if (!tr.round) return;
   const R = tr.round;
   if (tr.mode === 'match') {
-    sec.querySelectorAll('[data-ml]').forEach(b => b.onclick = () => { R.sel = +b.dataset.ml; R.bad = null; renderTrain(); });
+    sec.querySelectorAll('[data-ml]').forEach(b => b.onclick = () => { const [bi, i] = b.dataset.ml.split(':').map(Number); const B = R.boards[bi]; B.sel = i; B.bad = null; renderTrain(); });
     sec.querySelectorAll('[data-mr]').forEach(b => b.onclick = async () => {
-      if (R.sel == null) { toast('Сначала выберите финское слово'); return; }
-      const j = +b.dataset.mr; const it = R.pick[R.sel];
-      if (j === R.sel) { R.done.push(j); R.sel = null; R.bad = null; } else { R.miss++; R.bad = [R.sel, j]; if (it.dict) (R.log = R.log || {})[it.fi] = false; }
-      if (R.done.length === R.pick.length) {
-        const log = {}; R.pick.forEach(x => { if (x.dict) log[x.fi] = !(R.log && R.log[x.fi] === false); });
-        renderTrain(); await recordTraining(log); renderProgress(); return;
+      const [bi, j] = b.dataset.mr.split(':').map(Number); const B = R.boards[bi];
+      if (B.sel == null) { toast('Сначала выберите финское слово'); return; }
+      if (j === B.sel) { B.done.push(j); B.sel = null; B.bad = null; }
+      else { R.miss++; B.miss[B.sel] = true; B.bad = [B.sel, j]; }
+      if (!R.saved && R.boards.every(x => x.done.length === x.pick.length)) {
+        R.saved = true; const log = {};
+        R.boards.forEach(x => x.pick.forEach((it, i) => { if (it.dict) log[it.fi] = !x.miss[i]; }));
+        R.moved = await recordTraining('match', log); renderDict(); return;
       }
       renderTrain();
     });
@@ -1547,7 +1613,7 @@ function renderTrain() {
     const nx = sec.querySelector('[data-next]');
     if (nx) nx.onclick = async () => {
       R.i++; R.answered = false; R.last = null;
-      if (R.i >= R.items.length) { renderTrain(); await recordTraining(R.log); renderProgress(); return; }
+      if (R.i >= R.items.length) { R.moved = await recordTraining(tr.mode, R.log); renderDict(); return; }
       renderTrain();
     };
   }
@@ -1562,15 +1628,15 @@ function renderProgress() {
     t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type !== 'cards') return;
       total += ex.groups.reduce((a, g) => a + g.cards.length, 0);
       const r = state.results[key(t.id, ex.id)]; known += ((r && r.known) || []).length; }));
-    const mine = dw.filter(w => w.topic === t.id), mineL = mine.filter(w => (w.ok || 0) >= LEARNED).length;
+    const mine = dw.filter(w => w.topic === t.id), mineL = mine.filter(isLearned).length;
     return `<div class="prow"><div class="prow-h"><b>${esc(t.fi)}</b><span class="note">карточки: выучено <b>${known}</b> из ${total}</span></div>${bar(known, total)}
-      <div class="note" style="margin-top:4px">мой словарь: ${mine.length} слов из этой темы, выучено в тренировках ${mineL}</div></div>`;
+      <div class="note" style="margin-top:4px">мой словарь: ${mine.length} слов из этой темы, выучено ${mineL}</div></div>`;
   }).join('');
-  const learned = dw.filter(w => (w.ok || 0) >= LEARNED).length;
-  sec.innerHTML = `<div class="ex-head"><h3>Edistyminen</h3></div>
+  const learned = dw.filter(isLearned).length, waiting = dw.filter(w => !isLearned(w) && !isDue(w)).length;
+  sec.innerHTML = `<div class="ex-head"><h3>Tilasto</h3></div>
     <p class="ex-task">Сколько слов выучено по каждой теме.</p>
     ${rows}
-    <div class="prow"><div class="prow-h"><b>Мой словарь</b><span class="note">выучено <b>${learned}</b> из ${dw.length}</span></div>${bar(learned, dw.length)}</div>`;
+    <div class="prow"><div class="prow-h"><b>Мой словарь</b><span class="note">выучено <b>${learned}</b> из ${dw.length}${waiting ? ` · ждут повторения: ${waiting}` : ''}</span></div>${bar(learned, dw.length)}</div>`;
 }
 
 /* =========================================================
