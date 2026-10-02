@@ -1028,9 +1028,10 @@ async function submit(ex, doc) {
   const blockDone = () => { const sc = blockScore(t, b, state.results); return sc.total && sc.done === sc.total; };
   const wasDone = blockDone();
   state.results[key(t.id, ex.id)] = full;
-  // fireworks: big when the part is finished (also when its last task is redone), small for a task done 100 %
+  // fireworks: big when the part is finished and every time a task in a finished part is done again, small for a task done 100 %
   const nowDone = blockDone();
-  if (nowDone && (!wasDone || b.exercises[b.exercises.length - 1] === ex)) { setTimeout(() => { toast('Раздел «' + b.fi + '» закончен! Hienoa!'); fireworks(true); }, 400); }
+  if (nowDone && ex.type !== 'cards') { setTimeout(() => { toast(wasDone ? 'Раздел «' + b.fi + '» снова пройден! Hienoa!' : 'Раздел «' + b.fi + '» закончен! Hienoa!'); fireworks(true); }, 400); }
+  else if (nowDone && !wasDone) { setTimeout(() => { toast('Раздел «' + b.fi + '» закончен! Hienoa!'); fireworks(true); }, 400); }
   else if (ex.type !== 'cards' && doc.max && doc.score === doc.max) setTimeout(() => fireworks(false), 200);
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
