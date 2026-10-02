@@ -364,3 +364,530 @@ yö | ночь | yön
 @ kirjoittaa ylös | записать | kirjoitti\s+(?:\p{L}+\s+)?ylös
 @ niin kuin | как, так же как | niin kuin
 @ nyt kun | теперь, когда | nyt kun
+# --- Asuminen ---
+asuminen | жильё, проживание | asumisen
+aamu | утро | aamulla
+ahdistaa | тревожить, угнетать | ahdistaa
+aika | время | aikana ajan
+ainakaan | по крайней мере (не) | ainakaan
+Aino | Айно (имя) | aino
+alakerta | нижний этаж | alakerran
+alas | вниз | alas
+alkaa | начинаться | alkaa
+alla | под | alla
+allekirjoittaa | подписать | allekirjoitin
+aluksi | сначала | aluksi
+apu | помощь | apu apua avusta
+asunto-osakeyhtiö (As Oy) | жилищное акционерное общество | as oy
+asia | дело | asioissa asioista
+asti | до | asti
+asua | жить | asua asuin asumme asun asunut asuu
+asukas | жилец, житель | asukas asukasta asukkaan asukkaat asukkaiden asukkaille
+asukaskokous | собрание жильцов | asukaskokous asukaskokousta asukaskokoukseen
+asunto | квартира, жильё | asunto asuntoa asuntoja asuntoon asuntoosi asunnon asunnossa asunnosta asunnolla asunnoissa
+asuntotyyppi | тип жилья | asuntotyypit
+auto | машина | autolla auton
+autopaikka | парковочное место | autopaikka autopaikasta
+auttaa | помогать | auttaa auta autoin auttoivat auttaisitko
+avain | ключ | avain avainta avaimen avaimet
+banaaninkuori | банановая кожура | banaaninkuori
+biojäte | биоотходы | biojäte bio
+edelleen | по-прежнему | edelleen
+eli | то есть | eli
+elämä | жизнь | elämän elämästäsi
+ennen | до, раньше | ennen
+ensi | следующий | ensi
+esimerkiksi | например | esimerkiksi
+Espoo | Эспоо | espoossa
+eteinen | прихожая | eteinen eteisen eteistä
+etsiä | искать | etsiä etsin etsimme
+etukäteen | заранее | etukäteen
+euro | евро | euroa
+grillata | жарить на гриле | grillata
+haista | пахнуть (плохо) | haisee
+haju | запах | haju
+haluta | хотеть | haluan haluat haluaisit
+hammasharja | зубная щётка | hammasharja
+hana | кран | hana hanaa hanan hanasta
+harava | грабли | harava haravia
+haravoida | сгребать (листья) | haravoidaan
+he | они | heidät heitä
+herätä | проснуться | herää
+herättää | будить | herätti
+hiiligrilli | угольный гриль | hiiligrilli
+hiiri | мышь | hiiret hiiriä
+hiljaa | тихо | hiljaa
+hiljaisuus | тишина | hiljaisuus
+hiljaa / hiljemmalle | тише | hiljemmalle
+hillopurkki | банка из-под варенья | hillopurkki
+hissi | лифт | hissi hissillä hissiä
+home | плесень | home homeen hometta
+homevaurio | повреждение плесенью | homevaurio
+huolehtia | заботиться | huolehtia huolehdin huolehti huolehtii
+huolellisesti | тщательно | huolellisesti
+huoltomies | техник, дворник | huoltomies huoltomiestä huoltomiehen huoltomiehelle
+huoltoyhtiö | обслуживающая компания | huoltoyhtiö huoltoyhtiölle huoltoyhtiöön huoltoon
+huomata | заметить | huomaat huomasit
+huomenna | завтра | huomenna
+huomenta | доброе утро | huomenta
+huone | комната | huone huoneessa
+huonekalu | предмет мебели | huonekalut huonekaluja
+hypätä / hyppiä | прыгать | hyppivät
+hyvä | хороший | hyvä hyvät
+häiritä | мешать | häiritä häiritsen häiritsi
+häiriö | помеха, нарушение (порядка) | häiriö häiriötä
+hän | он, она | hänelle hänet
+ihan | совсем, вполне | ihan
+iho | кожа | iholla
+ikkuna | окно | ikkunat ikkunasta
+ikä | возраст | ikäni
+ilmoittaa | сообщать | ilmoittaa ilmoita ilmoitan ilmoitin
+ilmoitustaulu | доска объявлений | ilmoitustaulu ilmoitustaululla
+irtisanoa | расторгнуть | irtisanoa irtisanoi irtisanon
+irtisanomisaika | срок уведомления о расторжении | irtisanomisaika
+iso | большой | iso isompaa
+isännöitsijä | управляющий домом | isännöitsijä isännöitsijälle isännöitsijän
+itkeä | плакать | itkemästä
+itku | плач | itku
+itse | сам | itse
+Jari | Яри (имя) | jari
+jatkuva | постоянный | jatkuvaan
+jogurttipurkki | стаканчик из-под йогурта | jogurttipurkki
+jokainen | каждый | jokaisella
+joku | какой-то | joku
+jopa | даже | jopa
+joka | который | jossa
+joten | поэтому | joten
+jotta | чтобы | jotta
+juna | поезд | junan junien
+juosta | бегать | juoksevat
+juomalasi | стакан | juomalasi
+juomavesi | питьевая вода | juomavettä
+jutella | болтать, беседовать | jutella jutelkaa
+juttu | дело, штука | juttu
+järjestyssäännöt | правила внутреннего распорядка | järjestyssäännöt järjestyssääntöjä järjestyssäännöissä
+jäte | отходы | jäte jätettä jätteen jätteet
+jäteastia | мусорный контейнер | jäteastia
+jäteauto | мусоровоз | jäteauto
+jätehuolto | вывоз и сортировка мусора | jätehuolto
+jätekatos | площадка с мусорными баками | jätekatos jätekatoksen jätekatokseen
+jättää | оставлять | jättää jätä jätti jättänyt jätetty jätetyt
+jätös | экскременты (животных) | jätökset
+jääkaappi | холодильник | jääkaappi
+kahdeksalta | в восемь часов | kahdeksalta
+kaksi | два | kahteen
+kahvi | кофе | kahvi kahville
+kahvinporot | кофейная гуща | kahvinporot
+kaikki | всё, все | kaikki kaikkien kaikesta
+kaksio | двухкомнатная квартира | kaksio kaksion kaksiota
+kaksivuotias | двухлетний | kaksivuotiasta
+kalustettu | меблированный | kalustettu
+kannattaa | стоит, имеет смысл | kannattaa
+kantaa | нести | kannoimme kantamaan
+kartonki | картон | kartonki kartonkia kartongin
+kartonkiastia | контейнер для картона | kartonkiastiaan
+kartonkipakkaus | картонная упаковка | kartonkipakkaus kartonkipakkaukset
+katko | перерыв (в подаче воды и т. п.) | katkon
+katsoa | смотреть | katsomaan
+katto | потолок; крыша | katto kattoa katon katossa
+kauppa | магазин | kauppa kauppaan kaupasta
+kaupunki | город | kaupungin
+keittiö | кухня | keittiö keittiötä keittiön keittiössä
+kellari | подвал | kellari kellarissa
+kellarivarasto | кладовка в подвале | kellarivarasto kellarivaraston
+kuka | кто | kuka kenelle kenen kenet
+kenkä | ботинок | kengät kenkiä
+kerhohuone | клубная комната (в доме) | kerhohuone
+kerros | этаж | kerrosta kerroksessa kerrokseen
+kerrostalo | многоквартирный дом | kerrostalo kerrostalon kerrostaloon kerrostalossa
+kerrostaloasuja | житель многоквартирного дома | kerrostaloasuja
+kerta | раз | kerta
+kertaus | повторение | kertaus
+keräyspaperi | макулатура | keräyspaperi
+keskustella | обсуждать | keskustelevat
+keskustelupalsta | форум | keskustelupalsta
+kesä | лето | kesällä
+kielletty | запрещено | kielletty
+kielto | отрицание; запрет | kielto
+kieltäytyä | отказаться | kieltäytyä kieltäytyi
+kieltää | запрещать | kieltää
+kierrättää | сдавать в переработку | kierrättää kierrätän kierrätti
+kierrätysasema | станция приёма вторсырья | kierrätysasemalle
+kierrätyspiste | пункт приёма вторсырья | kierrätyspiste
+kiinni | закрыт(о) | kiinni
+kiinteistöhuolto | обслуживание недвижимости | kiinteistöhuolto
+kiireellinen | срочный | kiireellisissä
+kiittää | благодарить | kiitin
+kiitti | спасибо (разг.) | kiitti
+kirjoittaa | писать | kirjoitan
+kirpputori | барахолка | kirpputorilta
+kissa | кошка | kissaa
+klo (kello) | в ... часов | klo
+koti | дом (свой) | koti kotia kodista
+koira | собака | koira koiraan koirastamme
+kolmas | третий | kolmannessa kolmanteen
+kolmio | трёхкомнатная квартира | kolmio
+korjaaja | мастер | korjaaja
+korjata | чинить | korjata korjaan korjasi korjannut korjataan korjaamaan
+kostea | сырой | kosteaa
+kosteus | сырость, влажность | kosteus kosteutta kosteuden
+kuivata | сушить | kuivata
+kuivaushuone | сушильная комната | kuivaushuone kuivaushuoneeseen
+kukka | цветок | kukat kukista
+kutiava | зудящий | kutiavia
+kutsua | приглашать | kutsua kutsui kutsuit kutsunut
+kuukausi | месяц | kuukausi kuukauden kuukautta kuun kuussa
+kuulla | слышать | kuulen
+kuulua | входить в; относиться | kuulua kuuluu kuulu
+kuunnella | слушать | kuuntelee kuuntelen
+Kuusikonrinne | Куусиконринне (название дома) | kuusikonrinne
+kuva | фото | kuvan
+kyllästyä | устать от, надоесть | kyllästyä kyllästynyt
+kylmä | холодный | kylmä kylmät kylmiä
+kylpyhuone | ванная | kylpyhuone kylpyhuoneen
+kymmenen | десять | kymmeneen kymmeniä
+kysyä | спрашивать | kysytään
+käytetty | использованный | käytetty
+käyttää | пользоваться | käyttäkö
+laatikko | коробка | laatikoihin
+Lahtinen | Лахтинен (фамилия) | lahtinen
+laittaa | класть, ставить | laitatte laitoin laittamaan
+lajitella | сортировать | lajitella lajittele lajittelen lajitteli
+lamppu | лампа | lamppu lamppua
+lapsi | ребёнок | lapsia lasta lasten
+lasi | стекло | lasi
+lasipakkaus | стеклянная упаковка | lasipakkaus lasipakkaukset
+lasku | счёт | lasku
+lastenvaunut | детская коляска | lastenvaunut
+lattia | пол | lattia lattialla
+lattiakaivo | слив в полу | lattiakaivo lattiakaivoon
+lauantai-ilta | вечер субботы | lauantai-iltana
+lauantaisin | по субботам | lauantaisin
+Leena | Леэна (имя) | leena
+lehti | лист; газета | lehdet
+lemmikki | домашний питомец | lemmikkejä lemmikin
+limsapullo | бутылка из-под лимонада | limsapullo
+litistää | сплющить | litistää
+loma | отпуск | lomalla
+luhtitalo | дом с галереей | luhtitalo
+lukea | читать | lukea
+lumityöt | уборка снега | lumityöt lumitöistä
+luopua | отказаться от | luopua luopui luovuin luovun
+lutikka | клоп | lutikka lutikat
+lähteä | уходить, уезжать | lähdet lähdette
+lähettää | отправлять | lähettää
+läikkä | пятно | läikkä
+lämmitys | отопление | lämmitys lämmitystä lämmityksen lämmityksessä
+lämmitysvika | неисправность отопления | lämmitysvika
+lämmetä | нагреваться | lämpenee
+lämpö | тепло | lämpö
+löytää | находить | löytänyt löytäneet
+maali | краска | maali maalia
+maalipurkki | банка краски | maalipurkki
+maanantai | понедельник | maanantai maanantaihin
+mainos | реклама | mainokset
+maitotölkki | пакет из-под молока | maitotölkki
+makkara | сосиска | makkaraa
+maksaa | платить | maksaa maksan maksat maksoin maksaneet maksetaan
+makuuhuone | спальня | makuuhuone makuuhuoneen
+matala | низкий | matalassa
+matto | ковёр | matto maton mattoja
+me | мы | meidän meidät meillä meistä
+melu | шум | melu melusta meluun
+mennä | идти | mene
+metalli | металл | metalli
+metallipakkaus | металлическая упаковка | metallipakkaus pienmetalli
+meteli | шум, гам | meteli
+mieli | мнение | mielestä mielestään
+Mikko | Микко (имя) | mikko
+millainen | какой | millaisessa
+minä | я | minun minut
+missä | где | missä
+mikään | ничто | mistään mitään
+monta | много | monta
+muistaa | помнить | muista muistakaa muistatko
+mukaan | с собой | mukaan
+muovi | пластик | muovi
+muovipakkaus | пластиковая упаковка | muovipakkaus muovipakkaukset
+muovipussi | пластиковый пакет | muovipussi
+musiikki | музыка | musiikki musiikkia musiikin
+musta | чёрный | mustia
+muu | другой | muillakin muissa muuta
+muuttaa | переезжать | muuttaa muutan muutamme muutin muutimme muuttanut
+muutto | переезд | muutto muuttoa muutossa
+muuttopäivä | день переезда | muuttopäivänä
+myydä | продавать | myin
+myöhään | поздно | myöhään
+märkä | мокрый | märkä
+naapuri | сосед | naapuri naapuria naapurin naapuriin naapurille naapurista naapurisi naapureita
+neliö | квадратный метр | neliö neliötä
+neljäs | четвёртый | neljännessä
+nenäliina | носовой платок | nenäliina
+nettilehti | интернет-газета | nettilehdessä
+neuvoa | советовать | neuvoo
+nimimerkki | ник, псевдоним | nimimerkki
+nominatiiviobjekti | объект в номинативе | nominatiiviobjekti
+normaali | нормальный | normaalia
+nostaa | поднимать, повышать | nostaa
+noudattaa | соблюдать | noudattavat
+nousta | подниматься | nousta
+nukkua | спать | nukkumaan
+nuori | молодой | nuorempi
+näkyä / nähdä | видеть | näki
+objekti | объект, дополнение | objekti objektina
+odottaa | ждать | odottaa odotan
+oikeasti | на самом деле | oikeasti
+oikein | правильно | oikein
+olla | быть | olemme olisi olivat
+olohuone | гостиная | olohuone olohuonetta olohuoneen olohuoneeseen olohuoneessa
+omakotitalo | частный дом | omakotitalo omakotitaloon omakotitalossa
+oma | свой | omasi omasta
+omistaja | владелец | omistaja
+omistusasunto | собственная квартира | omistusasunto omistusasunnon
+ongelma | проблема | ongelma ongelmat
+olla (onko) | есть ли | onko
+opiskelija-asunto | студенческая квартира | opiskelija-asunto
+opiskelija | студент | opiskelijalla
+osallistua | участвовать | osallistua osallistuin osallistuimme osallistuivat
+osittain | частично | osittain
+ostaa | покупать | ostin ostimme ostanut
+ote | выдержка | ote
+Oulu | Оулу | ouluun
+ovi | дверь | ovi oven
+ovikello | дверной звонок | ovikelloa
+paha | плохой | pahalta
+pahvilaatikko | картонная коробка | pahvilaatikot
+pakata | упаковывать | pakkasimme
+pakko | обязательно, надо | pakko
+paksu | толстый | paksun
+palaa | гореть | pala
+palauttaa | возвращать | palauttaa
+palautusautomaatti | автомат приёма бутылок | palautusautomaatti pullonpalautus
+palvella | обслуживать | palvelee
+pantillinen | с залогом | pantillinen
+pantti | залог (за бутылку) | pantti
+paperi | бумага | paperi
+parempi | лучше | parempi
+paristo | батарейка | paristot
+paristokeräys | сбор батареек | paristokeräys
+paritalo | дом на две семьи | paritalo
+partitiivi | партитив | partitiivi
+partitiiviverbi | партитивный глагол | partitiiviverbit
+parveke | балкон | parveke parveketta parvekkeen parvekkeella parvekkeelta
+patteri | батарея | patteri patteria patterin patterit
+patterivika | неисправность батареи | patterivika
+pelätä | бояться | pelkään
+perhe | семья | perhe perhettä
+perjantai | пятница | perjantaina
+persoonapronomini | личное местоимение | persoonapronominit
+pestä | мыть, стирать | pestä pesin
+pesukone | стиральная машина | pesukone
+pesutupa | общая прачечная | pesutupa pesutuvan pesutuvassa
+pesuvuoro | время в прачечной | pesuvuoro
+pitää (mistä) | нравиться | pidän
+pieni | маленький | pieniä pientä
+piha | двор | piha pihaa pihalla pihalle pihan pihasta
+pihatalkoot | субботник во дворе | pihatalkoot pihatalkoisiin
+pilkku | точка, пятнышко | pilkkuja
+pitää (täytyy) | надо, должен | piti pitäisi pitäisikö
+pitää (ääntä) | производить (шум) | pitävät
+poikki | перекрыт, отключён | poikki
+pois | прочь | pois
+poisvieminen | вывоз | poisvieminen
+polkupyörä | велосипед | polkupyörän
+porraskäytävä | лестница, подъезд | porraskäytävä porraskäytävän porraskäytävässä porraskäytävään porraskäytävissä
+puhelin (puh.) | телефон | puh
+pullo | бутылка | pullo
+punainen | красный | punaisia
+putki | труба | putki
+putkiremontti | замена труб | putkiremontti
+putkityö | сантехнические работы | putkitöiden putkitöitä
+pyykki | бельё (для стирки) | pyykkiä
+pyytää | просить | pyytää pyydän pyysin pyytäkää
+pyörä | велосипед | pyörä pyörää pyörät pyöriä
+päivystys | дежурная служба | päivystys
+päivä | день | päivänä
+päästä | попасть | pääsee
+päästää | отпускать | päästää
+raha | деньги | rahat rahoista
+rakastaa | любить | rakastan rakastamme
+rappu | подъезд, лестница | rappu a-rappu a-rapussa b-rapun b-rapussa
+rappukäytävä | лестница, подъезд | rappukäytävä
+ratkaisu | решение | ratkaisua
+rauhassa | спокойно | rauhassa
+ravistella | трясти, вытряхивать | ravistella
+remontti | ремонт | remontti remontin remontista remonttiin
+riisua | снимать (одежду) | riisutaan
+rikki | сломан(о) | rikki
+rikkinäinen | разбитый | rikkinäinen
+rikkoa | нарушать; ломать | rikkoo rikkoneet
+rivitalo | таунхаус | rivitalo
+roska-astia | мусорный бак | roska-astia
+roskapussi | мусорный пакет | roskapussi roskapussit roskapusseja
+roskat | мусор | roskat roskia roskien
+ruskea | коричневый | ruskeita
+saada | получать; разрешено | saa saan
+sallittu | разрешено | sallittu
+sama | тот же | sama saman
+Sanna | Санна (имя) | sanna
+sanomalehti | газета | sanomalehti
+sanoa | говорить | sanotaan
+sattua | случиться | sattuessa
+sauna | сауна | sauna
+seinä | стена | seinä seinässä seinään
+sekajäte | смешанные отходы | sekajäte
+se | оно, это | sen siinä siihen
+seuraava | следующий | seuraavana
+siellä | там | siellä
+siivota | убирать | siivota siivoan siivosi siivosin siivoaa siivoavat
+silloin | тогда | silloin
+silti | всё же | silti
+sinne | туда | sinne
+sinä | ты | sinua sinut
+sisään | внутрь | sisään
+sit (sitten) | потом (разг.) | sit
+sohva | диван | sohva sohvan
+soittaa | звонить; играть (музыку) | soitan soitin soitit soitti soittanut
+solu / soluasunto | квартира с общей кухней | solu solun soluasunto solukämppä
+sopia | договориться | sopia sopi sovin sovimme sopineet
+sopimus | договор | sopimus
+suksi | лыжа | suksia
+sulkea | закрывать | sulkekaa
+sulla (sinulla) | у тебя (разг.) | sulla
+suostua | согласиться | suostua suostui suostunut suostu
+syödä | есть | syödään syövät
+sähkö | электричество | sähkö sähköä
+sähkögrilli | электрогриль | sähkögrillillä
+sähkökatko | отключение электричества | sähkökatko
+sähkölaite | электроприбор | sähkölaitteet
+sähköposti | электронная почта | sähköposti sähköpostia
+säilyketölkki | консервная банка | säilyketölkki
+säilyttää | хранить | säilyttää säilytetään
+sänky | кровать | sängyssä
+sääntö | правило | sääntöjä
+taas | снова | taas
+takaisin | обратно | takaisin
+takia | из-за | takia
+takki | куртка | takki
+takuuvuokra | залог за квартиру | takuuvuokra takuuvuokran vakuus
+talkoot | субботник | talkoot talkoisiin talkoissa
+talo | дом | talossa
+talouspaperi | бумажное полотенце | talouspaperi
+taloyhtiö | жилищная компания | taloyhtiö taloyhtiölle taloyhtiön
+talvirengas | зимняя шина | talvirenkaita
+Tampere | Тампере | tampere tampereelle tampereelta
+tamppausteline | вешалка для выбивания ковров | tamppaustelineellä
+tamputa | выбивать (ковёр) | tamputa
+tavata | встретить | tapasi
+tarvita | нуждаться | tarvita tarvitsen tarvitse
+tavara | вещи | tavaraa tavarat
+te | вы | te teidän teidät
+tehdä | делать | teet tehdään tehnyt tekemään tekisitte
+televisio | телевизор | televisio
+terveiset | приветы | terveisin
+tervetullut | желанный | tervetulleiksi
+tiedote | объявление, информационное письмо | tiedotteet
+tietää | знать | tietää
+tiistai | вторник | tiistaita
+tila | помещение | tila tilat tiloissa
+tili | счёт (банковский) | tililleen
+tippua | капать | tippuu
+toimia | работать (о технике) | toimi
+toinen | другой, второй | toinen
+toivottaa | желать | toivotti
+tottua | привыкнуть | tottua tottui tottunut totuin totun
+tuholainen | вредитель | tuholainen tuholaisen tuholaista tuholaiset
+tukkeutua | засориться | tukkeutua tukkeutunut
+tukos | засор | tukos tukoksen tukosta viemäritukos
+tukossa | засорён | tukossa
+tulla | приходить | tulemaan tuli tulla tullaan
+tunti | час | tunnissa
+tuoli | стул | tuoli tuolia tuoleja
+tupakka | табак, сигарета | tupakan
+tupakointi | курение | tupakointi
+Turku | Турку | turusta
+tutustua | познакомиться | tutustua tutustuin tutustuu
+tyhjentää | опорожнять | tyhjentää tyhjennän tyhjensi tyhjennetään
+tyhjä | пустой | tyhjä tyhjässä
+tämä | этот | tämän tässä tästä
+täällä | здесь | täällä
+ulko-ovi | входная дверь | ulko-ovi ulko-ovella
+ulkohuone | «комната на улице» | ulkohuone
+ulos | наружу | ulos
+unohtaa | забыть | unohda
+usein | часто | usein
+uusi | новый | uusi uuden uudesta uuteen
+vaarallinen | опасный | vaarallinen vaarallisia
+vaatehuone | гардеробная | vaatehuone
+vaikuttaa | влиять | vaikuttaa
+vaippa | подгузник | vaipat
+valittaa | жаловаться | valittaa valitti valittanut
+valo | свет | valot
+vanha | старый | vanha vanhat vanhoja
+Vantaa | Вантаа | vantaalta
+vapaa | свободный | vapaaksi
+varasto | кладовка | varasto varastossa
+varata | бронировать, запасать | varatkaa varatussa
+varauslista | список бронирования | varauslista
+vastaaja | отвечающий | vastaaja
+vastata | отвечать (за) | vastata
+vastaus | ответ | vastaus
+vastike | взнос на содержание дома | vastike vastiketta vastikkeen
+vastuussa | ответственен | vastuussa
+verbi | глагол | verbi
+vesi | вода | vesi
+vesikatko | отключение воды | vesikatko
+vesivahinko | затопление | vesivahinko vesivahingon
+vessa | туалет | vessa vessaa wc
+vetää | дуть (сквозняк) | vetää
+vika | неисправность | vika vikaa vian viasta vialla
+vikailmoitus | заявка о неисправности | vikailmoitus vikailmoitukset
+viedä | относить | viedä vie vien vein vei vienyt
+viemäri | канализация | viemäri
+vieras | гость | vieras vieraansa
+vierekkäin | рядом друг с другом | vierekkäin
+viesti | сообщение | viestin
+viikko | неделя | viikkoina
+viisi | пять | viisi
+Virta | Вирта (фамилия) | virta
+voida | мочь | voivat
+vuoden / vuosi | год | vuonna
+vuokra | арендная плата | vuokra vuokraa vuokraan vuokran
+vuokra-asunto | съёмная квартира | vuokra-asunto vuokrakämppä
+vuokralainen | арендатор | vuokralainen vuokralaisen
+vuokranantaja | арендодатель | vuokranantaja vuokranantajalle vuokranantajan vuokranantajani
+vuokrasopimus | договор аренды | vuokrasopimus vuokrasopimuksen
+vuokrata | снимать, сдавать | vuokrata vuokrasin vuokrasimme
+vuorokausi | сутки | vuorokaudeksi vuorokauden
+vuotava | протекающий | vuotava vuotavan vuotavasta
+vuoto | протечка | vuoto vuotoa vuodon
+vähemmän | меньше | vähemmän
+WhatsApp-ryhmä | группа в WhatsApp | whatsapp-ryhmä
+yksi | один | yksi yhden
+yhdessä | вместе | yhdessä
+yhteinen | общий | yhteinen yhteisissä yhteisistä yhteisiä
+yksiö | однокомнатная квартира | yksiö yksiön yksiötä
+yläkerta | верхний этаж | yläkerran
+ympäri | вокруг | ympäri
+ympärillä | вокруг | ympärillä
+yrittää | пытаться | yritämme
+ystävällinen | дружелюбный | ystävällisin
+ystävä | друг | ystävät
+yö | ночь | yö yöllä
+ääni | звук | ääni ääneen ääntä
+ötökkä | букашка | ötököitä
+@ ympäri vuorokauden | круглосуточно | ympäri vuorokauden
+@ ystävällisin terveisin | с уважением (в конце письма) | ystävällisin terveisin
+@ vesi on poikki | воды нет (отключена) | vesi on poikki
+@ pitää ääntä | шуметь | pitää\s+(?:kovaa\s+)?ääntä|pitävät\s+ääntä
+@ ei ainakaan | по крайней мере не | ei ainakaan
+@ koko ajan | всё время | koko ajan
+@ koko ikäni | всю жизнь | koko ikäni
+@ joka kerta | каждый раз | joka kerta
+@ sama juttu | то же самое | sama juttu
+@ kaikki mukaan | все участвуют! | kaikki mukaan
+@ jos se ei auta | если это не поможет | jos se ei auta
+@ toivottaa tervetulleeksi | приветствовать (новичка) | toivotti\s+\p{L}+\s+tervetulleiksi
+@ olla vastuussa | быть ответственным | on vastuussa
+@ on pakko | обязательно, надо | on pakko
+@ ennen kuin | прежде чем | ennen kuin
