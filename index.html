@@ -1016,7 +1016,8 @@ function exHead(ex, n, r) {
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
   const st = exDone(ex, r) ? '<span class="ex-state done">● выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
   return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}<button class="fold" type="button" data-fold="e:${ex.id}" aria-label="Свернуть или развернуть задание"></button></div></div>
-    <p class="ex-task">${esc(ex.task)}</p>`;
+    ${ex.type !== 'cards' ? `<p class="ex-task">${esc(ex.task)}</p>` : hideHelp('cards') ? '' : `<div class="help-note"><p class="ex-task" style="margin:0">${esc(ex.task)}</p>
+      <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="cards"> Больше не показывать</label></div>`}`;
 }
 function savedLine(r) { return r ? `<span class="saved-note">сохранено ${fmtDate(r.at)}</span>` : ''; }
 
