@@ -113,6 +113,7 @@
 .pastebox:focus{outline:none;border-style:solid;color:var(--ink)}
 .av-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:10px;border:1.5px dashed var(--sage-ink);border-radius:10px;width:fit-content;max-width:100%}
 .av-menu label.btn{display:inline-flex;align-items:center}
+.qfold{margin:4px 0 14px}
 .help-note{margin:0 0 14px}
 .prof-card{margin-top:24px}
 .prof-card::before{display:none}
@@ -1188,6 +1189,31 @@ function renderInput(sec, ex, n) {
 }
 
 /* ---------- YKI reading ---------- */
+function questionHTML({ q, id }, num, v) {
+  if (q.kind === 'mc') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="opts">${q.options.map((o, oi) =>
+    `<label class="opt" data-oi="${oi}"><input type="radio" name="${id}" value="${oi}" ${String(v) === String(oi) ? 'checked' : ''}><span>${'abc'[oi]}) ${esc(o)}</span></label>`).join('')}</div><span class="fb"></span></fieldset>`;
+  if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="tf">
+    <label class="opt" data-oi="1"><input type="radio" name="${id}" value="1" ${v === '1' ? 'checked' : ''}><span>Oikein</span></label>
+    <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
+  return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${num}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
+}
+// questions of one text; if it has both choice and open questions, the choice ones can be hidden
+// so the open answers sit right under the text
+function readingQuestions(list, all, vals, exId, ti) {
+  const num = x => all.findIndex(y => y.id === x.id) + 1;
+  const closed = list.filter(x => x.q.kind !== 'open'), open = list.filter(x => x.q.kind === 'open');
+  if (!closed.length || !open.length) return list.map(x => questionHTML(x, num(x), vals[x.id])).join('');
+  const fid = 'q:' + exId + ':' + ti, hidden = isFolded(fid), range = num(closed[0]) + '–' + num(closed[closed.length - 1]);
+  return `<button class="btn small qfold" type="button" data-qfold="${fid}" data-range="${range}">${hidden ? 'Показать' : 'Спрятать'} вопросы ${range}</button>
+    <div class="closed-qs" data-qbox="${fid}" ${hidden ? 'hidden' : ''}>${closed.map(x => questionHTML(x, num(x), vals[x.id])).join('')}</div>
+    ${open.map(x => questionHTML(x, num(x), vals[x.id])).join('')}`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-qfold]'); if (!b) return;
+  const id = b.dataset.qfold, box = document.querySelector(`[data-qbox="${id}"]`); if (!box) return;
+  const hide = !box.hidden; box.hidden = hide; setFold(id, hide);
+  b.textContent = (hide ? 'Показать' : 'Спрятать') + ' вопросы ' + b.dataset.range;
+});
 function renderReading(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
@@ -1200,14 +1226,7 @@ function renderReading(sec, ex, n) {
   sec.innerHTML = exHead(ex, n, r) + ex.texts.map((tx, ti) => `
     <div class="section-title"><span class="n">Teksti ${ti + 1}</span></div>
     <article class="yki-text"><div class="kind">${esc(tx.kind)}</div><h4>${esc(tx.title)}</h4>${tx.body.map(p => `<p>${esc(p)}</p>`).join('')}</article>
-    ${qs.filter(x => x.ti === ti).map(({ q, id }) => { const num = qs.findIndex(x => x.id === id) + 1; const v = vals[id];
-      if (q.kind === 'mc') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="opts">${q.options.map((o, oi) =>
-        `<label class="opt" data-oi="${oi}"><input type="radio" name="${id}" value="${oi}" ${String(v) === String(oi) ? 'checked' : ''}><span>${'abc'[oi]}) ${esc(o)}</span></label>`).join('')}</div><span class="fb"></span></fieldset>`;
-      if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="tf">
-        <label class="opt" data-oi="1"><input type="radio" name="${id}" value="1" ${v === '1' ? 'checked' : ''}><span>Oikein</span></label>
-        <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
-      return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${num}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
-    }).join('')}
+    ${readingQuestions(qs.filter(x => x.ti === ti), qs, vals, ex.id, ti)}
     <div class="actions part-actions"><button class="btn main" type="button" data-check="${ti}">Tarkista! · Teksti ${ti + 1}</button>
       ${checked.has(ti) ? `<span class="saved-note">● проверено и сохранено ${r && r.parts && r.parts[ti] ? fmtDate(r.parts[ti]) : fmtDate(r.at)}</span>` : '<span class="saved-note">○ ещё не проверено</span>'}</div>`).join('');
   const readVal = ({ q, id }) => {
