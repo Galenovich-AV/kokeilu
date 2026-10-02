@@ -816,13 +816,15 @@ function renderWho() {
   el.innerHTML = `
     ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
-    ${notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : '💬 Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
+    ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : '💬 Чаты' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
+    ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : '💬 Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
+  const tcb = $('#tchatBtn'); if (tcb) tcb.onclick = () => { state.view = state.view === 'tchat' ? 'learn' : 'tchat'; renderAll(); window.scrollTo(0, 0); };
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
@@ -1339,11 +1341,9 @@ async function renderTeacher() {
       <div class="panel"><p>Пока никто не сохранил результаты.</p><p class="note">Когда ученик зарегистрируется и проверит хотя бы одно задание, он появится здесь.</p></div>`;
     return;
   }
-  main.innerHTML = hero(list.length + ' чел.') + `<section class="ex" id="notesSec"><div class="ex-head"><h3>Комментарии учеников</h3></div><p class="note">Загрузка…</p></section>
+  main.innerHTML = hero(list.length + ' чел.') + `
     <section class="ex"><div class="ex-head"><h3>Ученики</h3></div>
     <p class="ex-task">Нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div></section>`;
-  // comments the students sent, as chats; "новый" = a student message since the teacher last opened this page
-  Promise.all([Store.notesOf(list), Store.chatsOf(list)]).then(([all, chats]) => renderTeacherChats(list, all, chats));
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
@@ -1353,6 +1353,33 @@ async function renderTeacher() {
   });
 }
 
+// teacher: all chats with students, in their own view
+async function loadTeacherChats() {
+  const list = await Store.students();
+  const [all, chats] = await Promise.all([Store.notesOf(list), Store.chatsOf(list)]);
+  state.tchat = { list, all, chats };
+  return state.tchat;
+}
+function teacherUnread() {
+  const T = state.tchat; if (!T) return 0;
+  let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
+  let n = 0;
+  Object.entries(T.all).forEach(([uid, o]) => (o.items || []).filter(x => x.sent).forEach(x => {
+    const lastS = threadOf(x, T.chats[uid]).filter(m => m.from === 's').map(m => m.at).sort().pop() || x.sentAt;
+    if (!seen || lastS > seen) n++;
+  }));
+  return n;
+}
+async function renderTeacherChatView() {
+  const main = $('#main');
+  main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Чат с учениками</span></h1>
+    <p class="note">Комментарии и вопросы учеников к заданиям · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
+    <section class="ex" id="notesSec"><div class="ex-head"><h3>Переписка</h3></div><p class="note">Загрузка…</p></section>`;
+  const T = await loadTeacherChats();
+  if (state.view !== 'tchat') return;
+  renderTeacherChats(T.list, T.all, T.chats);
+  renderWho();
+}
 function renderTeacherChats(list, all, chats) {
   const sec = $('#notesSec'); if (!sec) return;
   let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
@@ -1366,8 +1393,12 @@ function renderTeacherChats(list, all, chats) {
   rows.sort((a, b) => (a.last < b.last ? 1 : -1));
   const fresh = rows.filter(x => !seen || x.lastS > seen).length;
   const me = { name: (state.profile && state.profile.name) || 'Преподаватель', ...profDoc() };
-  sec.innerHTML = `<div class="ex-head"><h3>Комментарии учеников</h3>${fresh ? `<span class="score ok">${fresh} новых</span>` : ''}</div>
-    ${rows.length ? rows.map(({ uid, n, msgs, prof, lastS }) => `<div class="thread-card" data-uid="${uid}" data-nid="${esc(n.id)}">
+  const filt = state.tchatFilter || '';
+  const shownRows = filt ? rows.filter(x => x.uid === filt) : rows;
+  const who = [...new Set(rows.map(x => x.uid))];
+  sec.innerHTML = `<div class="ex-head"><h3>Переписка</h3>${fresh ? `<span class="score ok">${fresh} новых</span>` : ''}</div>
+    ${who.length > 1 ? `<div class="row" style="margin-bottom:6px"><label class="note" for="tcF">Ученик:</label><select class="field" id="tcF" style="flex:0 1 auto"><option value="">Все</option>${who.map(u => `<option value="${u}" ${u === filt ? 'selected' : ''}>${esc(names[u] || 'Ученик')}</option>`).join('')}</select></div>` : ''}
+    ${shownRows.length ? shownRows.map(({ uid, n, msgs, prof, lastS }) => `<div class="thread-card" data-uid="${uid}" data-nid="${esc(n.id)}">
       <div class="thread-top">${avatarHTML(34, prof)}<div><b>${esc(names[uid] || 'Ученик')}</b>${!seen || lastS > seen ? ' <span class="newb">новый</span>' : ''}<div class="note">${esc(exTitleOf(n.ex))}</div></div></div>
       <blockquote class="nquote" style="background:${esc(n.color || '#fff17a')}">${esc(n.exact)}</blockquote>
       <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof })).join('')}</div>
@@ -1383,6 +1414,7 @@ function renderTeacherChats(list, all, chats) {
     if (!ok) { toast('Не удалось отправить ответ, попробуйте ещё раз'); return; }
     chats[uid] = doc; toast('Ответ отправлен'); renderTeacherChats(list, all, chats);
   });
+  const tf = $('#tcF'); if (tf) tf.onchange = () => { state.tchatFilter = tf.value; renderTeacherChats(list, all, chats); };
   try { localStorage.setItem(LS_KEY + ':notesSeen', new Date().toISOString()); } catch (e) {}
 }
 
@@ -2156,12 +2188,12 @@ function renderProfile() {
    ========================================================= */
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
-  document.documentElement.classList.toggle('teacher-mode', state.view === 'teacher' && Store.isOwner);
+  document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics(); renderRegister();
-  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else renderLearn();
+  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
 
 state.results = lsRead().results || {};
@@ -2178,7 +2210,7 @@ async function loadMine() {
   renderAll();
 }
 Store.ready = Store.init();
-Store.ready.then(loadMine).then(() => Store.flushPending());
+Store.ready.then(loadMine).then(() => Store.flushPending()).then(async () => { if (Store.isOwner) { await loadTeacherChats(); renderWho(); } });
 window.addEventListener('online', () => Store.flushPending());
 </script>
 
