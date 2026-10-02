@@ -569,7 +569,7 @@ lemmikki | домашний питомец | lemmikkejä lemmikin
 limsapullo | бутылка из-под лимонада | limsapullo
 litistää | сплющить | litistää
 loma | отпуск | lomalla
-luhtitalo | дом с галереей | luhtitalo
+luhtitalo | дом галерейного типа | luhtitalo
 lukea | читать | lukea
 lumityöt | уборка снега | lumityöt lumitöistä
 luopua | отказаться от | luopua luopui luovuin luovun
@@ -867,6 +867,7 @@ yksi | один | yksi yhden
 yhdessä | вместе | yhdessä
 yhteinen | общий | yhteinen yhteisissä yhteisistä yhteisiä
 yksiö | однокомнатная квартира | yksiö yksiön yksiötä
+huoneisto | квартира (офиц.); апартаменты | huoneisto huoneiston huoneistoa lomahuoneisto
 yläkerta | верхний этаж | yläkerran
 ympäri | вокруг | ympäri
 ympärillä | вокруг | ympärillä
