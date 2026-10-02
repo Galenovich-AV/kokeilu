@@ -76,6 +76,10 @@
 .dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
+.totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
+  background:var(--sage);border:2px solid var(--sage-ink);color:var(--on-accent);box-shadow:0 6px 16px rgba(40,50,30,.22);display:flex;align-items:center;justify-content:center;padding:0}
+.totop::before{content:"";width:12px;height:12px;border-left:3px solid currentColor;border-top:3px solid currentColor;transform:translateY(3px) rotate(45deg)}
+.totop:hover{filter:brightness(.96)}
 .fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
 .learned{color:var(--sage-ink);font-size:.8rem}
 .match{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:640px}
@@ -328,6 +332,7 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
   <main id="main"></main>
 </div>
 <div class="toast" id="toast" hidden></div>
+<button class="totop" id="toTop" type="button" aria-label="Наверх" title="Наверх" hidden></button>
 
 <script src="config.js"></script>
 <script>
@@ -1139,6 +1144,14 @@ function renderWriting(sec, ex, n) {
 }
 
 function refreshTabs() { renderTopics(); celebrateNewlyDone(); }
+
+/* ---------- back-to-top arrow: appears after scrolling down ---------- */
+(function () {
+  const b = document.getElementById('toTop');
+  const upd = () => { b.hidden = window.scrollY < 600; };
+  window.addEventListener('scroll', upd, { passive: true }); upd();
+  b.onclick = () => window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+})();
 
 /* ---------- small fireworks when a whole block is finished ---------- */
 function doneBlockIds() {
