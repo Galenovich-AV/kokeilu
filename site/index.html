@@ -236,8 +236,11 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .wsheet-in .field{flex:none;width:100%}
 .wsheet-in .btn.main{margin-top:8px;justify-self:start}
 .dict td{vertical-align:middle}
+.addw{position:absolute;top:50%;right:10px;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:1.5px solid #1f2c17;color:#1f2c17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;line-height:1}
+.addw:hover{background:rgba(255,255,255,.5)}
 .dict-act{white-space:nowrap;text-align:right}
-.ex p, .ex li, .yki-text, .symptoms, .face{-webkit-touch-callout:none}
+.addsel{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:24;box-shadow:0 6px 20px rgba(40,50,30,.3);max-width:calc(100% - 32px);white-space:nowrap}
+.addsel:hover{transform:translateX(-50%)}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-weight:600;font-size:.92rem;z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center}
 @media (max-width:520px){.ex{padding:30px 16px 18px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.title-slip{padding:12px 18px}}
 @media (prefers-reduced-motion:reduce){.card-in{transition:none}.btn:hover{transform:none}}
@@ -773,8 +776,8 @@ function renderLearn() {
   const main = $('#main');
   main.innerHTML = `
     <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
-      <div class="row" style="gap:14px"><button class="linkbtn" type="button" data-allfold="1">свернуть всё</button><button class="linkbtn" type="button" data-allfold="0">развернуть всё</button></div></div>
-    <p class="note" style="margin:0">Совет: зажмите любое слово на странице, чтобы добавить его в свой словарь.</p>
+      <div class="row"><button class="btn" type="button" data-allfold="1">Свернуть всё</button><button class="btn" type="button" data-allfold="0">Развернуть всё</button></div></div>
+    <p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ Sanakirjaan» внизу, чтобы добавить его в свой словарь.</p>
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
@@ -826,7 +829,7 @@ function renderCards(sec, ex, n) {
       return `<button class="card ${state.flips[id] ? 'flipped' : ''} ${known.has(id) ? 'known' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
         <span class="card-in">
           <span class="face front" title="${esc(c[2] || "")}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
-          <span class="face back"><span class="w">${esc(c[1])}</span><span class="g">${esc(c[0])}</span></span>
+          <span class="face back"><span class="w">${esc(c[1])}</span><span class="g">${esc(c[0])}</span><span class="addw" role="button" tabindex="0" title="В мой словарь" data-addw="${esc(c[0].split(' + ')[0])}" data-tr="${esc(c[1])}">+</span></span>
         </span></button>`; }).join('')}</div></div>`).join('') + `
     <div class="card-tools">
       <button class="btn small main" type="button" data-known ${anyFlipped() ? '' : 'disabled'}>✓ Знаю открытые</button>
@@ -1107,36 +1110,38 @@ async function addWord(word, tr) {
   toast('«' + word + '» в словаре' + (cloud ? '' : ' (сохранено в браузере)'));
 }
 
-// long press on any word → add to dictionary
-const press = { t: null, x: 0, y: 0 };
-function wordAt(x, y) {
-  const sel = String(window.getSelection ? window.getSelection() : '').trim();
-  if (sel && sel.length < 60) return sel;
-  let node, off;
-  if (document.caretPositionFromPoint) { const c = document.caretPositionFromPoint(x, y); if (!c) return ''; node = c.offsetNode; off = c.offset; }
-  else if (document.caretRangeFromPoint) { const c = document.caretRangeFromPoint(x, y); if (!c) return ''; node = c.startContainer; off = c.startOffset; }
-  if (!node || node.nodeType !== 3) return '';
-  const txt = node.textContent; const isL = ch => /[\p{L}\-]/u.test(ch);
-  let a = off, b = off;
-  while (a > 0 && isL(txt[a - 1])) a--;
-  while (b < txt.length && isL(txt[b])) b++;
-  return txt.slice(a, b).replace(/^-+|-+$/g, '');
+// select a word (the normal way, also on phones) → a button appears → add to dictionary
+const selState = { text: '' };
+function selectedWord() {
+  const sel = window.getSelection ? window.getSelection() : null;
+  if (!sel || sel.isCollapsed) return '';
+  const node = sel.anchorNode && (sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode);
+  if (!node || !node.closest('#main') || node.closest('input, textarea, #wsheet')) return '';
+  const t = String(sel).replace(/\s+/g, ' ').trim().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+  return t.length > 1 && t.length <= 60 ? t : '';
 }
-document.addEventListener('pointerdown', e => {
-  if (e.button > 0 || state.view === 'teacher') return;
-  if (e.target.closest('input, textarea, select, .wsheet, #who, .toc')) return;
-  press.x = e.clientX; press.y = e.clientY;
-  clearTimeout(press.t);
-  press.t = setTimeout(() => {
-    const w = wordAt(press.x, press.y);
-    if (w && w.length > 1) { press.fired = true; openWordSheet(w); }
-  }, 550);
+document.addEventListener('selectionchange', () => {
+  clearTimeout(selState.t);
+  selState.t = setTimeout(() => {
+    const w = selectedWord(); const btn = $('#addSel');
+    if (w) { selState.text = w; btn.querySelector('b').textContent = w.length > 24 ? w.slice(0, 22) + '…' : w; btn.hidden = false; }
+    else if (!$('#addSel:hover')) btn.hidden = true;
+  }, 250);
 });
-document.addEventListener('pointermove', e => { if (press.t && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) { clearTimeout(press.t); press.t = null; } });
-['pointerup', 'pointercancel', 'scroll'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(press.t); press.t = null; }, true));
-// the click that ends a long press must not flip a card or press a button
-document.addEventListener('click', e => { if (press.fired) { press.fired = false; e.preventDefault(); e.stopPropagation(); } }, true);
-document.addEventListener('contextmenu', e => { if (press.fired || $('.wsheet:not([hidden])')) e.preventDefault(); });
+(function mountSelButton() {
+  const btn = document.createElement('button');
+  btn.id = 'addSel'; btn.type = 'button'; btn.className = 'btn main addsel'; btn.hidden = true;
+  btn.innerHTML = '+ Sanakirjaan: <b></b>';
+  btn.addEventListener('pointerdown', e => e.preventDefault()); // keep the selection while tapping
+  btn.onclick = () => { const w = selState.text; btn.hidden = true; if (w) openWordSheet(w); };
+  document.body.appendChild(btn);
+})();
+
+document.addEventListener('click', async e => {
+  const a = e.target.closest('[data-addw]'); if (!a) return;
+  e.stopPropagation(); e.preventDefault();
+  await addWord(a.dataset.addw, a.dataset.tr);
+}, true);
 
 function openWordSheet(word, tr) {
   let sh = $('#wsheet');
@@ -1150,7 +1155,7 @@ function openWordSheet(word, tr) {
     <label class="note" for="wtr">Перевод</label><input class="field" id="wtr" value="${esc(guess)}" placeholder="перевод на русский" autocomplete="off">
     <button class="btn main" type="submit">${known ? 'Обновить' : 'Добавить в словарь'}</button>
   </form>`;
-  window.getSelection && window.getSelection().removeAllRanges();
+  try { window.getSelection().removeAllRanges(); } catch (e) {}
   const close = () => { sh.hidden = true; };
   $('#wclose').onclick = close;
   $('#wform').onsubmit = async e => { e.preventDefault(); await addWord($('#wword').value, $('#wtr').value); close(); if (state.view === 'dict') renderDict(); };
@@ -1165,7 +1170,7 @@ function renderDict() {
   main.innerHTML = `
     <section class="ex">
       <div class="ex-head"><h3>Oma sanakirja</h3><span class="note">${words.length} слов</span></div>
-      <p class="ex-task">Добавляйте слова прямо из заданий: зажмите слово на пару секунд. Или впишите слово здесь.</p>
+      <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ Sanakirjaan» внизу экрана. Или впишите слово здесь.</p>
       <form class="row" id="dictAdd" style="margin-bottom:16px">
         <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
         <input class="field" id="dt" placeholder="перевод" autocomplete="off">
@@ -1175,7 +1180,7 @@ function renderDict() {
       ${words.length ? `<div class="scroll"><table class="res-table dict"><thead><tr><th>Sana</th><th>Перевод</th><th></th></tr></thead><tbody>
         ${shown.map(w => `<tr><td><b>${esc(w.w)}</b></td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
           <td class="dict-act"><button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button></td></tr>`).join('')}
-      </tbody></table></div>` : '<p class="note">Пока пусто. Зажмите любое слово в заданиях, и оно появится здесь.</p>'}
+      </tbody></table></div>` : '<p class="note">Пока пусто. Выделите любое слово в заданиях и нажмите «+ Sanakirjaan».</p>'}
     </section>`;
   $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value); renderDict(); };
   const dq = $('#dq'); if (dq) dq.oninput = () => { state.dictQ = dq.value; const pos = dq.selectionStart; renderDict(); const n = $('#dq'); n.focus(); n.setSelectionRange(pos, pos); };
