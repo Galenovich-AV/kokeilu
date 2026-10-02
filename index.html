@@ -295,6 +295,12 @@ a{color:var(--sage-ink)}
 .bank[open] summary::before{transform:rotate(90deg)}
 .bank-words{display:flex;flex-wrap:wrap;gap:6px 10px;padding:6px 0 4px}
 .bank-words span{padding:0 8px;background:var(--paper);border-radius:4px}
+/* word bank: drag a word into a blank (or tap it to fill the blank you were in); typing still works */
+.bank[open]{position:sticky;top:8px;z-index:6;background:var(--sheet);box-shadow:var(--shadow)}
+.bank-words .bw{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border:1px solid var(--tile-line);padding:2px 10px;font-weight:600;font-size:.9rem}
+.bank-words .bw:hover{border-color:var(--sage-ink)}
+.bw-ghost{position:fixed;z-index:40;pointer-events:none;padding:4px 12px;border-radius:6px;background:var(--sage);color:var(--on-accent);font-weight:700;box-shadow:0 6px 16px rgba(40,50,30,.3);transform:translate(-50%,-120%)}
+.blank.drop-over{border-bottom-color:var(--sage-ink);background:var(--tape)}
 ol.items{list-style:none;margin:0;padding:0;counter-reset:it;display:grid;gap:12px}
 ol.items>li{counter-increment:it;display:grid;grid-template-columns:2.2em 1fr;gap:4px;align-items:start}
 ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size:1.45rem;line-height:1.3;color:var(--sage-ink);font-weight:700}
@@ -522,7 +528,7 @@ const TOPICS = [
         ['mitata + G/P', 'измерять', 'mittasi kuumeen'], ['ottaa lääkettä', 'принимать лекарство'],
         ['hoitaa + G/P', 'лечить', 'hoitaa flunssaa'], ['kirjoittaa resepti', 'выписать рецепт'] ]}
     ]},
-    { id: 'oireet', type: 'input', title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
+    { id: 'oireet', type: 'input', title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь.',
       bank: ['flunssa', 'influenssa', 'angiina', 'vatsatauti', 'migreeni', 'korvatulehdus', 'keuhkokuume', 'allergia'],
       items: [
         { box: 'Hänen nenänsä vuotaa, hän aivastelee paljon ja hänen kurkkunsa on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha', 'nuhakuume'] },
@@ -698,7 +704,7 @@ const TOPICS = [
         ['pitää + mistä', 'нравиться, любить', 'pidän uudesta kodista'], ['viedä + mihin', 'относить', 'vien, vei; vien roskat'],
         ['siivota', 'убирать', 'siivoan, siivosi'], ['korjata', 'чинить', 'korjaan, korjasi'] ]}
     ]},
-    { id: 'a-tyypit', type: 'input', title: 'Mikä asunto tai tila?', task: 'Прочитайте описание и напишите, что это (по-фински, в начальной форме).',
+    { id: 'a-tyypit', type: 'input', title: 'Mikä asunto tai tila?', task: 'Прочитайте описание и напишите, что это.',
       bank: ['kerrostalo', 'rivitalo', 'omakotitalo', 'paritalo', 'yksiö', 'kaksio', 'soluasunto', 'vuokra-asunto', 'eteinen', 'pesutupa', 'varasto', 'parveke'],
       items: [
         { box: 'Talossa on monta kerrosta ja kymmeniä asuntoja. Ylös pääsee usein hissillä.', a: ['kerrostalo'] },
@@ -1512,7 +1518,7 @@ function renderInput(sec, ex, n) {
   const prev = r && r.raw ? r.raw : [];
   const checked = !!(r && r.raw);
   sec.innerHTML = exHead(ex, n, r) +
-    (ex.bank ? `<details class="bank"><summary>Показать банк слов</summary><div class="bank-words">${[...ex.bank].sort((a, b) => a.localeCompare(b, 'fi')).map(w => `<span>${esc(w)}</span>`).join('')}</div></details>` : '') +
+    (ex.bank ? `<details class="bank"><summary>Показать банк слов</summary><div class="bank-words">${[...ex.bank].sort((a, b) => a.localeCompare(b, 'fi')).map(w => `<span class="bw" data-bw="${esc(w)}" title="Перетащите в пропуск или нажмите">${esc(w)}</span>`).join('')}</div></details>` : '') +
     `<ol class="items">${ex.items.map((it, i) => {
       const inp = `<input class="blank ${it.box ? 'wide' : ''}" id="${ex.id}-${i}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Ответ ${i + 1}" value="${esc(prev[i] || '')}">`;
       const body = it.box ? `<div class="symptoms">${esc(it.box)}</div>${inp}`
@@ -1766,6 +1772,40 @@ function renderWriting(sec, ex, n) {
   });
 }
 
+
+/* ---------- word bank drag & drop: works with mouse and touch ---------- */
+let lastBlank = null;
+document.addEventListener('focusin', e => { if (e.target.classList && e.target.classList.contains('blank')) lastBlank = e.target; });
+function dropInto(inp, word, focus) {
+  if (!inp) return; inp.value = word; inp.classList.remove('ok', 'bad');
+  inp.dispatchEvent(new Event('input', { bubbles: true }));
+  if (focus) { inp.focus(); const L = inp.value.length; try { inp.setSelectionRange(L, L); } catch (e) {} }
+}
+document.addEventListener('pointerdown', e => {
+  const bw = e.target.closest('.bw'); if (!bw || e.button > 0) return;
+  e.preventDefault();
+  const ex = bw.closest('.ex'), word = bw.dataset.bw, x0 = e.clientX, y0 = e.clientY;
+  let ghost = null, over = null, raf = 0, py = y0;
+  const blankAt = (x, y) => { const el = document.elementFromPoint(x, y); const b = el && el.closest('.blank'); return b && ex.contains(b) ? b : null; };
+  const scroll = () => { const m = 70, h = innerHeight; if (py < m) scrollBy(0, -Math.ceil((m - py) / 4)); else if (py > h - m) scrollBy(0, Math.ceil((py - h + m) / 4)); raf = requestAnimationFrame(scroll); };
+  const move = ev => {
+    py = ev.clientY;
+    if (!ghost) { if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 6) return; ghost = document.createElement('div'); ghost.className = 'bw-ghost'; ghost.textContent = word; document.body.appendChild(ghost); raf = requestAnimationFrame(scroll); }
+    ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
+    const b = blankAt(ev.clientX, ev.clientY); if (b !== over) { if (over) over.classList.remove('drop-over'); over = b; if (b) b.classList.add('drop-over'); }
+  };
+  const up = ev => {
+    removeEventListener('pointermove', move); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); cancelAnimationFrame(raf);
+    if (over) over.classList.remove('drop-over');
+    if (ghost) { ghost.remove(); if (ev.type === 'pointerup') { const t = blankAt(ev.clientX, ev.clientY); dropInto(t, word); } return; }
+    // a tap: fill the blank the student was in, or the first empty one
+    const act = document.activeElement, empty = [...ex.querySelectorAll('.blank')].find(i => !i.value.trim());
+    const target = act && act.classList.contains('blank') && ex.contains(act) ? act : lastBlank && ex.contains(lastBlank) && !lastBlank.value.trim() ? lastBlank : empty;
+    dropInto(target, word);
+    if (target) { const all = [...ex.querySelectorAll('.blank')]; const nx = all.slice(all.indexOf(target) + 1).find(i => !i.value.trim()); lastBlank = nx || target; }
+  };
+  addEventListener('pointermove', move); addEventListener('pointerup', up); addEventListener('pointercancel', up);
+});
 /* ---------- answers: always blurred until clicked; the first time a blurred answer appears after a check, a hint explains it ---------- */
 const spoil = html => { blurHint(); return `<span class="spoiler" tabindex="0" title="Нажмите, чтобы увидеть ответ">${html}</span>`; };
 document.documentElement.classList.add('hide-answers');
