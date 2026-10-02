@@ -113,6 +113,7 @@
 .pastebox:focus{outline:none;border-style:solid;color:var(--ink)}
 .av-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:10px;border:1.5px dashed var(--sage-ink);border-radius:10px;width:fit-content;max-width:100%}
 .av-menu label.btn{display:inline-flex;align-items:center}
+.q-actions{margin-top:6px;gap:8px}
 .qfold{margin:4px 0 14px}
 .help-note{margin:0 0 14px}
 .prof-card{margin-top:24px}
@@ -1195,7 +1196,8 @@ function questionHTML({ q, id }, num, v) {
   if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="tf">
     <label class="opt" data-oi="1"><input type="radio" name="${id}" value="1" ${v === '1' ? 'checked' : ''}><span>Oikein</span></label>
     <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
-  return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${num}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
+  return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${num}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span>
+    <div class="row q-actions"><button class="btn small main" type="button" data-qcheck="${id}">Tarkista!</button><button class="btn small" type="button" data-qsave="${id}">Tallenna</button><span class="saved-note" data-qst="${id}"></span></div></div>`;
 }
 // questions of one text; if it has both choice and open questions, the choice ones can be hidden
 // so the open answers sit right under the text
@@ -1222,6 +1224,8 @@ function renderReading(sec, ex, n) {
   const vals = { ...prev, ...drafts };
   // older results were checked all at once
   const checked = new Set(r && r.raw ? (r.checked || ex.texts.map((_, i) => i)) : []);
+  // open questions can also be checked or just saved one by one: { id: 'checked' | 'saved' }
+  const qstate = { ...((r && r.qstate) || {}) };
   const qs = []; ex.texts.forEach((tx, ti) => tx.questions.forEach(q => qs.push({ q, ti, id: `${ex.id}-q${qs.length}` })));
   sec.innerHTML = exHead(ex, n, r) + ex.texts.map((tx, ti) => `
     <div class="section-title"><span class="n">Teksti ${ti + 1}</span></div>
@@ -1237,11 +1241,17 @@ function renderReading(sec, ex, n) {
   // keep unsent answers in this browser while typing
   const keepDraft = () => { const d = {}; qs.forEach(x => { d[x.id] = readVal(x); }); try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(d)); } catch (e) {} };
   sec.oninput = keepDraft; sec.onchange = keepDraft;
-  const grade = (set) => {
+  const grade = (set, qst) => {
     let score = 0, max = 0; const answers = [];
     qs.forEach(x => {
-      const { q, id, ti } = x; if (!set.has(ti)) return;
+      const { q, id, ti } = x; const own = qst[id];
+      if (!set.has(ti) && !own) return;
       const box = sec.querySelector('#' + id); const fb = box.querySelector('.fb'); const v = readVal(x);
+      if (q.kind === 'open' && own === 'saved' && !set.has(ti)) {
+        fb.className = 'fb wait'; fb.textContent = 'сохранено без проверки · преподаватель увидит ответ';
+        answers.push({ p: q.q, a: v, ok: null, c: q.model, open: true });
+        return;
+      }
       if (q.kind === 'open') {
         const nv = norm(v); const need = q.need || q.keys.length;
         const hit = Math.min(need, q.keys.filter(alts => alts.some(a => nv.includes(norm(a)))).length);
@@ -1261,13 +1271,26 @@ function renderReading(sec, ex, n) {
     });
     return { score, max, answers };
   };
-  if (checked.size) grade(checked);
+  if (checked.size || Object.keys(qstate).length) grade(checked, qstate);
+  qs.forEach(x => { const st = sec.querySelector(`[data-qst="${x.id}"]`); if (st && qstate[x.id]) st.textContent = qstate[x.id] === 'checked' ? '● проверено и сохранено' : '● сохранено'; });
+  // one open question: check it, or only save it
+  const saveOne = async (id, how) => {
+    const x = qs.find(y => y.id === id); const raw = { ...prev, [id]: readVal(x) };
+    const qst = { ...qstate, [id]: how === 'check' ? 'checked' : (qstate[id] === 'checked' ? 'checked' : 'saved') };
+    if (how === 'save' && qstate[id] === 'checked') qst[id] = 'saved';
+    const res = grade(checked, qst);
+    await submit(ex, { ...res, raw, checked: [...checked].sort(), parts: (r && r.parts) || {}, qstate: qst });
+    renderReading(sec, ex, n); refreshTabs();
+  };
+  sec.querySelectorAll('[data-qcheck]').forEach(b => b.onclick = () => saveOne(b.dataset.qcheck, 'check'));
+  sec.querySelectorAll('[data-qsave]').forEach(b => b.onclick = () => saveOne(b.dataset.qsave, 'save'));
   sec.querySelectorAll('[data-check]').forEach(btn => btn.onclick = async () => {
     const ti = +btn.dataset.check; const set = new Set([...checked, ti]);
     const raw = { ...prev }; qs.forEach(x => { if (x.ti === ti) raw[x.id] = readVal(x); });
     const parts = { ...((r && r.parts) || {}) }; parts[ti] = new Date().toISOString();
-    const res = grade(set);
-    await submit(ex, { ...res, raw, checked: [...set].sort(), parts });
+    const qst = { ...qstate }; qs.forEach(x => { if (x.ti === ti && x.q.kind === 'open') qst[x.id] = 'checked'; });
+    const res = grade(set, qst);
+    await submit(ex, { ...res, raw, checked: [...set].sort(), parts, qstate: qst });
     renderReading(sec, ex, n); refreshTabs();
   });
 }
