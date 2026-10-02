@@ -67,6 +67,9 @@ a{color:var(--sage-ink)}
 /* block tabs */
 .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
 .tab{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:var(--r);padding:8px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700}
+.block{margin:0 0 12px}
+.block-title{margin:34px 0 16px;font-size:2.3rem}
+.block-title .note{font-family:var(--f-body);font-size:.95rem;font-weight:400}
 .tab small{font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .tab[aria-selected="true"]{background:var(--sage);color:#22301a;border-color:#22301a}
 .tab[aria-selected="true"] small{color:#33461f}
@@ -525,22 +528,21 @@ function renderTopics() {
    LEARN VIEW
    ========================================================= */
 function renderLearn() {
-  const t = topicObj(), b = blockObj();
+  const t = topicObj();
   const main = $('#main');
   main.innerHTML = `
     <h2 style="margin:6px 0 4px">${esc(t.fi)}</h2>
-    <p class="note" style="margin:0 0 12px">${esc(t.ru)} · сначала лексика, затем грамматика, затем YKI</p>
-    <div class="tabs" role="tablist">${t.blocks.map((bl, i) => {
-      const sc = blockScore(t, bl, state.results);
-      return `<button class="tab" role="tab" type="button" data-block="${bl.id}" aria-selected="${bl.id === b.id}">
-        <span>${i + 1}. ${esc(bl.ru)}</span><small>${sc.done ? `${sc.s}/${sc.m}` : `${sc.done}/${sc.total}`}</small></button>`; }).join('')}</div>
-    <div id="exList"></div>`;
-  main.querySelectorAll('[data-block]').forEach(btn => btn.onclick = () => { state.block = btn.dataset.block; saveTab(); renderLearn(); });
-  const list = $('#exList');
-  b.exercises.forEach((ex, i) => {
-    const sec = document.createElement('section'); sec.className = 'ex'; sec.id = 'ex-' + ex.id;
-    list.appendChild(sec);
-    ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting })[ex.type](sec, ex, i + 1);
+    <p class="note" style="margin:0 0 20px">${esc(t.ru)}</p>
+    ${t.blocks.map((bl, i) => `<section class="block" id="block-${bl.id}">
+      <h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.ru)}</span> <span class="note">${esc(bl.fi)}</span></h2>
+      <div data-exlist="${bl.id}"></div></section>`).join('')}`;
+  t.blocks.forEach(bl => {
+    const list = main.querySelector(`[data-exlist="${bl.id}"]`);
+    bl.exercises.forEach((ex, i) => {
+      const sec = document.createElement('section'); sec.className = 'ex'; sec.id = 'ex-' + ex.id;
+      list.appendChild(sec);
+      ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting })[ex.type](sec, ex, i + 1);
+    });
   });
 }
 
@@ -552,7 +554,7 @@ function exHead(ex, n, r) {
 function savedLine(r) { return r ? `<span class="saved-note">сохранено ${fmtDate(r.at)}</span>` : ''; }
 
 async function submit(ex, doc) {
-  const t = topicObj(), b = blockObj();
+  const t = topicObj(), b = t.blocks.find(bl => bl.exercises.includes(ex));
   const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.ru, ex: ex.id, exTitle: ex.title, type: ex.type, at: new Date().toISOString(), ...doc };
   state.results[key(t.id, ex.id)] = full;
   if (!state.profile) { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
