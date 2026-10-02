@@ -895,3 +895,38 @@ yö | ночь | yö yöllä
 @ on pakko | обязательно, надо | on pakko
 @ ennen kuin | прежде чем | ennen kuin
 luiska | пандус | luiska luiskaa luiskan ramppi pyörätuoliluiska
+onks (onko) | есть ли (разг.) | onks
+pitääks (pitääkö) | нужно ли (разг.) | pitääks
+olkkari (olohuone) | гостиная (разг.) | olkkarissa
+villasukka | шерстяной носок | villasukissa
+et (että) | что (разг.) | et
+oo (ole) | (не) есть (разг.: ei oo = ei ole) | oo
+oon (olen) | я есть (разг.) | oon
+uus (uusi) | новый (разг.) | uus
+mut (mutta) | но (разг.) | mut
+takas (takaisin) | обратно (разг.) | takas
+katsoa / katotaan | посмотрим (разг. katsotaan) | katotaan
+moi | привет | moi
+istua | сидеть | istuu
+seistä | стоять | seissyt
+Sara | Сара (имя) | sara
+pahvi | картон | pahvit
+litistää | сплющить | litistä
+vaan | просто (разг.) | vaan
+tervetuloa | добро пожаловать | tervetuloa
+grillata | жарить на гриле | grillataan
+muutama | несколько | muutama
+lämpö | тепло; мн. lämmöt — отопление (разг.) | lämmöt
+kylmänä | холодный (в состоянии) | kylmänä
+perhe | семья | perhe
+@ sama täällä | у нас то же самое | sama täällä
+@ koko perhe | всей семьёй | koko perhe
+@ toinen juttu | другое дело, ещё вопрос | toinen juttu
+sanoa | говорить | sanoivat sanoo
+jätekatos | площадка с мусорными баками | jätekatoksessa
+viedä | относить | viedään
+laatikko | коробка | laatikot
+oma | свой | omat
+harava | грабли | haravat
+Sara | Сара (имя) | saran
+se / ne | он, она (разг.); они | ne
