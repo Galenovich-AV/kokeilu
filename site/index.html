@@ -337,7 +337,16 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .addw:hover{background:rgba(255,255,255,.5)}
 .dict-act{white-space:nowrap;text-align:right}
 @media (max-width:560px){.dict thead{display:none}.dict tr{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;border-bottom:1px solid var(--rule);padding:6px 0}.dict td{border:0;padding:2px 4px}.dict-act{flex-basis:100%;text-align:left;white-space:normal}}
-.addsel{position:absolute;z-index:24;border-radius:999px;border:2px solid var(--sage-ink);padding:9px 18px;font-size:.98rem;box-shadow:0 6px 18px rgba(40,50,30,.28);white-space:nowrap;max-width:calc(100vw - 16px);overflow:visible}
+.addsel{position:absolute;z-index:24;display:flex;border-radius:999px;border:2px solid var(--sage-ink);background:var(--sage);box-shadow:0 6px 18px rgba(40,50,30,.28);white-space:nowrap;max-width:calc(100vw - 16px);overflow:visible}
+.addsel button{font:inherit;font-weight:700;font-size:.95rem;color:var(--on-accent);background:none;border:0;padding:9px 16px;cursor:pointer;border-radius:999px;overflow:hidden;text-overflow:ellipsis}
+.addsel button + button{border-left:1.5px solid var(--sage-ink);border-radius:0 999px 999px 0}
+.addsel button:hover{background:rgba(255,255,255,.35)}
+mark.hl{color:#24261f;border-radius:3px;padding:0 1px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
+.note-row{padding:12px 0;border-bottom:1px dashed var(--rule);display:grid;gap:4px}
+.note-text{white-space:pre-wrap}
+.newb{font-size:.72rem;font-weight:800;background:var(--sage-ink);color:var(--sheet);border-radius:999px;padding:1px 8px;margin-left:4px}
+.nquote{margin:4px 0;padding:8px 12px;border-radius:6px;color:#24261f;font-weight:600;max-height:7.5em;overflow:auto}
 .addsel:hover{transform:none}
 .addsel::after{content:"";position:absolute;left:var(--tail,50%);bottom:-8px;width:12px;height:12px;margin-left:-6px;background:var(--sage);border-right:2px solid var(--sage-ink);border-bottom:2px solid var(--sage-ink);transform:rotate(45deg)}
 .addsel.below::after{bottom:auto;top:-8px;transform:rotate(225deg)}
@@ -699,6 +708,20 @@ const Store = {
     }
     const q = await this.call(() => this.db.collection('results/' + uid + '/ex').get());
     const out = {}; if (q) q.docs.forEach(d => { out[d.id] = d.data(); }); return out;
+  },
+  // comments every student has sent: { uid: [items] }
+  async notesOf(list) {
+    const out = {};
+    if (this.mode === 'supa') {
+      const { data } = await this.sb.from('results').select('user_id, data').eq('key', '_merkinnat');
+      (data || []).forEach(r => { out[r.user_id] = (r.data && r.data.items) || []; });
+    } else if (this.mode === 'cloud') {
+      await Promise.all(list.map(async st => {
+        const snap = await this.call(() => this.db.doc('results/' + st.id + '/ex/_merkinnat').get());
+        if (snap && snap.exists) out[st.id] = (snap.data().items || []);
+      }));
+    }
+    return out;
   },
   async saveFeedback(uid, key, doc) {
     if (this.mode === 'supa') {
@@ -1256,8 +1279,25 @@ async function renderTeacher() {
       <div class="panel"><p>Пока никто не сохранил результаты.</p><p class="note">Когда ученик зарегистрируется и проверит хотя бы одно задание, он появится здесь.</p></div>`;
     return;
   }
-  main.innerHTML = hero(list.length + ' чел.') + `<section class="ex"><div class="ex-head"><h3>Ученики</h3></div>
+  main.innerHTML = hero(list.length + ' чел.') + `<section class="ex" id="notesSec"><div class="ex-head"><h3>Комментарии учеников</h3></div><p class="note">Загрузка…</p></section>
+    <section class="ex"><div class="ex-head"><h3>Ученики</h3></div>
     <p class="ex-task">Нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div></section>`;
+  // comments the students sent; "новый" = sent since the teacher last opened this page
+  Store.notesOf(list).then(all => {
+    let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
+    const names = Object.fromEntries(list.map(st => [st.id, st.name || 'Без имени']));
+    const rows = [];
+    Object.entries(all).forEach(([uid, items]) => items.filter(n => n.sent).forEach(n => rows.push({ uid, n })));
+    rows.sort((a, b) => (a.n.sentAt < b.n.sentAt ? 1 : -1));
+    const sec = $('#notesSec'); if (!sec) return;
+    const fresh = rows.filter(x => !seen || x.n.sentAt > seen).length;
+    sec.innerHTML = `<div class="ex-head"><h3>Комментарии учеников</h3>${fresh ? `<span class="score ok">${fresh} новых</span>` : ''}</div>
+      ${rows.length ? `<ul class="hist">${rows.map(({ uid, n }) => `<li class="note-row">
+        <div class="hist-main"><b>${esc(names[uid] || 'Ученик')}</b> <span class="note">${esc(exTitleOf(n.ex))} · ${fmtDate(n.sentAt)}</span>${!seen || n.sentAt > seen ? ' <span class="newb">новый</span>' : ''}</div>
+        <blockquote class="nquote" style="background:${esc(n.color || '#fff17a')}">${esc(n.exact)}</blockquote>
+        <div class="note-text">${esc(n.note || '(без текста)')}</div></li>`).join('')}</ul>` : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «💬 Комментарий».</p>'}`;
+    try { localStorage.setItem(LS_KEY + ':notesSeen', new Date().toISOString()); } catch (e) {}
+  });
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
@@ -1361,22 +1401,29 @@ async function addWord(word, tr, pos) {
   toast('«' + word + '» в словаре' + (cloud ? '' : ' (сохранено в браузере)'));
 }
 
-// select a word (the normal way, also on phones) → a button appears → add to dictionary
-const selState = { text: '' };
-function selectedWord() {
+// select text (the normal way, also on phones) → a bubble: add to dictionary / leave a comment
+const selState = { text: '', anchor: null };
+function selectionInfo() {
   const sel = window.getSelection ? window.getSelection() : null;
-  if (!sel || sel.isCollapsed) return '';
+  if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
   const node = sel.anchorNode && (sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentElement : sel.anchorNode);
-  if (!node || !node.closest('#main') || node.closest('input, textarea, #wsheet')) return '';
-  const t = String(sel).replace(/\s+/g, ' ').trim().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
-  return t.length > 1 && t.length <= 60 ? t : '';
+  if (!node || !node.closest('#main') || node.closest('input, textarea, #wsheet, .hl')) return null;
+  const raw = String(sel).replace(/\s+/g, ' ').trim();
+  const word = raw.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+  if (word.length < 2 || raw.length > 400) return null;
+  return { word: word.length <= 60 ? word : '', anchor: state.view === 'learn' ? anchorOf(sel.getRangeAt(0)) : null };
 }
 document.addEventListener('selectionchange', () => {
   clearTimeout(selState.t);
   selState.t = setTimeout(() => {
-    const w = selectedWord(); const btn = $('#addSel');
-    if (w) { selState.text = w; btn.querySelector('b').textContent = w.length > 28 ? w.slice(0, 26) + '…' : w; btn.hidden = false; placeBubble(btn); }
-    else if (!$('#addSel:hover')) btn.hidden = true;
+    const info = selectionInfo(); const bar = $('#addSel');
+    if (info && (info.word || info.anchor)) {
+      selState.text = info.word; selState.anchor = info.anchor;
+      const wb = bar.querySelector('[data-sel="dict"]'), cb = bar.querySelector('[data-sel="note"]');
+      wb.hidden = !info.word; cb.hidden = !info.anchor;
+      wb.querySelector('b').textContent = info.word.length > 22 ? info.word.slice(0, 20) + '…' : info.word;
+      bar.hidden = false; placeBubble(bar);
+    } else if (!$('#addSel:hover')) bar.hidden = true;
   }, 250);
 });
 // the bubble sits right above the selection (below it on touch screens, where the phone's own copy menu takes the space above)
@@ -1395,14 +1442,140 @@ function placeBubble(btn) {
   btn.style.setProperty('--tail', (rect.left + rect.width / 2 - left) + 'px');
 }
 window.addEventListener('resize', () => { const b = $('#addSel'); if (b && !b.hidden) placeBubble(b); });
-(function mountSelButton() {
-  const btn = document.createElement('button');
-  btn.id = 'addSel'; btn.type = 'button'; btn.className = 'btn main addsel'; btn.hidden = true;
-  btn.innerHTML = '+ В словарь: <b></b>';
-  btn.addEventListener('pointerdown', e => e.preventDefault()); // keep the selection while tapping
-  btn.onclick = () => { const w = selState.text; btn.hidden = true; if (w) openWordSheet(w); };
-  document.body.appendChild(btn);
+(function mountSelBar() {
+  const bar = document.createElement('div');
+  bar.id = 'addSel'; bar.className = 'addsel'; bar.hidden = true;
+  bar.innerHTML = '<button type="button" data-sel="dict">+ В словарь: <b></b></button><button type="button" data-sel="note">💬 Комментарий</button>';
+  bar.addEventListener('pointerdown', e => e.preventDefault()); // keep the selection while tapping
+  bar.querySelector('[data-sel="dict"]').onclick = () => { const w = selState.text; bar.hidden = true; if (w) openWordSheet(w); };
+  bar.querySelector('[data-sel="note"]').onclick = () => { const a = selState.anchor; bar.hidden = true; if (a) openNoteSheet(null, a); };
+  document.body.appendChild(bar);
 })();
+
+/* =========================================================
+   COMMENTS: a marker highlight on any text in the tasks, with a note.
+   Stored with the results under "_merkinnat"; sent ones show up for the teacher.
+   Anchored by task + the quoted text with a little context around it.
+   ========================================================= */
+const NOTE_KEY = '_merkinnat';
+const MARKERS = ['#fff17a', '#ffc2d4', '#c6eb9f', '#b5ddf5', '#ddcdf5', '#ffd3a3'];
+const notes = () => ((state.results[NOTE_KEY] || {}).items || []);
+function textNodesOf(root) {
+  const out = []; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null); let n;
+  while ((n = w.nextNode())) out.push(n);
+  return out;
+}
+function anchorOf(range) {
+  const startEl = range.startContainer.nodeType === 3 ? range.startContainer.parentElement : range.startContainer;
+  const sec = startEl.closest('.ex[id^="ex-"]'); if (!sec || !sec.contains(range.endContainer)) return null;
+  let off = 0, start = -1, end = -1;
+  for (const n of textNodesOf(sec)) {
+    if (n === range.startContainer) start = off + range.startOffset;
+    if (n === range.endContainer) { end = off + range.endOffset; break; }
+    off += n.length;
+  }
+  if (start < 0 || end <= start) return null;
+  const full = sec.textContent;
+  return { ex: sec.id.slice(3), exact: full.slice(start, end), prefix: full.slice(Math.max(0, start - 32), start), suffix: full.slice(end, end + 32) };
+}
+function locate(sec, n) {
+  const full = sec.textContent;
+  let i = full.indexOf(n.prefix + n.exact + n.suffix);
+  if (i >= 0) i += n.prefix.length; else i = full.indexOf(n.exact);
+  return i < 0 ? null : [i, i + n.exact.length];
+}
+function wrapRange(sec, [a, b], n) {
+  let off = 0;
+  for (const t of textNodesOf(sec)) {
+    const s0 = off, s1 = off + t.length; off = s1;
+    if (s1 <= a || s0 >= b) continue;
+    const from = Math.max(a, s0) - s0, to = Math.min(b, s1) - s0;
+    if (t.parentElement.closest('.hl, button, textarea, input, select')) continue;
+    const mid = t.splitText(from); mid.splitText(to - from);
+    const m = document.createElement('mark'); m.className = 'hl'; m.dataset.note = n.id; m.style.background = n.color;
+    m.title = n.note ? n.note : 'Комментарий'; m.tabIndex = 0;
+    mid.parentNode.insertBefore(m, mid); m.appendChild(mid);
+  }
+}
+let hlBusy = false;
+function applyHighlights() {
+  if (hlBusy || state.view !== 'learn') return;
+  hlBusy = true;
+  try {
+    notes().forEach(n => {
+      const sec = document.getElementById('ex-' + n.ex); if (!sec || sec.querySelector(`.hl[data-note="${n.id}"]`)) return;
+      const pos = locate(sec, n); if (pos) wrapRange(sec, pos, n);
+    });
+  } finally { hlBusy = false; }
+}
+let hlTimer = null;
+new MutationObserver(() => { if (hlBusy) return; clearTimeout(hlTimer); hlTimer = setTimeout(applyHighlights, 30); })
+  .observe(document.getElementById('main'), { childList: true, subtree: true });
+function clearHighlight(id) {
+  document.querySelectorAll(`.hl[data-note="${id}"]`).forEach(m => { const p = m.parentNode; while (m.firstChild) p.insertBefore(m.firstChild, m); p.removeChild(m); p.normalize(); });
+}
+async function saveNotes(items) {
+  const doc = { at: new Date().toISOString(), items };
+  state.results[NOTE_KEY] = doc;
+  return Store.saveResult(NOTE_KEY, doc);
+}
+function exTitleOf(exId) {
+  for (const t of TOPICS) for (const b of t.blocks) { const i = b.exercises.findIndex(e => e.id === exId); if (i >= 0) return `${b.fi} · Tehtävä ${i + 1} · ${b.exercises[i].title}`; }
+  return '';
+}
+document.addEventListener('click', e => {
+  const m = e.target.closest('.hl[data-note]'); if (!m) return;
+  e.preventDefault(); openNoteSheet(m.dataset.note);
+});
+function openNoteSheet(id, anchor) {
+  let sh = $('#wsheet');
+  if (!sh) { sh = document.createElement('div'); sh.id = 'wsheet'; sh.className = 'wsheet'; document.body.appendChild(sh); }
+  const old = id ? notes().find(n => n.id === id) : null;
+  const a = old || anchor; if (!a) return;
+  let lastColor = MARKERS[0]; try { lastColor = localStorage.getItem(LS_KEY + ':marker') || MARKERS[0]; } catch (e) {}
+  let color = old ? old.color : lastColor;
+  sh.hidden = false;
+  sh.innerHTML = `<form class="wsheet-in" id="nform">
+    <div class="row" style="justify-content:space-between"><h3>Комментарий</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
+    <blockquote class="nquote" style="background:${esc(color)}">${esc(a.exact)}</blockquote>
+    <div class="note">${esc(exTitleOf(a.ex))}</div>
+    <label class="note" for="ntext">Ваш комментарий или вопрос</label>
+    <textarea class="field" id="ntext" rows="3" placeholder="Например: почему здесь партитив?">${esc(old ? old.note : '')}</textarea>
+    <div class="note">Цвет маркера</div>
+    <div class="swatches">${MARKERS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="background:${c}" data-mk="${c}" aria-label="Цвет ${c}"></button>`).join('')}</div>
+    ${old && old.sent ? `<p class="note">✓ Отправлено преподавателю ${fmtDate(old.sentAt)}${old.changed ? ' · после отправки есть изменения' : ''}</p>` : ''}
+    <div class="row" style="margin-top:8px">
+      <button class="btn" type="submit" data-act="save">Сохранить</button>
+      <button class="btn main" type="submit" data-act="send">${old && old.sent ? 'Отправить ещё раз' : 'Отправить преподавателю'}</button>
+      ${old ? '<button class="btn small" type="button" id="ndel">Удалить</button>' : ''}
+    </div>
+  </form>`;
+  try { window.getSelection().removeAllRanges(); } catch (e) {}
+  const close = () => { sh.hidden = true; };
+  $('#nclose').onclick = close;
+  sh.querySelectorAll('[data-mk]').forEach(b => b.onclick = () => {
+    color = b.dataset.mk; sh.querySelectorAll('[data-mk]').forEach(x => x.classList.toggle('on', x === b)); sh.querySelector('.nquote').style.background = color;
+  });
+  let act = 'save'; sh.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => { act = b.dataset.act; }));
+  $('#nform').onsubmit = async e => {
+    e.preventDefault();
+    try { localStorage.setItem(LS_KEY + ':marker', color); } catch (err) {}
+    const text = $('#ntext').value.trim(); const now = new Date().toISOString();
+    const n = old ? { ...old } : { id: 'n' + Date.now().toString(36), ex: a.ex, exact: a.exact, prefix: a.prefix, suffix: a.suffix, topic: state.topic, at: now };
+    n.note = text; n.color = color; n.at = now;
+    if (act === 'send') { n.sent = true; n.sentAt = now; n.changed = false; } else if (n.sent) n.changed = true;
+    const items = notes().filter(x => x.id !== n.id).concat([n]);
+    clearHighlight(n.id);
+    const cloud = await saveNotes(items);
+    applyHighlights(); close();
+    toast(act === 'send' ? (cloud ? 'Комментарий отправлен преподавателю' : 'Комментарий сохранён и отправится, когда появится интернет') : 'Комментарий сохранён');
+  };
+  const del = $('#ndel'); if (del) del.onclick = async () => {
+    if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
+    clearHighlight(id); await saveNotes(notes().filter(x => x.id !== id)); close(); toast('Комментарий удалён');
+  };
+  setTimeout(() => $('#ntext').focus(), 50);
+}
 
 document.addEventListener('click', async e => {
   const a = e.target.closest('[data-addw]'); if (!a) return;
@@ -1618,8 +1791,7 @@ function renderTrain() {
       <label class="note row" style="gap:6px;margin-top:6px"><input type="checkbox" id="trHelpOff"> Больше не показывать</label></div>`}
     <div class="row" style="margin-bottom:10px">${TRAIN_MODES.map(([id, fi, ru]) => `<button type="button" class="btn small ${tr.mode === id ? 'main' : ''}" data-mode="${id}" title="${ru}">${fi}</button>`).join('')}</div>
     <div class="row" style="margin-bottom:14px"><label class="note" for="trSrc">Слова:</label>
-      <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
-      <span class="note">${TRAIN_MODES.find(m => m[0] === tr.mode)[2]}</span></div>
+      <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
     <div class="tr-area">${body}</div>`;
   const ho = $('#trHelpOff'); if (ho) ho.onchange = () => { try { localStorage.setItem(LS_KEY + ':hideTrainHelp', '1'); } catch (e) {} renderTrain(); };
   sec.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { tr.mode = b.dataset.mode; tr.round = null; renderTrain(); });
@@ -1730,6 +1902,16 @@ function shrinkImage(file) {
     img.src = url;
   });
 }
+async function setAvatarFile(file) {
+  try { const img = await shrinkImage(file); await saveProf({ img }); toast('Фото сохранено'); renderWho(); if (state.view === 'profile') renderProfile(); }
+  catch (err) { toast('Не получилось открыть картинку. Попробуйте JPG или PNG'); }
+}
+// Ctrl+V / ⌘+V with a copied picture while the profile is open
+document.addEventListener('paste', e => {
+  if (state.view !== 'profile' || (e.target.closest && e.target.closest('input, textarea'))) return;
+  const f = [...(e.clipboardData ? e.clipboardData.files : [])].find(x => x.type.startsWith('image/'));
+  if (f) { e.preventDefault(); setAvatarFile(f); }
+});
 function goToExercise(topicId, exId) {
   const t = TOPICS.find(x => x.id === topicId); if (!t) return;
   const b = t.blocks.find(bl => bl.exercises.some(e => e.id === exId));
@@ -1779,10 +1961,14 @@ function renderProfile() {
           <div class="row" style="margin-top:8px">
             <label class="btn small" for="avFile">${d.img ? 'Сменить фото' : 'Загрузить фото'}</label>
             <input type="file" id="avFile" accept="image/*" hidden>
+            <button class="btn small" type="button" id="avUrlBtn">Ссылка на фото</button>
+            <button class="btn small" type="button" id="avPaste">Вставить из буфера</button>
             ${d.img ? '<button class="btn small" type="button" id="avDel">Убрать фото</button>' : ''}
             <button class="btn small" type="button" id="nameEdit">Изменить имя</button>
           </div>
           ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
+          <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
+          <p class="note" style="margin:6px 0 0">Можно и просто нажать Ctrl+V (на Mac ⌘+V) на этой странице, если картинка скопирована.</p>
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
         </div>
       </div>
@@ -1803,12 +1989,24 @@ function renderProfile() {
     </section>`;
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
   main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
-  $('#avFile').onchange = async e => {
-    const f = e.target.files[0]; if (!f) return;
-    try { const img = await shrinkImage(f); await saveProf({ img }); toast('Фото сохранено'); renderWho(); renderProfile(); }
-    catch (err) { toast('Не получилось открыть картинку. Попробуйте JPG или PNG'); }
-  };
+  $('#avFile').onchange = e => { const f = e.target.files[0]; if (f) setAvatarFile(f); };
   const del = $('#avDel'); if (del) del.onclick = async () => { await saveProf({ img: null }); renderWho(); renderProfile(); };
+  $('#avUrlBtn').onclick = () => { $('#avUrlForm').hidden = false; $('#avUrl').focus(); };
+  $('#avUrlForm').onsubmit = e => {
+    e.preventDefault(); const url = $('#avUrl').value.trim();
+    if (!/^https:\/\//i.test(url)) { toast('Нужна ссылка, которая начинается с https://'); return; }
+    const test = new Image();
+    test.onload = async () => { await saveProf({ img: url }); toast('Фото поставлено'); renderWho(); renderProfile(); };
+    test.onerror = () => toast('По этой ссылке не открывается картинка. Нужна прямая ссылка на изображение (обычно заканчивается на .jpg или .png)');
+    test.src = url;
+  };
+  $('#avPaste').onclick = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const it of items) { const type = it.types.find(t => t.startsWith('image/')); if (type) { await setAvatarFile(await it.getType(type)); return; } }
+      toast('В буфере нет картинки. Скопируйте картинку и нажмите ещё раз');
+    } catch (err) { toast('Браузер не дал доступ к буферу. Нажмите Ctrl+V (на Mac ⌘+V) на этой странице'); }
+  };
   $('#nameEdit').onclick = () => { $('#nameForm').hidden = false; $('#nameIn').focus(); };
   $('#nameForm').onsubmit = async e => { e.preventDefault(); const v = $('#nameIn').value.trim(); if (!v) return; await Store.saveProfile(v); state.profile = { ...(state.profile || {}), name: v }; toast('Имя сохранено'); renderAll(); };
 }
