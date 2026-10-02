@@ -101,7 +101,8 @@
 .hist-score.ok{color:var(--ok)}.hist-score.mid{color:var(--wait)}.hist-score.low{color:var(--bad)}
 @media (max-width:560px){.hist-row{grid-template-columns:1fr auto}.hist-meta{text-align:left;grid-column:1}.hist-row .btn{grid-column:2;grid-row:1 / span 2}}
 .help-note{margin:0 0 14px}
-.prof-card{margin-top:34px}
+.prof-card{margin-top:24px}
+.prof-card::before{display:none}
 .learned{color:var(--sage-ink);font-size:.8rem}
 .match{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:640px}
 .mcol{display:grid;gap:8px;align-content:start}
@@ -1673,6 +1674,23 @@ function renderProgress() {
 const PROF_KEY = '_profil';
 const AV_COLORS = ['#b9e094', '#f7c2b5', '#d8c8ef', '#fad4a6', '#a8d8e0', '#f3e08b', '#c9c1b4', '#8fb6e8'];
 const profDoc = () => state.results[PROF_KEY] || {};
+// the profile page takes its colours from the chosen avatar colour
+const AV_INK = { '#b9e094': ['#4e7d2f', '#3f6328'], '#f7c2b5': ['#c25d72', '#9e4860'], '#d8c8ef': ['#7a5ca3', '#5e4683'], '#fad4a6': ['#b8732a', '#8a5420'],
+  '#a8d8e0': ['#3d8a96', '#2c6872'], '#f3e08b': ['#9c8420', '#6e5d14'], '#c9c1b4': ['#7a6f60', '#5a5145'], '#8fb6e8': ['#3e6fb0', '#2d5288'] };
+function applyProfileTheme() {
+  let el = document.getElementById('profTheme');
+  if (!el) { el = document.createElement('style'); el.id = 'profTheme'; document.head.appendChild(el); }
+  const c = profDoc().color || AV_COLORS[0]; const [ink, head] = AV_INK[c] || AV_INK['#b9e094'];
+  const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 10%,#fbf8f2);--sheet:color-mix(in srgb,${c} 4%,#fffefb);
+    --tile:color-mix(in srgb,${c} 20%,#fbf8f2);--tile-line:color-mix(in srgb,${c} 38%,#fbf8f2);--dot:color-mix(in srgb,${c} 25%,#e9e3d6);--rule:color-mix(in srgb,${c} 25%,#efe9de);
+    --tape:color-mix(in srgb,${c} 55%,transparent);--kraft:color-mix(in srgb,${c} 45%,#f3e6cc);--ok-bg:color-mix(in srgb,${c} 18%,#fffdf8);--on-accent:${head}`;
+  const dark = `--sage:${c};--sage-ink:color-mix(in srgb,${c} 75%,#fff);--head:color-mix(in srgb,${c} 45%,#fff);--paper:color-mix(in srgb,${c} 7%,#1f2020);--sheet:color-mix(in srgb,${c} 9%,#29292a);
+    --tile:color-mix(in srgb,${c} 14%,#2c2c2d);--tile-line:color-mix(in srgb,${c} 24%,#3a3a3b);--dot:color-mix(in srgb,${c} 18%,#333);--rule:color-mix(in srgb,${c} 18%,#3a3a3a);
+    --tape:color-mix(in srgb,${c} 30%,transparent);--kraft:color-mix(in srgb,${c} 25%,#4a4030);--ok-bg:color-mix(in srgb,${c} 18%,#2a2a2a);--on-accent:#1f1f1f`;
+  el.textContent = `:root.profile-mode{${light}}
+@media (prefers-color-scheme: dark){:root.profile-mode:not([data-theme="light"]){${dark};color-scheme:dark}}
+:root.profile-mode[data-theme="dark"]{${dark};color-scheme:dark}`;
+}
 function avatarHTML(size, doc) {
   const d = doc || profDoc(); const c = d.color || AV_COLORS[0];
   if (d.img) return `<img class="avatar" src="${esc(d.img)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
@@ -1769,7 +1787,7 @@ function renderProfile() {
       ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
     </section>`;
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
-  main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { await saveProf({ color: b.dataset.color }); renderWho(); renderProfile(); });
+  main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
   $('#avFile').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
     try { const img = await shrinkImage(f); await saveProf({ img }); toast('Фото сохранено'); renderWho(); renderProfile(); }
@@ -1787,6 +1805,7 @@ function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', state.view === 'teacher' && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
+  if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics(); renderRegister();
   if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else renderLearn();
 }
