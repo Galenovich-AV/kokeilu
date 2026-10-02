@@ -1,0 +1,838 @@
+<title>Suomi-muistikirja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: one notebook page on dotted paper; washi-tape headings, bullet-journal signifiers (• ○ ✓ ✗) mark task state. */
+:root{
+  --paper:#fbf7ec;      /* beige page */
+  --sheet:#fffdf6;      /* raised card */
+  --ink:#2f3a2c;        /* main text, green-tinted near-black */
+  --ink-soft:#6b7563;
+  --dot:#ddd4bf;        /* dot grid */
+  --rule:#e6dfcc;
+  --sage:#b9e094;       /* accent: pastel green */
+  --sage-ink:#4e7d2f;   /* accent strong enough for text on beige */
+  --tape:rgba(185,224,148,.72);
+  --ok:#3f7f2a; --ok-bg:#e7f4da;
+  --bad:#b5513e; --bad-bg:#f8e3dc;
+  --wait:#9a7b2d; --wait-bg:#f5ecd2;
+  --shadow:0 1px 0 rgba(60,50,20,.06),0 6px 18px -10px rgba(60,50,20,.25);
+  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  --f-body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#22261f;--sheet:#2a2f26;--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
+  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
+  --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#22261f;--sheet:#2a2f26;--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
+  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
+  --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
+  --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
+  color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
+h1,h2,h3,.hand{font-family:var(--f-hand);font-weight:700;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(2.6rem,7vw,3.6rem);margin:0}
+h2{font-size:2.1rem;margin:0}
+h3{font-size:1.65rem;margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px dashed var(--sage-ink);outline-offset:3px}
+a{color:var(--sage-ink)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+.top .sub{color:var(--ink-soft);font-size:.95rem;margin:2px 0 0}
+.who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--ink);border-radius:999px;padding:3px 12px;background:var(--sheet)}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--wait)}
+.chip.cloud .dot{background:var(--ok)}
+.tape{position:relative;display:inline-block;padding:2px 14px 0;z-index:0}
+.tape::before{content:"";position:absolute;inset:18% -6px 4% -6px;background:var(--tape);transform:rotate(-1.2deg);z-index:-1;border-radius:2px;
+  -webkit-mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent 0);mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent 0)}
+
+/* index of topics */
+.index{margin:18px 0 22px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);padding:10px 0}
+.index-row{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+.index-label{font-family:var(--f-hand);font-size:1.4rem;font-weight:700;margin-right:6px}
+.topic-btn{background:none;border:0;padding:2px 0;cursor:pointer;border-bottom:2px solid transparent;font-weight:600}
+.topic-btn[aria-current="true"]{border-color:var(--sage-ink)}
+.topic-btn:disabled{color:var(--ink-soft);cursor:default;font-weight:400}
+
+/* block tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
+.tab{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:var(--r);padding:8px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700}
+.tab small{font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{background:var(--sage);color:#22301a;border-color:#22301a}
+.tab[aria-selected="true"] small{color:#33461f}
+
+/* exercise card */
+.ex{background:var(--sheet);border:1px solid var(--rule);border-radius:4px var(--r) var(--r) var(--r);box-shadow:var(--shadow);padding:22px 20px 20px;margin:0 0 28px;position:relative}
+.ex-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.ex-head .sig{font-family:var(--f-hand);font-size:1.6rem;color:var(--sage-ink);margin-right:4px}
+.ex-task{color:var(--ink-soft);margin:0 0 16px;max-width:65ch}
+.score{font-family:var(--f-hand);font-size:1.6rem;font-weight:700;padding:0 10px;border:2px solid currentColor;border-radius:8px;transform:rotate(-3deg);font-variant-numeric:tabular-nums}
+.score.ok{color:var(--ok)} .score.mid{color:var(--wait)} .score.low{color:var(--bad)}
+.saved-note{font-size:.85rem;color:var(--ink-soft)}
+
+/* flashcards */
+.groups{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.gbtn{cursor:pointer;border:1px dashed var(--ink-soft);background:transparent;border-radius:999px;padding:3px 12px;font-size:.92rem}
+.gbtn[aria-pressed="true"]{background:var(--sage);border:1px solid #22301a;color:#22301a;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.card{display:block;width:100%;perspective:900px;height:132px;cursor:pointer;border:0;background:none;padding:0;text-align:center}
+.card-in{display:block;position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.card.flipped .card-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:10px 12px;gap:4px;
+  border:1.5px solid var(--ink);background:var(--sheet);background-image:linear-gradient(var(--rule) 1px,transparent 1px);background-size:100% 22px;background-position:0 11px}
+.face.back{transform:rotateY(180deg);background:var(--sage);color:#1f2c17;border-color:#1f2c17;background-image:none}
+.face .w{font-weight:700;font-size:1.08rem;line-height:1.25}
+.face .g{font-size:.82rem;color:var(--ink-soft);line-height:1.3}
+.face.back .g{color:#33461f}
+.card.known .face.front{border-style:dashed;opacity:.75}
+.card.known .face.front::after{content:"✓";position:absolute;top:4px;right:9px;font-family:var(--f-hand);font-size:1.4rem;color:var(--ok)}
+.card-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+
+/* bank, items */
+.bank{display:flex;flex-wrap:wrap;gap:6px 10px;border:1.5px dashed var(--sage-ink);border-radius:8px;padding:10px 12px;margin-bottom:16px}
+.bank b{font-family:var(--f-hand);font-size:1.3rem;margin-right:4px}
+.bank span{padding:0 8px;background:var(--paper);border-radius:4px}
+ol.items{list-style:none;margin:0;padding:0;counter-reset:it;display:grid;gap:12px}
+ol.items>li{counter-increment:it;display:grid;grid-template-columns:2.2em 1fr;gap:4px;align-items:start}
+ol.items>li::before{content:counter(it)".";font-family:var(--f-hand);font-size:1.35rem;line-height:1.3;color:var(--sage-ink);font-weight:700}
+.it-body{min-width:0}
+.blank{display:inline-block;min-width:8.5em;max-width:100%;border:0;border-bottom:2px solid var(--ink-soft);background:transparent;padding:0 4px;margin:0 2px;font-weight:700}
+.blank.wide{width:100%;min-width:0}
+.blank:focus{outline:none;border-bottom-color:var(--sage-ink);background:var(--ok-bg)}
+.blank.ok{border-bottom-color:var(--ok);color:var(--ok)}
+.blank.bad{border-bottom-color:var(--bad);color:var(--bad)}
+.hint{color:var(--ink-soft);font-style:italic}
+.fb{display:block;font-size:.9rem;margin-top:3px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)} .fb.wait{color:var(--wait)}
+.fb .why{color:var(--ink-soft)}
+.symptoms{background:var(--paper);border-left:3px solid var(--sage);padding:4px 10px;margin-bottom:6px;border-radius:0 6px 6px 0}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+.btn{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:8px;padding:8px 16px;font-weight:700}
+.btn.main{background:var(--sage);color:#1f2c17;border-color:#1f2c17}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn.small{padding:4px 10px;font-size:.88rem}
+
+/* YKI reading */
+.yki-text{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 16px;max-width:70ch}
+.yki-text .kind{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.yki-text h4{font-family:var(--f-body);font-size:1.12rem;margin:2px 0 8px}
+.yki-text p{margin:0 0 .7em}
+.q{margin:0 0 14px}
+.q .qt{font-weight:700;margin-bottom:4px}
+.opts{display:grid;gap:4px}
+.opt{display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:3px 6px;border-radius:6px}
+.opt input{margin-top:6px;accent-color:var(--sage-ink)}
+.opt.ok{background:var(--ok-bg)} .opt.bad{background:var(--bad-bg)}
+.tf{display:flex;gap:14px;flex-wrap:wrap}
+textarea{width:100%;min-height:90px;border:1.5px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--sheet);line-height:1.55;resize:vertical;
+  background-image:linear-gradient(transparent calc(1.55em - 1px),var(--rule) 1px);background-size:100% 1.55em;background-attachment:local;background-position:0 10px}
+textarea:focus{outline:none;border-color:var(--sage-ink)}
+.section-title{display:flex;gap:10px;align-items:baseline;margin:22px 0 10px}
+.section-title .n{font-family:var(--f-hand);font-size:1.5rem;color:var(--sage-ink)}
+
+/* writing */
+.wtask{border-top:1px dashed var(--rule);padding-top:16px;margin-top:16px}
+.wtask:first-of-type{border-top:0;margin-top:0;padding-top:0}
+.wtask ul{margin:6px 0 10px;padding-left:1.2em}
+.wmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--ink-soft);margin-top:4px}
+.count{font-variant-numeric:tabular-nums}
+.count.good{color:var(--ok)}
+.timer{font-family:var(--f-hand);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.teacher-fb{margin-top:10px;border:1.5px solid var(--sage-ink);border-radius:8px;padding:10px 12px;background:var(--ok-bg)}
+.teacher-fb b{font-family:var(--f-hand);font-size:1.3rem}
+
+/* register / notices */
+.panel{background:var(--sheet);border:1.5px solid var(--ink);border-radius:var(--r);padding:18px 20px;margin:0 0 22px;box-shadow:var(--shadow)}
+.panel p{margin:.3em 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field{border:1.5px solid var(--ink-soft);border-radius:8px;padding:8px 12px;background:var(--paper);min-width:0;flex:1 1 220px}
+.note{font-size:.9rem;color:var(--ink-soft)}
+.warn{background:var(--wait-bg);border:1px solid var(--wait);border-radius:8px;padding:8px 12px;font-size:.92rem}
+
+/* teacher */
+.st{border-top:1px solid var(--rule);padding:10px 0}
+.st summary{cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;font-weight:700;list-style:none}
+.st summary::before{content:"›";font-family:var(--f-hand);font-size:1.4rem;transition:transform .2s;display:inline-block}
+.st[open] summary::before{transform:rotate(90deg)}
+.st summary .note{font-weight:400}
+.res-table{width:100%;border-collapse:collapse;font-size:.92rem}
+.res-table td,.res-table th{border-bottom:1px solid var(--rule);padding:5px 6px;text-align:left;vertical-align:top}
+.res-table th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.scroll{overflow-x:auto}
+.mark-ok{color:var(--ok);font-weight:700}.mark-bad{color:var(--bad);font-weight:700}.mark-wait{color:var(--wait);font-weight:700}
+.essay{white-space:pre-wrap;background:var(--paper);border-left:3px solid var(--sage);padding:8px 12px;border-radius:0 6px 6px 0;margin:6px 0}
+.exr{margin:10px 0 14px}
+.exr h5{margin:0 0 4px;font-size:1rem}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-weight:600;font-size:.92rem;z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center}
+@media (max-width:520px){.ex{padding:18px 14px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.card{height:120px}}
+@media (prefers-reduced-motion:reduce){.card-in{transition:none}.btn:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span class="tape">Suomi-muistikirja</span></h1>
+      <p class="sub">Повторение лексики и грамматики · формат YKI (keskitaso)</p>
+    </div>
+    <div class="who" id="who"><span class="chip"><span class="dot"></span>подключение…</span></div>
+  </header>
+
+  <nav class="index" aria-label="Темы">
+    <div class="index-row" id="topics"></div>
+  </nav>
+
+  <div id="register"></div>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* =========================================================
+   CONTENT. Add a new topic = add one object to TOPICS.
+   Exercise types: cards · input · reading · writing
+   ========================================================= */
+const TOPICS = [
+{
+  id: 'terveys', fi: 'Terveys ja sairaudet', ru: 'Здоровье и болезни',
+  blocks: [
+  { id: 'sanasto', fi: 'Sanasto', ru: 'Лексика', exercises: [
+    { id: 'kortit', type: 'cards', title: 'Карточки', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
+      groups: [
+      { name: 'Части тела', cards: [
+        ['pää', 'голова'], ['kaula', 'шея'], ['kurkku', 'горло'], ['olkapää', 'плечо'], ['selkä', 'спина'], ['rinta', 'грудь'],
+        ['vatsa', 'живот'], ['käsi', 'рука (кисть)', 'käden, kättä, käsiä'], ['sormi', 'палец', 'sormen, sormea'], ['jalka', 'нога'],
+        ['polvi', 'колено', 'polven, polvea'], ['silmä', 'глаз'], ['korva', 'ухо'], ['nenä', 'нос'],
+        ['hammas', 'зуб', 'hampaan, hammasta'], ['lihas', 'мышца', 'lihaksen, lihasta'] ]},
+      { name: 'Внутренние органы', cards: [
+        ['sydän', 'сердце', 'sydämen, sydäntä'], ['keuhkot', 'лёгкие', 'mon.: keuhkojen, keuhkoja'], ['maksa', 'печень'],
+        ['munuainen', 'почка', 'munuaisen, munuaista'], ['aivot', 'мозг', 'mon.: aivojen, aivoja'], ['mahalaukku', 'желудок'],
+        ['suolisto', 'кишечник'], ['nielurisat', 'миндалины', 'mon.'] ]},
+      { name: 'Болезни', cards: [
+        ['flunssa', 'простуда'], ['nuha', 'насморк'], ['influenssa', 'грипп'], ['angiina', 'ангина'],
+        ['keuhkokuume', 'воспаление лёгких', 'keuhkokuumeen, keuhkokuumetta'], ['korvatulehdus', 'воспаление уха, отит'],
+        ['vatsatauti', 'кишечная инфекция'], ['migreeni', 'мигрень'], ['allergia', 'аллергия'],
+        ['tauti', 'болезнь (заразная)'], ['tulehdus', 'воспаление', 'tulehduksen, tulehdusta'] ]},
+      { name: 'Симптомы', cards: [
+        ['oire', 'симптом', 'oireen, oiretta'], ['kuume', 'температура, жар', 'kuumeen, kuumetta'], ['yskä', 'кашель'],
+        ['päänsärky', 'головная боль'], ['kurkkukipu', 'боль в горле'], ['vatsakipu', 'боль в животе'],
+        ['pahoinvointi', 'тошнота'], ['ripuli', 'понос, диарея'], ['huimaus', 'головокружение'], ['väsymys', 'усталость'],
+        ['ihottuma', 'сыпь'], ['kipeä', 'больной (о части тела)', 'kurkku on kipeä'], ['vuotaa', 'течь', 'nenä vuotaa'],
+        ['kutista', 'чесаться', 'silmät kutiavat'] ]},
+      { name: 'Глаголы с управлением', cards: [
+        ['särkeä + P', 'ныть, болеть', 'minua särkee päätä'], ['sattua + mihin', 'болеть (резко), ушибиться', 'jalkaan sattuu'],
+        ['tarttua + mihin', 'заразить, передаться', 'flunssa tarttui minuun'], ['sairastua + mihin', 'заболеть чем', 'sairastuin flunssaan'],
+        ['parantua + mistä', 'выздороветь', 'paranin flunssasta'], ['kärsiä + mistä', 'страдать от', 'kärsin migreenistä'],
+        ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (тошнить)', 'oksennan, oksensi'],
+        ['levätä', 'отдыхать', 'lepään, lepäsi'], ['voida hyvin / huonosti', 'чувствовать себя хорошо / плохо', 'voin huonosti'] ]},
+      { name: 'У врача', cards: [
+        ['lääkäri', 'врач'], ['lääke', 'лекарство', 'lääkkeen, lääkettä'], ['särkylääke', 'обезболивающее'], ['resepti', 'рецепт'],
+        ['verenpaine', 'давление', 'verenpaineen, verenpainetta'], ['käydä lääkärissä', 'сходить к врачу'],
+        ['tutkia + P', 'обследовать', 'lääkäri tutki vatsaa'], ['kuunnella + P', 'слушать', 'kuunteli keuhkoja'],
+        ['mitata + G/P', 'измерять', 'mittasi kuumeen'], ['ottaa lääkettä', 'принимать лекарство'],
+        ['hoitaa + G/P', 'лечить', 'hoitaa flunssaa'], ['kirjoittaa resepti', 'выписать рецепт'] ]}
+    ]},
+    { id: 'oireet', type: 'input', title: 'Болезнь по симптомам', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
+      items: [
+        { box: 'Nenä vuotaa, aivastelet paljon ja kurkku on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha'] },
+        { box: 'Sinulla on korkea kuume, lihaksia särkee ja olet hyvin väsynyt. Tauti tulee talvella epidemiana.', a: ['influenssa'] },
+        { box: 'Kurkku on todella kipeä, nieleminen sattuu ja nielurisat ovat tulehtuneet. Sinulla on kuumetta.', a: ['angiina'] },
+        { box: 'Sinulla on ripuli, oksennat ja vatsaan sattuu.', a: ['vatsatauti'] },
+        { box: 'Päätä särkee kovasti toiselta puolelta, valo häiritsee ja sinulla on pahoinvointia.', a: ['migreeni'] },
+        { box: 'Lapsen korvaan sattuu, hän itkee ja hänellä on kuumetta.', a: ['korvatulehdus'] },
+        { box: 'Sinulla on kova yskä ja korkea kuume. Hengittäminen on vaikeaa, ja keuhkoissa on tulehdus.', a: ['keuhkokuume'] },
+        { box: 'Keväällä silmät kutiavat, aivastelet ja iholla on ihottumaa, mutta kuumetta ei ole.', a: ['allergia'] }
+      ]},
+    { id: 'sanat', type: 'input', title: 'Вставьте слово', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
+      bank: ['sairastua', 'kärsiä', 'polvi', 'maksa', 'kuume', 'yskiä', 'munuainen', 'selkä', 'parantua', 'kurkkukipu'],
+      items: [
+        { t: 'Lapsi ___ eilen angiinaan, ja nyt hän on kotona.', a: ['sairastui'] },
+        { t: 'Minulla on kova ___, en voi edes juoda.', a: ['kurkkukipu'] },
+        { t: 'Isoäiti on ___ migreenistä jo vuosia.', a: ['kärsinyt'] },
+        { t: 'Kaaduin portaissa, ja nyt ___ sattuu.', a: ['polveen'] },
+        { t: 'Alkoholi on vaarallista ___.', a: ['maksalle'] },
+        { t: 'Hoitaja mittasi ___: 38,5 astetta.', a: ['kuumeen', 'kuumetta'] },
+        { t: 'Pikkuveljeni ___ koko yön, eikä kukaan nukkunut.', a: ['yski'] },
+        { t: 'Ihmisellä on kaksi ___.', a: ['munuaista'] },
+        { t: '___ särkee, koska istuin koko päivän tietokoneella.', a: ['selkää'] },
+        { t: 'Toivottavasti sinä ___ pian flunssasta!', a: ['paranet'] }
+      ]}
+  ]},
+  { id: 'kielioppi', fi: 'Kielioppi', ru: 'Грамматика', exercises: [
+    { id: 'perfekti', type: 'input', title: 'Перфект или имперфект', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
+      items: [
+        { t: 'Minä ___ sairaana jo kolme päivää, eikä kuume laske.', h: 'olla', a: ['olen ollut'], why: 'действие продолжается до сих пор → перфект' },
+        { t: 'Eilen minä ___ lääkärissä.', h: 'käydä', a: ['kävin'], why: 'eilen — законченное время → имперфект' },
+        { t: 'Hän ___ influenssaan jo kaksi kertaa tänä talvena.', h: 'sairastua', a: ['on sairastunut'], why: 'tänä talvena — период ещё не закончился → перфект' },
+        { t: 'Viime viikolla flunssa ___ minuun työpaikalla.', h: 'tarttua', a: ['tarttui'], why: 'viime viikolla → имперфект' },
+        { t: 'Minua ___ päätä koko aamun, ja särky jatkuu yhä.', h: 'särkeä', a: ['on särkenyt'], why: 'jatkuu yhä — продолжается → перфект' },
+        { t: 'Lauantaina hän kaatui, ja polveen ___ kovasti.', h: 'sattua', a: ['sattui'], why: 'lauantaina — конкретный момент в прошлом → имперфект' },
+        { t: 'Eilen illalla minä ___ särkylääkettä.', h: 'ottaa', a: ['otin'], why: 'eilen illalla → имперфект' },
+        { t: '– Oletko jo terve? – Kyllä, minä ___ jo kokonaan.', h: 'parantua', a: ['olen parantunut'], why: 'результат важен сейчас (jo) → перфект' },
+        { t: 'Lapsi ___ koko yön, mutta nyt hän nukkuu.', h: 'yskiä', a: ['yski'], why: 'ночь закончилась (mutta nyt) → имперфект' },
+        { t: 'Minä ___ kuumetta tänään jo kolme kertaa.', h: 'mitata', a: ['olen mitannut'], why: 'tänään — день продолжается → перфект' },
+        { t: 'Viime kesänä hän ___ allergiasta koko kesän.', h: 'kärsiä', a: ['kärsi'], why: 'viime kesänä → имперфект' },
+        { t: 'Lääkäri ___ minulle reseptin kaksi päivää sitten.', h: 'kirjoittaa', a: ['kirjoitti'], why: 'kaksi päivää sitten → имперфект' }
+      ]},
+    { id: 'objekti', type: 'input', title: 'Падеж объекта', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
+      items: [
+        { t: 'Ota ___ kolme kertaa päivässä!', h: 'lääke', a: ['lääke'], why: 'повелительное наклонение → номинатив' },
+        { t: 'En ottanut ___ eilen.', h: 'lääke', a: ['lääkettä'], why: 'отрицание → партитив' },
+        { t: 'Lääkäri kuunteli ___.', h: 'sydän', a: ['sydäntä'], why: 'kuunnella — партитивный глагол' },
+        { t: 'Hoitaja mittasi ___ ja kirjoitti tuloksen ylös.', h: 'kuume', a: ['kuumeen'], why: 'действие закончено, есть результат → генетив' },
+        { t: 'Lääkäri kirjoitti minulle ___.', h: 'resepti', a: ['reseptin'], why: 'законченное действие, один предмет → генетив' },
+        { t: 'Sinun täytyy hoitaa ___ kunnolla.', h: 'flunssa', a: ['flunssa'], why: 'täytyy + инфинитив (безличная конструкция) → номинатив' },
+        { t: 'Lääkäri tutki ___ pitkään.', h: 'vatsa', a: ['vatsaa'], why: 'процесс, действие без результата → партитив' },
+        { t: 'Lääkäri ei kirjoittanut ___.', h: 'resepti', a: ['reseptiä'], why: 'отрицание → партитив' },
+        { t: 'Mittaa ___ illalla uudestaan!', h: 'verenpaine', a: ['verenpaine'], why: 'повелительное наклонение → номинатив' }
+      ]},
+    { id: 'rektio', type: 'input', title: 'Глагольное управление', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
+      items: [
+        { t: 'Minua särkee ___.', h: 'pää', a: ['päätä'], why: 'särkeä + P: что болит — партитив' },
+        { t: '___ särkee selkää.', h: 'hän', a: ['häntä'], why: 'särkeä + P: у кого болит — тоже партитив' },
+        { t: 'Kaaduin, ja ___ sattui.', h: 'polvi', a: ['polveen'], why: 'sattua + mihin (иллатив)' },
+        { t: 'Älä pelkää, tämä ei satu ___ yhtään.', h: 'sinä', a: ['sinuun'], why: 'sattua + mihin: kehen? → sinuun' },
+        { t: 'Flunssa tarttui ___ bussissa.', h: 'minä', a: ['minuun'], why: 'tarttua + mihin: kehen? → minuun' },
+        { t: 'Pysy kotona, ettei tauti tartu ___!', h: 'lapset', a: ['lapsiin'], why: 'tarttua + mihin, мн. ч. иллатив' },
+        { t: 'Hän sairastui ___.', h: 'influenssa', a: ['influenssaan'], why: 'sairastua + mihin' },
+        { t: 'Paranin ___ nopeasti.', h: 'flunssa', a: ['flunssasta'], why: 'parantua + mistä' },
+        { t: 'Kärsin ___ joka kevät.', h: 'allergia', a: ['allergiasta'], why: 'kärsiä + mistä' },
+        { t: '___ särkee jalkoja pitkän kävelyn jälkeen.', h: 'me', a: ['meitä'], why: 'särkeä + P' },
+        { t: 'Kun nielen, ___ sattuu.', h: 'kurkku', a: ['kurkkuun'], why: 'sattua + mihin' },
+        { t: 'Pitkän päivän jälkeen ___ särkee silmiä.', h: 'minä', a: ['minua'], why: 'särkeä + P' }
+      ]}
+  ]},
+  { id: 'yki', fi: 'YKI-harjoitus', ru: 'YKI-тест', exercises: [
+    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного (keskitaso). Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
+      texts: [
+      { kind: 'Tiedote', title: 'Kivikon terveysasema tiedottaa', body: [
+        'Influenssakausi on alkanut. Jos sinulla on korkea kuume, yskä ja lihaksia särkee, älä tule terveysasemalle ilman ajanvarausta. Soita ensin hoitajalle numeroon 09 310 5555 arkisin kello 8–16. Hoitaja kertoo, tarvitsetko lääkärin.',
+        'Useimmat sairastuneet paranevat kotona noin viikossa. Lepää, juo paljon vettä ja ota tarvittaessa särkylääkettä. Jos kuume on yli 39 astetta yli kolme päivää tai hengittäminen on vaikeaa, ota heti yhteyttä päivystykseen.',
+        'Influenssarokotuksia annetaan ilman ajanvarausta tiistaisin ja torstaisin kello 12–15. Rokotus on maksuton yli 65-vuotiaille, raskaana oleville ja pienille lapsille.' ],
+        questions: [
+        { kind: 'mc', q: 'Mitä sinun pitää tehdä ensin, jos sinulla on influenssan oireet?', options: ['Mennä suoraan terveysasemalle.', 'Soittaa hoitajalle.', 'Mennä päivystykseen.'], answer: 1 },
+        { kind: 'mc', q: 'Milloin pitää ottaa yhteyttä päivystykseen?', options: ['Kun lihaksia särkee.', 'Heti kun sairastuu.', 'Kun korkea kuume on kestänyt yli kolme päivää.'], answer: 2 },
+        { kind: 'mc', q: 'Mikä pitää paikkansa rokotuksesta?', options: ['Rokotukseen täytyy varata aika.', 'Rokotukseen voi mennä tiistaina iltapäivällä.', 'Rokotus on maksuton kaikille.'], answer: 1 }
+      ]},
+      { kind: 'Blogikirjoitus', title: 'Ajattelin, että flunssa on pieni asia', body: [
+        'Marraskuun alussa poikani toi päiväkodista flunssan, ja tietysti se tarttui myös minuun. Ensin nenä vuoti ja kurkku oli kipeä. Ajattelin, että tämä on vain tavallinen nuha, ja menin töihin niin kuin aina. Joimme työkavereiden kanssa kahvia ja istuimme pitkässä palaverissa. Kahden päivän päästä puolet tiimistä oli sairaana.',
+        'Viikonloppuna oloni oli vielä huonompi. Minulla oli kuumetta, yskin koko yön, ja päätä särki niin, etten pystynyt lukemaan. Maanantaina kävin lääkärissä. Lääkäri kuunteli keuhkoja ja sanoi, että minulla on alkava keuhkokuume. Hän kirjoitti reseptin ja käski levätä vähintään viikon.',
+        'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
+        '– Mari, 34' ],
+        questions: [
+        { kind: 'mc', q: 'Mistä Mari sai flunssan?', options: ['Työkavereilta.', 'Pojaltaan.', 'Lääkäriltä.'], answer: 1 },
+        { kind: 'mc', q: 'Miksi Mari meni töihin?', options: ['Hän ajatteli, että sairaus ei ole vakava.', 'Hänellä oli tärkeä palaveri.', 'Lääkäri sanoi, että se on hyvä idea.'], answer: 0 },
+        { kind: 'mc', q: 'Mitä lääkäri teki?', options: ['Mittasi verenpaineen.', 'Kuunteli keuhkoja ja kirjoitti reseptin.', 'Lähetti Marin sairaalaan.'], answer: 1 },
+        { kind: 'tf', q: 'Marin työkaverit sairastuivat myös.', answer: true },
+        { kind: 'tf', q: 'Mari parani nopeasti eikä ollut enää väsynyt.', answer: false },
+        { kind: 'tf', q: 'Viikonloppuna Mari pystyi lukemaan.', answer: false },
+        { kind: 'tf', q: 'Jos poika on sairas, Mari jää nyt kotiin.', answer: true },
+        { kind: 'open', q: 'Mitä oireita Marilla oli viikonloppuna? Mainitse kolme.', keys: [['kuume'], ['ysk'], ['pää', 'särk']], model: 'kuume, yskä, päänsärky' },
+        { kind: 'open', q: 'Mitkä kaksi asiaa Mari oppi? Vastaa lyhyesti omin sanoin.', keys: [['töihin', 'töissä', 'työhön'], ['lev', 'lepä', 'lepo']], model: 'Sairaana ei kannata mennä töihin. On tärkeää levätä kunnolla.' }
+      ]}
+    ]},
+    { id: 'kirjoittaminen', type: 'writing', title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть (keskitaso): три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
+      tasks: [
+      { id: 'w1', kind: 'Epämuodollinen viesti', words: [50, 80], title: 'Viesti ystävälle',
+        text: 'Olet sairastunut etkä pääse ystäväsi syntymäpäiväjuhliin lauantaina. Kirjoita viesti ystävällesi.',
+        points: ['Kerro, miksi et pääse juhliin.', 'Kerro, miten voit ja mitä lääkäri sanoi.', 'Ehdota uutta tapaamista.'] },
+      { id: 'w2', kind: 'Muodollinen viesti', words: [60, 100], title: 'Palaute terveysasemalle',
+        text: 'Kävit terveysasemalla, mutta jouduit odottamaan lääkäriä kaksi tuntia, eikä kukaan kertonut syytä. Kirjoita palaute terveysaseman nettisivulle.',
+        points: ['Kerro, mitä tapahtui.', 'Kerro, miksi olet tyytymätön.', 'Kerro, mitä toivot terveysasemalta tulevaisuudessa.'] },
+      { id: 'w3', kind: 'Mielipideteksti', words: [100, 160], title: 'Pitääkö sairaana mennä töihin?',
+        text: 'Paikallislehden nettisivulla keskustellaan: monet suomalaiset menevät töihin, vaikka he ovat sairaita. Kirjoita mielipiteesi.',
+        points: ['Kerro oma mielipiteesi.', 'Perustele mielipiteesi ja anna esimerkki.', 'Mitä työpaikat voisivat tehdä asian hyväksi?'] }
+    ]}
+  ]}
+  ]
+},
+{ id: 'soon1', fi: 'Asuminen', ru: 'Жильё', soon: true, blocks: [] },
+{ id: 'soon2', fi: 'Työ ja opiskelu', ru: 'Работа и учёба', soon: true, blocks: [] }
+];
+
+/* =========================================================
+   STORAGE: claude.ai db when available, else this browser.
+   results/<uid>            profile {name, updatedAt}
+   results/<uid>/ex/<key>   one exercise result
+   results/<uid>/fb/<key>   teacher feedback
+   ========================================================= */
+const LS_KEY = 'suomi-muistikirja:v1';
+const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } };
+const lsWrite = s => { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) {} };
+
+const Store = {
+  mode: 'local', db: null, uid: null, isOwner: false, cloudBlocked: false,
+  ready: null,
+  async init() {
+    try {
+      if (window.claude && typeof window.claude.use === 'function') {
+        const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+        if (db && user) {
+          const id = await user.id();
+          if (id) { this.db = db; this.uid = id; this.mode = 'cloud'; this.isOwner = await user.isOwner(); }
+        }
+      }
+    } catch (e) { this.mode = 'local'; }
+  },
+  async call(fn, fallback) {
+    try { return await fn(); }
+    catch (e) {
+      if (e && e.code === 'unavailable') { await new Promise(r => setTimeout(r, 600 + Math.random() * 600)); try { return await fn(); } catch (e2) {} }
+      if (e && e.code === 'invalid_argument') { this.cloudBlocked = true; renderWho(); }
+      return fallback ? fallback() : null;
+    }
+  },
+  async getProfile() {
+    await this.ready;
+    const local = lsRead().profile || null;
+    if (this.mode !== 'cloud') return local;
+    const snap = await this.call(() => this.db.doc('results/' + this.uid).get());
+    return (snap && snap.exists) ? snap.data() : local;
+  },
+  async saveProfile(name) {
+    await this.ready;
+    const s = lsRead(); s.profile = { name, updatedAt: new Date().toISOString() }; lsWrite(s);
+    if (this.mode === 'cloud' && !this.cloudBlocked) await this.call(() => this.db.doc('results/' + this.uid).set(s.profile));
+  },
+  async saveResult(key, doc) {
+    await this.ready;
+    const s = lsRead(); s.results = s.results || {}; s.results[key] = doc; lsWrite(s);
+    if (this.mode === 'cloud' && !this.cloudBlocked) {
+      await this.call(() => this.db.doc('results/' + this.uid + '/ex/' + key).set(doc));
+      if (!this.cloudBlocked && state.profile) await this.call(() => this.db.doc('results/' + this.uid).set({ name: state.profile.name, updatedAt: doc.at }));
+    }
+    return this.mode === 'cloud' && !this.cloudBlocked;
+  },
+  async myResults() {
+    await this.ready;
+    const local = lsRead().results || {};
+    if (this.mode !== 'cloud') return local;
+    const q = await this.call(() => this.db.collection('results/' + this.uid + '/ex').get());
+    if (!q) return local;
+    const out = { ...local }; q.docs.forEach(d => { out[d.id] = d.data(); }); return out;
+  },
+  async feedbackFor(uid) {
+    await this.ready;
+    if (this.mode !== 'cloud') return {};
+    const q = await this.call(() => this.db.collection('results/' + uid + '/fb').get());
+    const out = {}; if (q) q.docs.forEach(d => { out[d.id] = d.data(); }); return out;
+  },
+  async students() {
+    await this.ready;
+    if (this.mode !== 'cloud') return [];
+    const q = await this.call(() => this.db.collection('results').get());
+    return q ? q.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+  },
+  async studentResults(uid) {
+    const q = await this.call(() => this.db.collection('results/' + uid + '/ex').get());
+    const out = {}; if (q) q.docs.forEach(d => { out[d.id] = d.data(); }); return out;
+  },
+  async saveFeedback(uid, key, doc) {
+    return await this.call(() => this.db.doc('results/' + uid + '/fb/' + key).set(doc).then(() => true), () => false);
+  }
+};
+
+/* =========================================================
+   STATE + helpers
+   ========================================================= */
+const state = { topic: 'terveys', block: 'sanasto', view: 'learn', profile: null, results: {}, feedback: {}, cardGroup: 0, flips: {} };
+try { const t = localStorage.getItem(LS_KEY + ':tab'); if (t) Object.assign(state, JSON.parse(t)); } catch (e) {}
+const saveTab = () => { try { localStorage.setItem(LS_KEY + ':tab', JSON.stringify({ topic: state.topic, block: state.block })); } catch (e) {} };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s || '').toLowerCase().replace(/[–—]/g, '-').replace(/[.,!?;:"«»()]/g, '').replace(/\s+/g, ' ').trim();
+const key = (topic, ex) => topic + '__' + ex;
+const words = s => (String(s).trim().match(/\S+/g) || []).length;
+const topicObj = () => TOPICS.find(t => t.id === state.topic) || TOPICS[0];
+const blockObj = () => { const t = topicObj(); return t.blocks.find(b => b.id === state.block) || t.blocks[0]; };
+const fmtDate = iso => { try { return new Date(iso).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2600); }
+function scoreClass(s, m) { const p = m ? s / m : 0; return p >= .8 ? 'ok' : p >= .5 ? 'mid' : 'low'; }
+function blockScore(topic, block, res) {
+  let s = 0, m = 0, done = 0;
+  block.exercises.forEach(ex => { const r = res[key(topic.id, ex.id)]; if (r && r.max) { s += r.score; m += r.max; done++; } });
+  return { s, m, done, total: block.exercises.length };
+}
+
+/* =========================================================
+   HEADER, REGISTRATION
+   ========================================================= */
+function renderWho() {
+  const el = $('#who');
+  const cloud = Store.mode === 'cloud' && !Store.cloudBlocked;
+  const name = state.profile ? state.profile.name : '';
+  el.innerHTML = `
+    <span class="chip ${cloud ? 'cloud' : ''}" title="${cloud ? 'Результаты сохраняются на сайте' : 'Результаты сохраняются только в этом браузере'}">
+      <span class="dot"></span>${cloud ? 'сохраняется на сайте' : 'сохраняется в браузере'}</span>
+    ${name ? `<span class="chip">✎ ${esc(name)}</span>` : ''}
+    ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
+    ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}`;
+  const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); };
+  const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
+}
+
+function renderRegister() {
+  const el = $('#register');
+  const blocked = Store.mode === 'cloud' && Store.cloudBlocked;
+  if (state.profile && !blocked) { el.innerHTML = ''; return; }
+  if (state.profile && blocked) {
+    el.innerHTML = `<div class="warn">Сохранить на сайте не получилось: у вас нет прав на запись. Результаты сохраняются в этом браузере. Попросите преподавателя пригласить вас по email с правом редактирования, а пока можно нажать «Копировать мои ответы» и отправить их.</div><br>`;
+    return;
+  }
+  el.innerHTML = `
+    <section class="panel" aria-labelledby="regTitle">
+      <h3 id="regTitle">Регистрация</h3>
+      <p>Напишите своё имя, чтобы ваши результаты по каждому блоку сохранялись и преподаватель видел, кто выполнил задания.</p>
+      ${Store.mode === 'cloud' ? '<p class="note">Вы вошли через claude.ai: ответы сохранятся в вашем личном разделе, их видите только вы и преподаватель.</p>'
+        : '<p class="note">Сейчас страница открыта без входа, поэтому результаты сохранятся только в этом браузере.</p>'}
+      <form class="row" id="regForm" style="margin-top:10px">
+        <input class="field" id="regName" autocomplete="name" placeholder="Имя и фамилия" maxlength="60" required>
+        <button class="btn main" type="submit">Сохранить</button>
+      </form>
+    </section>`;
+  $('#regForm').onsubmit = async e => {
+    e.preventDefault();
+    const name = $('#regName').value.trim(); if (!name) return;
+    await Store.saveProfile(name);
+    state.profile = { name };
+    toast('Готово, ' + name + '!');
+    renderAll();
+  };
+}
+
+function renderTopics() {
+  $('#topics').innerHTML = `<span class="index-label">Index</span>` + TOPICS.map(t =>
+    `<button class="topic-btn" type="button" data-topic="${t.id}" ${t.soon ? 'disabled' : ''} aria-current="${t.id === state.topic}">${esc(t.fi)} <span class="note">· ${esc(t.ru)}${t.soon ? ' (скоро)' : ''}</span></button>`).join('');
+  document.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { state.topic = b.dataset.topic; state.block = topicObj().blocks[0].id; state.view = 'learn'; saveTab(); renderAll(); });
+}
+
+/* =========================================================
+   LEARN VIEW
+   ========================================================= */
+function renderLearn() {
+  const t = topicObj(), b = blockObj();
+  const main = $('#main');
+  main.innerHTML = `
+    <h2 style="margin:6px 0 4px">${esc(t.fi)}</h2>
+    <p class="note" style="margin:0 0 12px">${esc(t.ru)} · сначала лексика, затем грамматика, затем YKI</p>
+    <div class="tabs" role="tablist">${t.blocks.map((bl, i) => {
+      const sc = blockScore(t, bl, state.results);
+      return `<button class="tab" role="tab" type="button" data-block="${bl.id}" aria-selected="${bl.id === b.id}">
+        <span>${i + 1}. ${esc(bl.ru)}</span><small>${sc.done ? `${sc.s}/${sc.m}` : `${sc.done}/${sc.total}`}</small></button>`; }).join('')}</div>
+    <div id="exList"></div>`;
+  main.querySelectorAll('[data-block]').forEach(btn => btn.onclick = () => { state.block = btn.dataset.block; saveTab(); renderLearn(); });
+  const list = $('#exList');
+  b.exercises.forEach((ex, i) => {
+    const sec = document.createElement('section'); sec.className = 'ex'; sec.id = 'ex-' + ex.id;
+    list.appendChild(sec);
+    ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting })[ex.type](sec, ex, i + 1);
+  });
+}
+
+function exHead(ex, n, r) {
+  const sc = r && r.max ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>` : '';
+  return `<div class="ex-head"><h3><span class="sig">${n}.</span>${esc(ex.title)}</h3>${sc}</div>
+    <p class="ex-task">${esc(ex.task)}</p>`;
+}
+function savedLine(r) { return r ? `<span class="saved-note">сохранено ${fmtDate(r.at)}</span>` : ''; }
+
+async function submit(ex, doc) {
+  const t = topicObj(), b = blockObj();
+  const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.ru, ex: ex.id, exTitle: ex.title, type: ex.type, at: new Date().toISOString(), ...doc };
+  state.results[key(t.id, ex.id)] = full;
+  if (!state.profile) { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
+  const cloud = await Store.saveResult(key(t.id, ex.id), full);
+  toast(cloud ? 'Результат сохранён на сайте' : 'Результат сохранён в этом браузере');
+}
+
+/* ---------- cards ---------- */
+function renderCards(sec, ex, n) {
+  const k = key(state.topic, ex.id);
+  const r = state.results[k];
+  const known = new Set((r && r.known) || []);
+  const total = ex.groups.reduce((a, g) => a + g.cards.length, 0);
+  const g = ex.groups[state.cardGroup] || ex.groups[0];
+  sec.innerHTML = exHead(ex, n, r) + `
+    <div class="groups">${ex.groups.map((gr, i) => `<button class="gbtn" type="button" data-g="${i}" aria-pressed="${gr === g}">${esc(gr.name)} <span class="note">${gr.cards.filter(c => known.has(c[0])).length}/${gr.cards.length}</span></button>`).join('')}</div>
+    <div class="cards">${g.cards.map(c => {
+      const id = c[0]; const flipped = state.flips[id];
+      return `<button class="card ${flipped ? 'flipped' : ''} ${known.has(id) ? 'known' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
+        <span class="card-in">
+          <span class="face front"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
+          <span class="face back"><span class="w">${esc(c[1])}</span><span class="g">${esc(c[0])}</span></span>
+        </span></button>`; }).join('')}</div>
+    <div class="card-tools">
+      <span class="note">Перевернули и знаете слово? Отметьте его:</span>
+      <button class="btn small" type="button" id="markKnown" ${Object.keys(state.flips).some(i => state.flips[i] && g.cards.some(c => c[0] === i)) ? '' : 'disabled'}>✓ Знаю открытые</button>
+      <button class="btn small" type="button" id="flipAll">Перевернуть все</button>
+      <button class="btn small" type="button" id="resetKnown">Начать заново</button>
+      <span class="note" style="margin-left:auto">Выучено: <b>${known.size}/${total}</b></span>
+    </div>`;
+  sec.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { state.cardGroup = +b.dataset.g; state.flips = {}; renderCards(sec, ex, n); });
+  sec.querySelectorAll('[data-card]').forEach(b => b.onclick = () => {
+    const id = b.dataset.card; state.flips[id] = !state.flips[id]; b.classList.toggle('flipped', state.flips[id]);
+    $('#markKnown').disabled = !g.cards.some(c => state.flips[c[0]]);
+  });
+  $('#flipAll').onclick = () => { const any = g.cards.some(c => !state.flips[c[0]]); g.cards.forEach(c => state.flips[c[0]] = any); renderCards(sec, ex, n); };
+  const persist = async () => {
+    await submit(ex, { score: known.size, max: total, known: [...known], answers: [{ p: 'Выучено карточек', a: known.size + ' из ' + total, ok: null }] });
+    state.flips = {}; renderCards(sec, ex, n); refreshTabs();
+  };
+  $('#markKnown').onclick = () => { g.cards.forEach(c => { if (state.flips[c[0]]) known.add(c[0]); }); persist(); };
+  $('#resetKnown').onclick = () => { known.clear(); persist(); };
+}
+
+/* ---------- input (fill-in) ---------- */
+function renderInput(sec, ex, n) {
+  const k = key(state.topic, ex.id);
+  const r = state.results[k];
+  const prev = r && r.raw ? r.raw : [];
+  const checked = !!(r && r.raw);
+  sec.innerHTML = exHead(ex, n, r) +
+    (ex.bank ? `<div class="bank"><b>Слова:</b>${ex.bank.map(w => `<span>${esc(w)}</span>`).join('')}</div>` : '') +
+    `<ol class="items">${ex.items.map((it, i) => {
+      const inp = `<input class="blank ${it.box ? 'wide' : ''}" id="${ex.id}-${i}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Ответ ${i + 1}" value="${esc(prev[i] || '')}">`;
+      const body = it.box ? `<div class="symptoms">${esc(it.box)}</div>${inp}`
+        : esc(it.t).replace('___', inp) + (it.h ? ` <span class="hint">(${esc(it.h)})</span>` : '');
+      return `<li><div class="it-body">${body}<span class="fb" id="${ex.id}-fb-${i}"></span></div></li>`; }).join('')}</ol>
+    <div class="actions">
+      <button class="btn main" type="button" data-check>Проверить</button>
+      <button class="btn" type="button" data-clear>Очистить</button>
+      ${savedLine(r)}
+    </div>`;
+  const check = async (save) => {
+    let score = 0; const answers = [], raw = [];
+    ex.items.forEach((it, i) => {
+      const inp = sec.querySelector('#' + ex.id + '-' + i);
+      const v = inp.value; raw.push(v);
+      const ok = it.a.some(a => norm(a) === norm(v));
+      if (ok) score++;
+      inp.classList.toggle('ok', ok); inp.classList.toggle('bad', !ok);
+      const fb = sec.querySelector('#' + ex.id + '-fb-' + i);
+      fb.className = 'fb ' + (ok ? 'ok' : 'bad');
+      fb.innerHTML = ok ? '✓ верно' + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '')
+        : `✗ правильно: <b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
+      answers.push({ p: it.box || (it.t + (it.h ? ' (' + it.h + ')' : '')), a: v, ok, c: it.a.join(' / ') });
+    });
+    if (save) { await submit(ex, { score, max: ex.items.length, answers, raw }); renderInput(sec, ex, n); refreshTabs(); }
+  };
+  if (checked) check(false);
+  sec.querySelector('[data-check]').onclick = () => check(true);
+  sec.querySelector('[data-clear]').onclick = () => {
+    sec.querySelectorAll('.blank').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
+    sec.querySelectorAll('.fb').forEach(f => { f.textContent = ''; f.className = 'fb'; });
+  };
+  sec.querySelectorAll('.blank').forEach((inp, i, all) => inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); (all[i + 1] || sec.querySelector('[data-check]')).focus(); }
+  }));
+}
+
+/* ---------- YKI reading ---------- */
+function renderReading(sec, ex, n) {
+  const k = key(state.topic, ex.id);
+  const r = state.results[k];
+  const prev = (r && r.raw) || {};
+  let qn = 0;
+  sec.innerHTML = exHead(ex, n, r) + ex.texts.map((tx, ti) => `
+    <div class="section-title"><span class="n">Teksti ${ti + 1}</span></div>
+    <article class="yki-text"><div class="kind">${esc(tx.kind)}</div><h4>${esc(tx.title)}</h4>${tx.body.map(p => `<p>${esc(p)}</p>`).join('')}</article>
+    ${tx.questions.map(q => { const id = `${ex.id}-q${qn++}`; const v = prev[id];
+      if (q.kind === 'mc') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${qn}. ${esc(q.q)}</legend><div class="opts">${q.options.map((o, oi) =>
+        `<label class="opt" data-oi="${oi}"><input type="radio" name="${id}" value="${oi}" ${String(v) === String(oi) ? 'checked' : ''}><span>${'abc'[oi]}) ${esc(o)}</span></label>`).join('')}</div><span class="fb"></span></fieldset>`;
+      if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${qn}. ${esc(q.q)}</legend><div class="tf">
+        <label class="opt" data-oi="1"><input type="radio" name="${id}" value="1" ${v === '1' ? 'checked' : ''}><span>Oikein</span></label>
+        <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
+      return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${qn}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
+    }).join('')}`).join('') + `
+    <div class="actions"><button class="btn main" type="button" data-check>Проверить и сохранить</button>${savedLine(r)}</div>`;
+  const check = async (save) => {
+    let score = 0, max = 0, i = 0; const answers = [], raw = {};
+    ex.texts.forEach(tx => tx.questions.forEach(q => {
+      const id = `${ex.id}-q${i++}`; const box = sec.querySelector('#' + id); const fb = box.querySelector('.fb');
+      if (q.kind === 'open') {
+        const v = box.querySelector('textarea').value; raw[id] = v;
+        const nv = norm(v); const hit = q.keys.filter(alts => alts.some(a => nv.includes(a))).length;
+        score += hit; max += q.keys.length;
+        fb.className = 'fb ' + (hit === q.keys.length ? 'ok' : 'wait');
+        fb.innerHTML = `${hit}/${q.keys.length} по ключевым словам · пример ответа: <i>${esc(q.model)}</i> <span class="why">· преподаватель проверит ответ</span>`;
+        answers.push({ p: q.q, a: v, ok: hit === q.keys.length, c: q.model, open: true });
+        return;
+      }
+      max++;
+      const sel = box.querySelector('input:checked'); const v = sel ? sel.value : null; raw[id] = v;
+      const correct = q.kind === 'mc' ? String(q.answer) : (q.answer ? '1' : '0');
+      const ok = v === correct; if (ok) score++;
+      box.querySelectorAll('.opt').forEach(o => { o.classList.remove('ok', 'bad'); if (o.dataset.oi === correct) o.classList.add('ok'); else if (o.dataset.oi === v) o.classList.add('bad'); });
+      fb.className = 'fb ' + (ok ? 'ok' : 'bad'); fb.textContent = ok ? '✓ oikein' : (v == null ? '✗ нет ответа' : '✗ väärin');
+      const label = x => q.kind === 'mc' ? (x == null ? '—' : 'abc'[x] + ') ' + q.options[x]) : (x == null ? '—' : x === '1' ? 'Oikein' : 'Väärin');
+      answers.push({ p: q.q, a: label(v), ok, c: label(correct) });
+    }));
+    if (save) { await submit(ex, { score, max, answers, raw }); renderReading(sec, ex, n); refreshTabs(); }
+  };
+  if (r && r.raw) check(false);
+  sec.querySelector('[data-check]').onclick = () => check(true);
+}
+
+/* ---------- YKI writing ---------- */
+const timer = { end: 0, h: null };
+function renderWriting(sec, ex, n) {
+  const k = key(state.topic, ex.id);
+  const r = state.results[k];
+  const prev = (r && r.raw) || {};
+  let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
+  const fb = state.feedback[k] || null;
+  sec.innerHTML = exHead(ex, n, null) + `
+    <div class="row" style="margin-bottom:8px"><button class="btn small" type="button" id="timerBtn">⏱ Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span></div>
+    ${ex.tasks.map((t, i) => { const v = drafts[t.id] != null ? drafts[t.id] : (prev[t.id] || ''); const f = fb && fb.items && fb.items[t.id];
+      return `<div class="wtask">
+      <div class="section-title" style="margin-top:0"><span class="n">Tehtävä ${i + 1}</span><b>${esc(t.kind)}</b></div>
+      <p style="margin:0 0 4px;max-width:65ch"><b>${esc(t.title)}.</b> ${esc(t.text)}</p>
+      <ul>${t.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+      <textarea id="${ex.id}-${t.id}" rows="7" aria-label="${esc(t.title)}" data-tid="${t.id}" data-min="${t.words[0]}" data-max="${t.words[1]}">${esc(v)}</textarea>
+      <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span></div>
+      ${f && (f.grade || f.comment) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}<div style="white-space:pre-wrap">${esc(f.comment || '')}</div></div>` : ''}
+    </div>`; }).join('')}
+    <div class="actions"><button class="btn main" type="button" data-send>Отправить на проверку</button>${savedLine(r)}${r ? '<span class="saved-note">· можно исправить и отправить снова</span>' : ''}</div>`;
+  const upd = ta => { const c = words(ta.value); const el = sec.querySelector('#' + ta.id + '-c'); el.textContent = c + ' слов'; el.classList.toggle('good', c >= +ta.dataset.min && c <= +ta.dataset.max); };
+  sec.querySelectorAll('textarea').forEach(ta => { upd(ta); ta.addEventListener('input', () => {
+    upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {} }); });
+  const tick = () => { const left = Math.max(0, timer.end - Date.now()); const out = $('#timerOut'); if (!out) return;
+    out.textContent = timer.end ? `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : '';
+    if (timer.end && !left) { clearInterval(timer.h); toast('Время вышло!'); } };
+  sec.querySelector('#timerBtn').onclick = () => { timer.end = Date.now() + ex.minutes * 60000; clearInterval(timer.h); timer.h = setInterval(tick, 1000); tick(); };
+  tick(); if (timer.end > Date.now()) { clearInterval(timer.h); timer.h = setInterval(tick, 1000); }
+  sec.querySelector('[data-send]').onclick = async () => {
+    const raw = {}, answers = [];
+    ex.tasks.forEach(t => { const v = sec.querySelector('#' + ex.id + '-' + t.id).value; raw[t.id] = v; answers.push({ p: t.kind + ': ' + t.title, a: v, ok: null, words: words(v), tid: t.id }); });
+    if (!answers.some(a => a.words)) { toast('Сначала напишите хотя бы один текст'); return; }
+    await submit(ex, { score: 0, max: 0, answers, raw, pending: true });
+    try { localStorage.removeItem(LS_KEY + ':draft:' + k); } catch (e) {}
+    renderWriting(sec, ex, n);
+  };
+}
+
+function refreshTabs() {
+  const t = topicObj();
+  document.querySelectorAll('[data-block]').forEach(btn => {
+    const bl = t.blocks.find(b => b.id === btn.dataset.block); const sc = blockScore(t, bl, state.results);
+    btn.querySelector('small').textContent = sc.done ? `${sc.s}/${sc.m}` : `${sc.done}/${sc.total}`;
+  });
+}
+
+/* =========================================================
+   EXPORT (copy own answers as text)
+   ========================================================= */
+function reportText(name, res) {
+  const lines = ['Suomi-muistikirja — ' + name, ''];
+  Object.values(res).sort((a, b) => (a.at < b.at ? -1 : 1)).forEach(r => {
+    lines.push(`## ${r.topicName} · ${r.blockName} · ${r.exTitle}` + (r.max ? ` — ${r.score}/${r.max}` : '') + ` (${fmtDate(r.at)})`);
+    (r.answers || []).forEach((a, i) => lines.push(`${i + 1}. ${a.p}\n   → ${a.a || '—'}${a.ok === false ? '  [✗ ' + a.c + ']' : a.ok ? '  [✓]' : ''}`));
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+async function exportMine() {
+  const text = reportText(state.profile ? state.profile.name : '', state.results);
+  try { await navigator.clipboard.writeText(text); toast('Ответы скопированы, их можно вставить в письмо'); }
+  catch (e) {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;inset:10% 16px auto;height:60%;z-index:30;width:calc(100% - 32px)';
+    document.body.appendChild(ta); ta.select(); toast('Скопируйте выделенный текст (Ctrl+C), затем кликните мимо'); ta.onblur = () => ta.remove(); ta.focus();
+  }
+}
+
+/* =========================================================
+   TEACHER VIEW (artifact owner only)
+   ========================================================= */
+async function renderTeacher() {
+  const main = $('#main');
+  main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2><p class="note">Загрузка…</p>`;
+  const list = (await Store.students()).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  if (!list.length) {
+    main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2>
+      <div class="panel"><p>Пока никто не сохранил результаты.</p><p class="note">Когда ученик зарегистрируется и проверит хотя бы одно задание, он появится здесь. Ученики должны быть приглашены по email с правом редактирования, иначе сайт не даст им сохранить ответы.</p></div>`;
+    return;
+  }
+  main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2><p class="note">${list.length} чел. · нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div>`;
+  const wrap = $('#stList');
+  list.forEach(st => {
+    const d = document.createElement('details'); d.className = 'st';
+    d.innerHTML = `<summary>${esc(st.name || 'Без имени')} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary><div class="st-body note">Загрузка…</div>`;
+    wrap.appendChild(d);
+    d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
+  });
+}
+
+async function renderStudent(el, st) {
+  const [res, fbs] = await Promise.all([Store.studentResults(st.id), Store.feedbackFor(st.id)]);
+  if (!Object.keys(res).length) { el.textContent = 'Нет сохранённых заданий.'; return; }
+  el.className = 'st-body';
+  let html = '';
+  TOPICS.forEach(t => t.blocks.forEach(b => {
+    const sc = blockScore(t, b, res); if (!sc.done) return;
+    html += `<div class="section-title"><span class="n">${esc(b.ru)}</span><span class="note">${esc(t.fi)} · ${sc.done}/${sc.total} заданий${sc.m ? ` · ${sc.s}/${sc.m}` : ''}</span></div>`;
+    b.exercises.forEach(ex => {
+      const k = key(t.id, ex.id); const r = res[k]; if (!r) return;
+      html += `<div class="exr"><h5>${esc(ex.title)} ${r.max ? `<span class="${'mark-' + (scoreClass(r.score, r.max) === 'ok' ? 'ok' : scoreClass(r.score, r.max) === 'mid' ? 'wait' : 'bad')}">${r.score}/${r.max}</span>` : ''} <span class="note">${fmtDate(r.at)}</span></h5>`;
+      if (ex.type === 'writing') {
+        const f = (fbs[k] && fbs[k].items) || {};
+        (r.answers || []).forEach(a => {
+          const g = f[a.tid] || {};
+          html += `<div style="margin:10px 0 16px"><b>${esc(a.p)}</b> <span class="note">· ${a.words} слов</span>
+            <div class="essay">${esc(a.a || '—')}</div>
+            <div class="row" data-fb="${k}" data-tid="${a.tid}">
+              <select class="field" style="flex:0 0 auto" aria-label="Уровень">${['', 'alle 3', '3', '4', '5'].map(o => `<option ${g.grade === o ? 'selected' : ''} value="${o}">${o ? 'taso ' + o : 'уровень…'}</option>`).join('')}</select>
+              <textarea class="field" rows="2" placeholder="Комментарий для ученика" aria-label="Комментарий">${esc(g.comment || '')}</textarea>
+            </div></div>`;
+        });
+        html += `<button class="btn small main" type="button" data-savefb="${k}">Сохранить отзыв</button>`;
+      } else if (ex.type !== 'cards') {
+        html += `<div class="scroll"><table class="res-table"><thead><tr><th>#</th><th>Задание</th><th>Ответ</th><th>Правильно</th></tr></thead><tbody>${(r.answers || []).map((a, i) =>
+          `<tr><td>${i + 1}</td><td>${esc(a.p)}</td><td class="${a.open ? 'mark-wait' : a.ok ? 'mark-ok' : 'mark-bad'}">${esc(a.a || '—')}</td><td>${a.ok && !a.open ? '✓' : esc(a.c || '')}</td></tr>`).join('')}</tbody></table></div>`;
+      } else {
+        html += `<p class="note" style="margin:0">Выучено карточек: ${r.score} из ${r.max}</p>`;
+      }
+      html += `</div>`;
+    });
+  }));
+  el.innerHTML = html;
+  el.querySelectorAll('[data-savefb]').forEach(btn => btn.onclick = async () => {
+    const k = btn.dataset.savefb; const items = {};
+    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => { items[row.dataset.tid] = { grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim() }; });
+    const ok = await Store.saveFeedback(st.id, k, { items, at: new Date().toISOString() });
+    toast(ok ? 'Отзыв сохранён, ученик увидит его под своим текстом' : 'Не удалось сохранить отзыв, попробуйте ещё раз');
+  });
+}
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+function renderAll() {
+  renderWho(); renderTopics(); renderRegister();
+  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else renderLearn();
+}
+
+state.results = lsRead().results || {};
+state.profile = lsRead().profile || null;
+if (!topicObj().blocks.some(b => b.id === state.block)) state.block = topicObj().blocks[0].id;
+renderAll();
+
+Store.ready = Store.init();
+Store.ready.then(async () => {
+  const [p, res] = await Promise.all([Store.getProfile(), Store.myResults()]);
+  state.profile = p; state.results = res;
+  if (Store.mode === 'cloud') state.feedback = await Store.feedbackFor(Store.uid);
+  renderAll();
+});
+</script>
