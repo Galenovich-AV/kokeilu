@@ -39,6 +39,7 @@
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
   color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
 .wrap{max-width:1020px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
@@ -210,6 +211,22 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .essay{white-space:pre-wrap;background:var(--paper);border-left:3px solid var(--sage);padding:8px 12px;border-radius:0 6px 6px 0;margin:6px 0}
 .exr{margin:10px 0 14px}
 .exr h5{margin:0 0 4px;font-size:1rem}
+.block-head{display:flex;align-items:center;gap:12px}
+.fold{cursor:pointer;width:32px;height:32px;flex:0 0 auto;border:1.5px solid var(--sage-ink);border-radius:50%;background:transparent;color:var(--sage-ink);display:inline-flex;align-items:center;justify-content:center;padding:0}
+.fold::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(2px) rotate(-135deg);transition:transform .2s}
+.collapsed > .block-head .fold::before,.ex.collapsed .fold::before{transform:translateY(-2px) rotate(45deg)}
+.block.collapsed [data-exlist]{display:none}
+.block.collapsed .block-title{margin-bottom:10px}
+.ex.collapsed{padding-bottom:16px}
+.ex.collapsed > :not(.ex-head){display:none}
+.ex.collapsed .ex-head{margin-bottom:0}
+.wsheet{position:fixed;inset:auto 0 0 0;z-index:25;display:flex;justify-content:center;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.wsheet-in{width:min(520px,100%);background:var(--sheet);border:1.5px solid var(--sage-ink);border-radius:14px;box-shadow:0 -6px 30px rgba(40,50,30,.25);padding:16px 18px;display:grid;gap:6px}
+.wsheet-in .field{flex:none;width:100%}
+.wsheet-in .btn.main{margin-top:8px;justify-self:start}
+.dict td{vertical-align:middle}
+.dict-act{white-space:nowrap;text-align:right}
+.ex p, .ex li, .yki-text, .symptoms, .face{-webkit-touch-callout:none}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-weight:600;font-size:.92rem;z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center}
 @media (max-width:520px){.ex{padding:30px 16px 18px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.title-slip{padding:12px 18px}}
 @media (prefers-reduced-motion:reduce){.card-in{transition:none}.btn:hover{transform:none}}
@@ -597,11 +614,13 @@ function renderWho() {
   el.innerHTML = `
     ${name ? `<span class="chip">✎ ${esc(name)}</span>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
+    <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
+  $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
 
 const AUTH_ERR = m => /invalid login/i.test(m) ? 'Неверный email или пароль.'
@@ -741,14 +760,22 @@ function renderLearn() {
   const t = topicObj();
   const main = $('#main');
   main.innerHTML = `
-    <h2 style="margin:6px 0 4px">${esc(t.fi)}</h2>
-    ${t.blocks.map((bl, i) => `<section class="block" id="block-${bl.id}">
-      <h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
+    <div class="row" style="justify-content:space-between;margin:6px 0 4px"><h2>${esc(t.fi)}</h2>
+      <div class="row"><button class="btn small" type="button" data-allfold="1">Свернуть всё</button><button class="btn small" type="button" data-allfold="0">Развернуть всё</button></div></div>
+    <p class="note" style="margin:0">Совет: зажмите любое слово на странице, чтобы добавить его в свой словарь.</p>
+    ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
+      <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
+      <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
+  main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
+    const fold = b.dataset.allfold === '1';
+    t.blocks.forEach(bl => { setFold('b:' + bl.id, fold); bl.exercises.forEach(ex => setFold('e:' + ex.id, false)); });
+    renderLearn();
+  });
   t.blocks.forEach(bl => {
     const list = main.querySelector(`[data-exlist="${bl.id}"]`);
     bl.exercises.forEach((ex, i) => {
-      const sec = document.createElement('section'); sec.className = 'ex'; sec.id = 'ex-' + ex.id;
+      const sec = document.createElement('section'); sec.className = 'ex' + (isFolded('e:' + ex.id) ? ' collapsed' : ''); sec.id = 'ex-' + ex.id;
       list.appendChild(sec);
       ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting })[ex.type](sec, ex, i + 1);
     });
@@ -759,7 +786,7 @@ function exHead(ex, n, r) {
   const sc = r && r.max && ex.type !== 'cards' ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>`
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
   const st = exDone(ex, r) ? '<span class="ex-state done">● выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
-  return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}</div></div>
+  return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}<button class="fold" type="button" data-fold="e:${ex.id}" aria-label="Свернуть или развернуть задание"></button></div></div>
     <p class="ex-task">${esc(ex.task)}</p>`;
 }
 function savedLine(r) { return r ? `<span class="saved-note">сохранено ${fmtDate(r.at)}</span>` : ''; }
@@ -951,7 +978,7 @@ function refreshTabs() { renderTopics(); }
    ========================================================= */
 function reportText(name, res) {
   const lines = ['Suomi-muistikirja — ' + name, ''];
-  Object.values(res).sort((a, b) => (a.at < b.at ? -1 : 1)).forEach(r => {
+  Object.keys(res).filter(k => k[0] !== '_').map(k => res[k]).sort((a, b) => (a.at < b.at ? -1 : 1)).forEach(r => {
     lines.push(`## ${r.topicName} · ${r.blockName} · ${r.exTitle}` + (r.max ? ` — ${r.score}/${r.max}` : '') + ` (${fmtDate(r.at)})`);
     (r.answers || []).forEach((a, i) => lines.push(`${i + 1}. ${a.p}\n   → ${a.a || '—'}${a.ok === false ? '  [✗ ' + a.c + ']' : a.ok ? '  [✓]' : ''}`));
     lines.push('');
@@ -1031,11 +1058,128 @@ async function renderStudent(el, st) {
 }
 
 /* =========================================================
+   FOLDING (remembered in this browser)
+   ========================================================= */
+const FOLD_KEY = LS_KEY + ':folded';
+let folded = new Set(); try { folded = new Set(JSON.parse(localStorage.getItem(FOLD_KEY)) || []); } catch (e) {}
+const isFolded = id => folded.has(id);
+function setFold(id, on) { on ? folded.add(id) : folded.delete(id); try { localStorage.setItem(FOLD_KEY, JSON.stringify([...folded])); } catch (e) {} }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-fold]'); if (!b) return;
+  const id = b.dataset.fold; const on = !isFolded(id); setFold(id, on);
+  const box = b.closest(id[0] === 'b' ? '.block' : '.ex'); box.classList.toggle('collapsed', on); b.setAttribute('aria-expanded', String(!on));
+});
+
+/* =========================================================
+   PERSONAL DICTIONARY (stored with the results under "_sanakirja")
+   ========================================================= */
+const DICT_KEY = '_sanakirja';
+const dictWords = () => ((state.results[DICT_KEY] || {}).words || []);
+const cardIndex = () => {
+  const m = {};
+  TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type === 'cards') ex.groups.forEach(g => g.cards.forEach(c => { m[norm(c[0].split(' + ')[0])] = c[1]; })); })));
+  return m;
+};
+async function saveDict(words) {
+  const doc = { at: new Date().toISOString(), words };
+  state.results[DICT_KEY] = doc;
+  const cloud = await Store.saveResult(DICT_KEY, doc);
+  renderWho();
+  return cloud;
+}
+async function addWord(word, tr) {
+  word = word.trim(); tr = tr.trim(); if (!word) return;
+  const words = dictWords().filter(w => norm(w.w) !== norm(word));
+  words.push({ w: word, t: tr, at: new Date().toISOString(), topic: state.topic });
+  const cloud = await saveDict(words);
+  toast('«' + word + '» в словаре' + (cloud ? '' : ' (сохранено в браузере)'));
+}
+
+// long press on any word → add to dictionary
+const press = { t: null, x: 0, y: 0 };
+function wordAt(x, y) {
+  const sel = String(window.getSelection ? window.getSelection() : '').trim();
+  if (sel && sel.length < 60) return sel;
+  let node, off;
+  if (document.caretPositionFromPoint) { const c = document.caretPositionFromPoint(x, y); if (!c) return ''; node = c.offsetNode; off = c.offset; }
+  else if (document.caretRangeFromPoint) { const c = document.caretRangeFromPoint(x, y); if (!c) return ''; node = c.startContainer; off = c.startOffset; }
+  if (!node || node.nodeType !== 3) return '';
+  const txt = node.textContent; const isL = ch => /[\p{L}\-]/u.test(ch);
+  let a = off, b = off;
+  while (a > 0 && isL(txt[a - 1])) a--;
+  while (b < txt.length && isL(txt[b])) b++;
+  return txt.slice(a, b).replace(/^-+|-+$/g, '');
+}
+document.addEventListener('pointerdown', e => {
+  if (e.button > 0 || state.view === 'teacher') return;
+  if (e.target.closest('input, textarea, select, .wsheet, #who, .toc')) return;
+  press.x = e.clientX; press.y = e.clientY;
+  clearTimeout(press.t);
+  press.t = setTimeout(() => {
+    const w = wordAt(press.x, press.y);
+    if (w && w.length > 1) { press.fired = true; openWordSheet(w); }
+  }, 550);
+});
+document.addEventListener('pointermove', e => { if (press.t && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) { clearTimeout(press.t); press.t = null; } });
+['pointerup', 'pointercancel', 'scroll'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(press.t); press.t = null; }, true));
+// the click that ends a long press must not flip a card or press a button
+document.addEventListener('click', e => { if (press.fired) { press.fired = false; e.preventDefault(); e.stopPropagation(); } }, true);
+document.addEventListener('contextmenu', e => { if (press.fired || $('.wsheet:not([hidden])')) e.preventDefault(); });
+
+function openWordSheet(word, tr) {
+  let sh = $('#wsheet');
+  if (!sh) { sh = document.createElement('div'); sh.id = 'wsheet'; sh.className = 'wsheet'; document.body.appendChild(sh); }
+  const known = dictWords().find(x => norm(x.w) === norm(word));
+  const guess = tr != null ? tr : known ? known.t : (cardIndex()[norm(word)] || '');
+  sh.hidden = false;
+  sh.innerHTML = `<form class="wsheet-in" id="wform">
+    <div class="row" style="justify-content:space-between"><h3>Lisää sanakirjaan</h3><button class="btn small" type="button" id="wclose">Отмена</button></div>
+    <label class="note" for="wword">Слово</label><input class="field" id="wword" value="${esc(word)}" autocomplete="off" spellcheck="false" required>
+    <label class="note" for="wtr">Перевод</label><input class="field" id="wtr" value="${esc(guess)}" placeholder="перевод на русский" autocomplete="off">
+    <button class="btn main" type="submit">${known ? 'Обновить' : 'Добавить в словарь'}</button>
+  </form>`;
+  window.getSelection && window.getSelection().removeAllRanges();
+  const close = () => { sh.hidden = true; };
+  $('#wclose').onclick = close;
+  $('#wform').onsubmit = async e => { e.preventDefault(); await addWord($('#wword').value, $('#wtr').value); close(); if (state.view === 'dict') renderDict(); };
+  setTimeout(() => $('#wtr').focus(), 50);
+}
+
+function renderDict() {
+  const main = $('#main');
+  const q = state.dictQ || '';
+  const words = dictWords().slice().sort((a, b) => a.w.localeCompare(b.w, 'fi'));
+  const shown = words.filter(w => !q || norm(w.w + ' ' + w.t).includes(norm(q)));
+  main.innerHTML = `
+    <section class="ex">
+      <div class="ex-head"><h3>Oma sanakirja</h3><span class="note">${words.length} слов</span></div>
+      <p class="ex-task">Добавляйте слова прямо из заданий: зажмите слово на пару секунд. Или впишите слово здесь.</p>
+      <form class="row" id="dictAdd" style="margin-bottom:16px">
+        <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
+        <input class="field" id="dt" placeholder="перевод" autocomplete="off">
+        <button class="btn main" type="submit">Lisää</button>
+      </form>
+      ${words.length ? `<input class="field" id="dq" placeholder="Поиск…" value="${esc(q)}" style="width:100%;margin-bottom:10px" autocomplete="off">` : ''}
+      ${words.length ? `<div class="scroll"><table class="res-table dict"><thead><tr><th>Sana</th><th>Перевод</th><th></th></tr></thead><tbody>
+        ${shown.map(w => `<tr><td><b>${esc(w.w)}</b></td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
+          <td class="dict-act"><button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button></td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="note">Пока пусто. Зажмите любое слово в заданиях, и оно появится здесь.</p>'}
+    </section>`;
+  $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value); renderDict(); };
+  const dq = $('#dq'); if (dq) dq.oninput = () => { state.dictQ = dq.value; const pos = dq.selectionStart; renderDict(); const n = $('#dq'); n.focus(); n.setSelectionRange(pos, pos); };
+  main.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const w = dictWords().find(x => x.w === b.dataset.edit); openWordSheet(w.w, w.t); });
+  main.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    if (b.dataset.sure) { await saveDict(dictWords().filter(x => x.w !== b.dataset.del)); renderDict(); return; }
+    b.dataset.sure = 1; b.textContent = 'Точно удалить?';
+  });
+}
+
+/* =========================================================
    BOOT
    ========================================================= */
 function renderAll() {
   renderWho(); renderTopics(); renderRegister();
-  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else renderLearn();
+  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else renderLearn();
 }
 
 state.results = lsRead().results || {};
