@@ -202,6 +202,8 @@ a{color:var(--sage-ink)}
 #timerRow .btn.main{background:#d99a3a;border-color:#d99a3a;color:#fff}
 /* unsaved changes: the save button turns timer-orange */
 .btn.main.unsaved{background:#d99a3a;border-color:#d99a3a;color:#fff}
+.btn.revert{background:transparent;border-color:#d99a3a;color:#b8732a}
+.btn.revert:hover{background:rgba(217,154,58,.08)}
 /* before it starts there is only the start button, without the bar's own frame around it */
 #timerRow.idle{background:none;border:0;box-shadow:none;padding:0}
 #timerRow.idle .btn{background:#ffe7b8}
@@ -1355,8 +1357,8 @@ function renderWriting(sec, ex, n) {
       <textarea id="${ex.id}-${t.id}" rows="7" aria-label="${esc(t.title)}" data-tid="${t.id}" data-min="${t.words[0]}" data-max="${t.words[1]}">${esc(v)}</textarea>
       <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span>${t.min ? `<span>примерное время ≈ ${t.min} мин</span>` : ''}</div>
       <div class="actions part-actions"><button class="btn main ${changed ? 'unsaved' : ''}" type="button" data-send="${t.id}">Tallenna · Tehtävä ${i + 1}</button>
+        <button class="btn revert" type="button" data-revert="${t.id}" ${changed ? '' : 'hidden'}>Отменить изменения</button>
         <span class="saved-note" id="${ex.id}-${t.id}-st">${sent ? (changed ? '◐ есть несохранённые изменения' : '● сохранено ' + fmtDate(savedAt[t.id] || r.at)) : '○ ещё не сохранено'}</span></div>
-      <details class="versions" id="${ex.id}-${t.id}-vers" ${(versions[t.id] || []).length ? '' : 'hidden'}>${versionsHTML(t.id)}</details>
       ${f && (f.grade || f.comment || (f.marks && f.marks.length)) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}${f.comment ? `<div style="white-space:pre-wrap">${esc(f.comment)}</div>` : ''}
         ${f.marks && f.marks.length ? `<div class="note" style="margin-top:8px">Ваш отправленный текст с комментариями:</div><div class="essay">${markedHTML(prev[t.id] || '', f.marks)}</div>${marksListHTML(f.marks, false)}` : ''}</div>` : ''}
     </div>`; }).join('')}`;
@@ -1365,7 +1367,16 @@ function renderWriting(sec, ex, n) {
     upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
     const dirty = ta.value !== (prev[ta.dataset.tid] || '');
     const st = sec.querySelector('#' + ta.id + '-st'); if (st) st.textContent = dirty ? '◐ есть несохранённые изменения' : (prev[ta.dataset.tid] ? '● сохранено ' + fmtDate(savedAt[ta.dataset.tid]) : '○ ещё не сохранено');
-    const sb = sec.querySelector(`[data-send="${ta.dataset.tid}"]`); if (sb) sb.classList.toggle('unsaved', dirty); }); });
+    const sb = sec.querySelector(`[data-send="${ta.dataset.tid}"]`); if (sb) sb.classList.toggle('unsaved', dirty);
+    const rv = sec.querySelector(`[data-revert="${ta.dataset.tid}"]`); if (rv) rv.hidden = !dirty; }); });
+  // back to the last saved text (still undoable with Ctrl+Z)
+  sec.querySelectorAll('[data-revert]').forEach(b => b.onclick = () => {
+    const tid = b.dataset.revert, ta = sec.querySelector('#' + ex.id + '-' + tid), text = prev[tid] || '';
+    ta.focus(); ta.select();
+    if (!(text ? document.execCommand && document.execCommand('insertText', false, text) : document.execCommand && document.execCommand('delete'))) { ta.value = text; ta.dispatchEvent(new Event('input')); }
+    delete drafts[tid]; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
+    toast('Изменения отменены');
+  });
   // bring back a saved version; insertText keeps it undoable with Ctrl+Z
   sec.addEventListener('click', e => {
     const b = e.target.closest('[data-vrestore]'); if (!b) return;
@@ -1414,8 +1425,8 @@ function renderWriting(sec, ex, n) {
     delete drafts[tid]; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
     // update in place instead of redrawing, so Ctrl+Z in the field still works
     btn.classList.remove('unsaved');
+    { const rv = sec.querySelector(`[data-revert="${tid}"]`); if (rv) rv.hidden = true; }
     const st = sec.querySelector('#' + ex.id + '-' + tid + '-st'); if (st) st.textContent = '● сохранено ' + fmtDate(now);
-    const vd = sec.querySelector('#' + ex.id + '-' + tid + '-vers'); if (vd) { const open = vd.open; vd.innerHTML = versionsHTML(tid); vd.hidden = false; vd.open = open; }
     const es = sec.querySelector('.ex-state'); const rr = state.results[k];
     if (es) { es.className = 'ex-state' + (exDone(ex, rr) ? ' done' : ''); es.textContent = exDone(ex, rr) ? '● выполнено' : '◐ начато'; }
     refreshTabs();
@@ -1463,6 +1474,36 @@ document.addEventListener('pointerdown', e => {
   const upd = () => document.documentElement.style.setProperty('--vvh', Math.round(vv.height) + 'px');
   vv.addEventListener('resize', upd); upd();
 })();
+
+/* ---------- word-by-word undo in answer fields: Ctrl/⌘+Z takes back one word at a time, Ctrl+Y or Ctrl/⌘+Shift+Z brings it back ---------- */
+const undoState = new WeakMap();
+const undoOf = ta => { let u = undoState.get(ta); if (!u) { u = { undo: [], redo: [], kind: null }; undoState.set(ta, u); } return u; };
+const snap = ta => ({ v: ta.value, a: ta.selectionStart, b: ta.selectionEnd });
+document.addEventListener('beforeinput', e => {
+  const ta = e.target; if (!(ta instanceof HTMLTextAreaElement) || !ta.closest('#main, .wsheet')) return;
+  const u = undoOf(ta), kind = e.inputType.startsWith('delete') ? 'del' : 'ins';
+  const before = ta.value.slice(0, ta.selectionStart), removed = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+  // a new step starts: typing switches to deleting (or back), a space / line break / punctuation is typed, something is pasted or replaced
+  const boundary = kind !== u.kind
+    || e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak' || e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop'
+    || (kind === 'ins' && (/[\s.,!?;:]/.test(e.data || '') || removed.length > 0 || (e.data || '').length > 1))
+    || (kind === 'del' && /\s$/.test(before) && e.inputType === 'deleteContentBackward');
+  if (boundary) { u.undo.push(snap(ta)); if (u.undo.length > 300) u.undo.shift(); }
+  u.redo = []; u.kind = kind;
+}, true);
+document.addEventListener('keydown', e => {
+  const ta = e.target; if (!(ta instanceof HTMLTextAreaElement) || !ta.closest('#main, .wsheet') || !(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase(), isUndo = k === 'z' && !e.shiftKey, isRedo = (k === 'z' && e.shiftKey) || (k === 'y' && e.ctrlKey);
+  if (!isUndo && !isRedo) return;
+  e.preventDefault();
+  const u = undoOf(ta); const from = isUndo ? u.undo : u.redo, to = isUndo ? u.redo : u.undo;
+  // skip steps that would not change anything
+  let st = from.pop(); while (st && st.v === ta.value && from.length) st = from.pop();
+  if (!st || st.v === ta.value) return;
+  to.push(snap(ta)); u.kind = null;
+  ta.value = st.v; ta.setSelectionRange(st.a, st.b);
+  ta.dispatchEvent(new Event('input', { bubbles: true }));
+}, true);
 
 /* ---------- back-to-top arrow: appears after scrolling down ---------- */
 (function () {
