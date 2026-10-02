@@ -521,7 +521,7 @@ const TOPICS = [
         ['särkeä + P', 'ныть, болеть', 'minua särkee päätä'], ['sattua + mihin', 'болеть (резко), ушибиться', 'jalkaan sattuu'],
         ['tarttua + mihin', 'заразить, передаться', 'flunssa tarttui minuun'], ['sairastua + mihin', 'заболеть чем', 'sairastuin flunssaan'],
         ['parantua + mistä', 'выздороветь', 'parannun, parannuin; parannuin flunssasta'], ['kärsiä + mistä', 'страдать от', 'kärsin migreenistä'],
-        ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (о рвоте)', 'oksennan, oksensi; oksentelu — рвота'],
+        ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (о рвоте)', 'oksennan, oksensi; oksentelu', 'oksentelu — рвота'],
         ['levätä', 'отдыхать', 'lepään, lepäsi'], ['voida hyvin / huonosti', 'чувствовать себя хорошо / плохо', 'voin huonosti'] ]},
       { name: 'Lääkärissä', cards: [
         ['lääkäri', 'врач'], ['lääke', 'лекарство', 'lääkkeen, lääkettä'], ['särkylääke', 'обезболивающее'], ['resepti', 'рецепт'],
@@ -653,11 +653,11 @@ const TOPICS = [
       groups: [
       { name: 'Asuntotyypit', cards: [
         ['kerrostalo', 'многоквартирный дом'], ['huoneisto', 'квартира (офиц.); апартаменты', 'huoneiston, huoneistoa; huoneisto A12, lomahuoneisto'], ['rivitalo', 'таунхаус (дома в ряд)'], ['paritalo', 'дом на две семьи'],
-        ['omakotitalo', 'частный дом'], ['luhtitalo', 'дом галерейного типа', 'вход в квартиры с открытой галереи'],
-        ['yksiö', 'однокомнатная квартира', 'yksiön, yksiötä; 1h+k — с отдельной кухней, 1h+kk / 1h+tk — кухня в комнате (≈ студия)'], ['kaksio', 'двухкомнатная квартира', 'kaksion, kaksiota'],
+        ['omakotitalo', 'частный дом'], ['luhtitalo', 'дом галерейного типа', '', 'вход в квартиры с открытой галереи'],
+        ['yksiö', 'однокомнатная квартира', 'yksiön, yksiötä; 1h+k, 1h+kk, 1h+tk', '1h+k — с отдельной кухней; 1h+kk / 1h+tk — кухня в комнате (≈ студия)'], ['kaksio', 'двухкомнатная квартира', 'kaksion, kaksiota'],
         ['kolmio', 'трёхкомнатная квартира'], ['vuokra-asunto', 'съёмная квартира'], ['omistusasunto', 'собственная квартира'],
-        ['opiskelija-asunto', 'студенческое жильё', 'любое жильё для студентов (HOAS, TOAS…): yksiö, kaksio или solu'], ['soluasunto', 'квартира на несколько жильцов', 'своя комната, кухня и ванная общие; разг. solu, solukämppä'], ['asuntola', 'общежитие', 'здание с комнатами и общими кухнями и душевыми; opiskelija-asuntola'],
-        ['kalustettu', 'меблированный', 'kalustettu asunto'], ['neliömetri', 'квадратный метр', 'neliömetrin, neliömetriä; m²'], ['neliö', 'квадрат', 'разг. = кв. метр: kaksio, 40 neliötä'] ]},
+        ['opiskelija-asunto', 'студенческое жильё', 'yksiö, kaksio tai solu', 'любое жильё для студентов (HOAS, TOAS…)'], ['soluasunto', 'квартира на несколько жильцов', 'puhekielessä: solu, solukämppä', 'своя комната, кухня и ванная общие'], ['asuntola', 'общежитие', 'opiskelija-asuntola', 'здание с комнатами, кухни и душевые общие'],
+        ['kalustettu', 'меблированный', 'kalustettu asunto'], ['neliömetri', 'квадратный метр', 'neliömetrin, neliömetriä; m²'], ['neliö', 'квадрат', 'kaksio, 40 neliötä', 'в разговоре и объявлениях = кв. метр'] ]},
       { name: 'Asunnon tilat', cards: [
         ['eteinen', 'прихожая', 'eteisen, eteistä'], ['olohuone', 'гостиная', 'olohuoneen, olohuonetta'], ['makuuhuone', 'спальня'],
         ['keittiö', 'кухня'], ['kylpyhuone', 'ванная комната'], ['vessa', 'туалет', 'myös WC'], ['sauna', 'сауна'],
@@ -1440,7 +1440,7 @@ function renderCards(sec, ex, n) {
       return `<button class="card ${state.flips[id] ? 'flipped' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
         <span class="card-in">
           <span class="face front" title="${esc(c[2] || '')}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
-          <span class="face back"><span class="w">${esc(c[1])}</span>
+          <span class="face back"><span class="w">${esc(c[1])}</span>${c[3] ? `<span class="g">${esc(c[3])}</span>` : ''}
             <span class="back-tools">
               <span class="knowbtn" role="button" tabindex="0" data-knowcard="${esc(id)}" data-ex="${ex.id}" title="Я знаю это слово" aria-label="Я знаю это слово">✓ <span class="long">Знаю слово</span><span class="short">Знаю</span></span>
               <span class="addw" role="button" tabindex="0" title="В мой словарь" data-addw="${esc(c[0].split(' + ')[0])}" data-tr="${esc(c[1])}">+</span>
