@@ -76,6 +76,22 @@
 .dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
+.fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+.learned{color:var(--sage-ink);font-size:.8rem}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:640px}
+.mcol{display:grid;gap:8px;align-content:start}
+.mbtn{cursor:pointer;text-align:left;font:inherit;font-weight:700;color:var(--head);background:var(--tile);border:1.5px solid var(--tile-line);border-radius:8px;padding:10px 14px;min-height:46px}
+.mbtn.sel{border-color:var(--sage-ink);box-shadow:0 0 0 3px var(--tape)}
+.mbtn.bad{border-color:var(--bad);background:var(--bad-bg)}
+.mbtn.done{opacity:.45;cursor:default;text-decoration:line-through;background:var(--ok-bg)}
+.tr-q{font-size:1.5rem;font-weight:800;color:var(--head);margin:4px 0;letter-spacing:.02em}
+.tr-q .gap{display:inline-block;min-width:.8em;text-align:center;color:var(--sage-ink);border-bottom:3px solid var(--sage-ink)}
+.tr-res{font-size:1.1rem;margin:12px 0}
+.field.one{flex:0 0 64px;text-align:center;font-size:1.3rem;font-weight:800}
+.pbar{height:10px;border-radius:999px;background:var(--tile);border:1px solid var(--tile-line);overflow:hidden;margin-top:6px}
+.pbar span{display:block;height:100%;background:var(--sage);border-radius:999px}
+.prow{padding:10px 0;border-bottom:1px dashed var(--rule)}
+.prow-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;align-items:baseline}
 .hl-pill{display:inline-block;background:var(--sage);color:var(--on-accent);font:inherit;font-weight:700;padding:1px 12px;border:0;border-radius:999px;white-space:nowrap;cursor:pointer}
 .hl-pill:hover{filter:brightness(.95)}
 
@@ -1122,7 +1138,42 @@ function renderWriting(sec, ex, n) {
   });
 }
 
-function refreshTabs() { renderTopics(); }
+function refreshTabs() { renderTopics(); celebrateNewlyDone(); }
+
+/* ---------- small fireworks when a whole block is finished ---------- */
+function doneBlockIds() {
+  const out = new Set();
+  TOPICS.forEach(t => t.blocks.forEach(b => { const sc = blockScore(t, b, state.results); if (sc.total && sc.done === sc.total) out.add(t.id + ':' + b.id); }));
+  return out;
+}
+function celebrateNewlyDone() {
+  const now = doneBlockIds(); const before = state.doneBlocks;
+  state.doneBlocks = now;
+  if (!before) return;
+  const fresh = [...now].filter(id => !before.has(id)); if (!fresh.length) return;
+  const [tid, bid] = fresh[0].split(':'); const b = TOPICS.find(t => t.id === tid).blocks.find(x => x.id === bid);
+  toast('Раздел «' + b.fi + '» закончен! Hienoa!');
+  fireworks();
+}
+function fireworks() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas'); cv.className = 'fw';
+  const dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr; document.body.appendChild(cv);
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const colors = ['#b9e094', '#f7c2b5', '#d8c8ef', '#fad4a6', '#8cc56a', '#f19bb0'];
+  const parts = [];
+  const burst = (x, y) => { for (let i = 0; i < 46; i++) { const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 3.6;
+    parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, c: colors[i % colors.length], r: 1.6 + Math.random() * 1.8 }); } };
+  [[.3, .32, 0], [.7, .26, 280], [.5, .42, 560]].forEach(([fx, fy, d]) => setTimeout(() => burst(W * fx, H * fy), d));
+  const t0 = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, W, H);
+    parts.forEach(p => { p.vy += .05; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.life -= .012;
+      if (p.life > 0) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); } });
+    if (t - t0 < 2400) requestAnimationFrame(frame); else cv.remove();
+  })(t0);
+}
 
 /* =========================================================
    EXPORT (copy own answers as text)
@@ -1255,8 +1306,9 @@ async function saveDict(words) {
 }
 async function addWord(word, tr) {
   word = word.trim(); tr = tr.trim(); if (!word) return;
+  const old = dictWords().find(w => norm(w.w) === norm(word));
   const words = dictWords().filter(w => norm(w.w) !== norm(word));
-  words.push({ w: word, t: tr, at: new Date().toISOString(), topic: state.topic });
+  words.push({ w: word, t: tr, at: new Date().toISOString(), topic: old ? old.topic : state.topic, ok: old ? old.ok || 0 : 0 });
   const cloud = await saveDict(words);
   toast('«' + word + '» в словаре' + (cloud ? '' : ' (сохранено в браузере)'));
 }
@@ -1347,12 +1399,15 @@ function renderDict() {
       </form>
       ${words.length ? `<input class="field" id="dq" placeholder="Поиск…" value="${esc(q)}" style="width:100%;margin-bottom:10px" autocomplete="off">` : ''}
       ${words.length ? `<div class="scroll"><table class="res-table dict"><thead><tr><th>Sana</th><th>Перевод</th><th></th></tr></thead><tbody>
-        ${shown.map(w => `<tr><td><b>${esc(w.w)}</b></td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
+        ${shown.map(w => `<tr><td><b>${esc(w.w)}</b>${(w.ok || 0) >= LEARNED ? ' <span class="learned" title="Выучено в тренировках">●</span>' : ''}</td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
           <td class="dict-act">${state.dictDel === w.w
             ? `<span class="note">Точно удалить?</span> <button class="btn small main" type="button" data-delyes="${esc(w.w)}">Да</button> <button class="btn small" type="button" data-delno>Нет</button>`
             : `<button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button>`}</td></tr>`).join('')}
       </tbody></table></div>` : '<p class="note">Пока пусто. Выделите любое слово в заданиях и нажмите «+ В словарь» рядом с ним.</p>'}
-    </section>`;
+    </section>
+    <section class="ex" id="trainSec"></section>
+    <section class="ex" id="progSec"></section>`;
+  renderTrain(); renderProgress();
   $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value); renderDict(); };
   const dq = $('#dq'); if (dq) dq.oninput = () => { state.dictQ = dq.value; const pos = dq.selectionStart; renderDict(); const n = $('#dq'); n.focus(); n.setSelectionRange(pos, pos); };
   main.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const w = dictWords().find(x => x.w === b.dataset.edit); openWordSheet(w.w, w.t); });
@@ -1361,6 +1416,148 @@ function renderDict() {
   main.querySelectorAll('[data-delyes]').forEach(b => b.onclick = async () => {
     state.dictDel = null; await saveDict(dictWords().filter(x => x.w !== b.dataset.delyes)); toast('Слово удалено'); renderDict();
   });
+}
+
+/* =========================================================
+   TRAINING (in the dictionary view)
+   Sources: my dictionary, or the cards of a topic.
+   A dictionary word counts as learned after LEARNED correct answers.
+   ========================================================= */
+const LEARNED = 3;
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function trainPool(src) {
+  if (src === 'dict') return dictWords().filter(w => (w.t || '').trim()).map(w => ({ fi: w.w, ru: w.t, dict: true }));
+  const t = TOPICS.find(x => x.id === src); if (!t) return [];
+  const out = [];
+  t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type === 'cards') ex.groups.forEach(g => g.cards.forEach(c => out.push({ fi: c[0].split(' + ')[0], ru: c[1] }))); }));
+  return out;
+}
+const TRAIN_MODES = [['match', 'Yhdistä', 'соедини слово и перевод'], ['write', 'Kirjoita suomeksi', 'напиши слово по-фински'], ['letter', 'Puuttuva kirjain', 'вставь пропущенную букву']];
+function newRound() {
+  const tr = state.train; const pool = shuffle(trainPool(tr.src));
+  if (tr.mode === 'match') {
+    const pick = pool.slice(0, 5);
+    tr.round = { pick, left: shuffle(pick.map((x, i) => i)), right: shuffle(pick.map((x, i) => i)), sel: null, done: [], miss: 0, bad: null };
+  } else {
+    const items = pool.slice(0, 10).map(x => {
+      if (tr.mode !== 'letter') return x;
+      const pos = [...x.fi].map((ch, i) => /\p{L}/u.test(ch) ? i : -1).filter(i => i >= 0);
+      return { ...x, gap: pos[Math.floor(Math.random() * pos.length)] };
+    });
+    tr.round = { items, i: 0, score: 0, answered: false, last: null, log: {} };
+  }
+}
+async function recordTraining(log) {
+  // log: { fi: true/false } for dictionary words
+  const keys = Object.keys(log); if (!keys.length) return;
+  const words = dictWords().map(w => {
+    if (!(w.w in log)) return w;
+    return { ...w, ok: log[w.w] ? (w.ok || 0) + 1 : Math.max(0, (w.ok || 0) - 1) };
+  });
+  await saveDict(words);
+}
+function renderTrain() {
+  const sec = $('#trainSec'); if (!sec) return;
+  const tr = state.train || (state.train = { mode: 'match', src: null, chosen: false, round: null });
+  // until the student picks a source herself: her dictionary once it has a few words, otherwise the topic cards
+  if (!tr.chosen) { const auto = dictWords().filter(w => (w.t || '').trim()).length >= 4 ? 'dict' : state.topic; if (auto !== tr.src) { tr.src = auto; tr.round = null; } }
+  const pool = trainPool(tr.src);
+  const min = tr.mode === 'match' ? 3 : 1;
+  const srcOpts = [['dict', 'Мой словарь']].concat(TOPICS.filter(t => !t.soon).map(t => [t.id, t.fi]));
+  let body = '';
+  if (pool.length < min) {
+    body = `<p class="note">В «Моём словаре» пока мало слов с переводом (нужно хотя бы ${min}). Добавьте слова или выберите тему.</p>`;
+  } else {
+    if (!tr.round) newRound();
+    const R = tr.round;
+    if (tr.mode === 'match') {
+      const finished = R.done.length === R.pick.length;
+      body = `<div class="match">
+        <div class="mcol">${R.left.map(i => `<button type="button" class="mbtn ${R.done.includes(i) ? 'done' : ''} ${R.sel === i ? 'sel' : ''} ${R.bad && R.bad[0] === i ? 'bad' : ''}" data-ml="${i}" ${R.done.includes(i) ? 'disabled' : ''}>${esc(R.pick[i].fi)}</button>`).join('')}</div>
+        <div class="mcol">${R.right.map(i => `<button type="button" class="mbtn ${R.done.includes(i) ? 'done' : ''} ${R.bad && R.bad[1] === i ? 'bad' : ''}" data-mr="${i}" ${R.done.includes(i) ? 'disabled' : ''}>${esc(R.pick[i].ru)}</button>`).join('')}</div></div>
+        ${finished ? `<p class="tr-res">Valmista! Ошибок: <b>${R.miss}</b></p><button class="btn main" type="button" data-again>Новый раунд</button>`
+          : '<p class="note">Нажмите на финское слово, потом на его перевод.</p>'}`;
+    } else {
+      const it = R.items[R.i];
+      if (!it) {
+        body = `<p class="tr-res">Valmista! Правильно: <b>${R.score} из ${R.items.length}</b></p><button class="btn main" type="button" data-again>Новый раунд</button>`;
+      } else {
+        const prompt = tr.mode === 'write'
+          ? `<div class="tr-q">${esc(it.ru)}</div>`
+          : `<div class="tr-q">${[...it.fi].map((ch, i) => i === it.gap ? `<span class="gap">${R.answered ? esc(ch) : '_'}</span>` : esc(ch)).join('')}</div><div class="note">${esc(it.ru)}</div>`;
+        const L = R.last;
+        body = `<div class="note">${R.i + 1} / ${R.items.length}</div>${prompt}
+          <form class="row" id="trForm" style="margin-top:10px">
+            <input class="field ${tr.mode === 'letter' ? 'one' : ''}" id="trIn" autocomplete="off" autocapitalize="off" spellcheck="false" ${tr.mode === 'letter' ? 'maxlength="1"' : ''} ${R.answered ? 'disabled' : ''} placeholder="${tr.mode === 'letter' ? '?' : 'suomeksi'}" value="${esc(L && R.answered ? L.given : '')}">
+            ${R.answered ? '<button class="btn main" type="button" data-next>Дальше →</button>' : '<button class="btn main" type="submit">Tarkista!</button>'}
+          </form>
+          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: <b>' + esc(L.right) + '</b>'}</p>` : ''}`;
+      }
+    }
+  }
+  sec.innerHTML = `<div class="ex-head"><h3>Harjoittele</h3></div>
+    <p class="ex-task">Тренируйте слова. За каждое правильное слово из «Моего словаря» засчитывается шаг; после ${LEARNED} правильных ответов слово отмечается как выученное ●.</p>
+    <div class="row" style="margin-bottom:10px">${TRAIN_MODES.map(([id, fi, ru]) => `<button type="button" class="btn small ${tr.mode === id ? 'main' : ''}" data-mode="${id}" title="${ru}">${fi}</button>`).join('')}</div>
+    <div class="row" style="margin-bottom:14px"><label class="note" for="trSrc">Слова:</label>
+      <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+      <span class="note">${TRAIN_MODES.find(m => m[0] === tr.mode)[2]}</span></div>
+    <div class="tr-area">${body}</div>`;
+  sec.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { tr.mode = b.dataset.mode; tr.round = null; renderTrain(); });
+  $('#trSrc').onchange = e => { tr.src = e.target.value; tr.chosen = true; tr.round = null; renderTrain(); };
+  const again = sec.querySelector('[data-again]'); if (again) again.onclick = () => { tr.round = null; renderTrain(); };
+  if (!tr.round) return;
+  const R = tr.round;
+  if (tr.mode === 'match') {
+    sec.querySelectorAll('[data-ml]').forEach(b => b.onclick = () => { R.sel = +b.dataset.ml; R.bad = null; renderTrain(); });
+    sec.querySelectorAll('[data-mr]').forEach(b => b.onclick = async () => {
+      if (R.sel == null) { toast('Сначала выберите финское слово'); return; }
+      const j = +b.dataset.mr; const it = R.pick[R.sel];
+      if (j === R.sel) { R.done.push(j); R.sel = null; R.bad = null; } else { R.miss++; R.bad = [R.sel, j]; if (it.dict) (R.log = R.log || {})[it.fi] = false; }
+      if (R.done.length === R.pick.length) {
+        const log = {}; R.pick.forEach(x => { if (x.dict) log[x.fi] = !(R.log && R.log[x.fi] === false); });
+        renderTrain(); await recordTraining(log); renderProgress(); return;
+      }
+      renderTrain();
+    });
+  } else if (R.items[R.i]) {
+    const f = $('#trForm'), inp = $('#trIn');
+    if (!R.answered) setTimeout(() => inp.focus(), 30);
+    if (f) f.onsubmit = e => {
+      e.preventDefault(); const it = R.items[R.i]; const given = inp.value;
+      const right = tr.mode === 'write' ? it.fi : [...it.fi][it.gap];
+      const ok = tr.mode === 'write' ? norm(given) === norm(right) : given.trim().toLowerCase() === right.toLowerCase();
+      if (ok) R.score++;
+      if (it.dict) R.log[it.fi] = ok;
+      R.answered = true; R.last = { given, ok, right: tr.mode === 'write' ? right : it.fi };
+      renderTrain(); const nx = sec.querySelector('[data-next]'); if (nx) nx.focus();
+    };
+    const nx = sec.querySelector('[data-next]');
+    if (nx) nx.onclick = async () => {
+      R.i++; R.answered = false; R.last = null;
+      if (R.i >= R.items.length) { renderTrain(); await recordTraining(R.log); renderProgress(); return; }
+      renderTrain();
+    };
+  }
+}
+
+function renderProgress() {
+  const sec = $('#progSec'); if (!sec) return;
+  const dw = dictWords();
+  const bar = (a, b) => `<div class="pbar" role="img" aria-label="${a} из ${b}"><span style="width:${b ? Math.round(a / b * 100) : 0}%"></span></div>`;
+  const rows = TOPICS.filter(t => !t.soon).map(t => {
+    let known = 0, total = 0;
+    t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type !== 'cards') return;
+      total += ex.groups.reduce((a, g) => a + g.cards.length, 0);
+      const r = state.results[key(t.id, ex.id)]; known += ((r && r.known) || []).length; }));
+    const mine = dw.filter(w => w.topic === t.id), mineL = mine.filter(w => (w.ok || 0) >= LEARNED).length;
+    return `<div class="prow"><div class="prow-h"><b>${esc(t.fi)}</b><span class="note">карточки: выучено <b>${known}</b> из ${total}</span></div>${bar(known, total)}
+      <div class="note" style="margin-top:4px">мой словарь: ${mine.length} слов из этой темы, выучено в тренировках ${mineL}</div></div>`;
+  }).join('');
+  const learned = dw.filter(w => (w.ok || 0) >= LEARNED).length;
+  sec.innerHTML = `<div class="ex-head"><h3>Edistyminen</h3></div>
+    <p class="ex-task">Сколько слов выучено по каждой теме.</p>
+    ${rows}
+    <div class="prow"><div class="prow-h"><b>Мой словарь</b><span class="note">выучено <b>${learned}</b> из ${dw.length}</span></div>${bar(learned, dw.length)}</div>`;
 }
 
 /* =========================================================
@@ -1374,6 +1571,7 @@ function renderAll() {
 }
 
 state.results = lsRead().results || {};
+state.doneBlocks = doneBlockIds();
 state.profile = lsRead().profile || null;
 if (!topicObj().blocks.some(b => b.id === state.block)) state.block = topicObj().blocks[0].id;
 renderAll();
@@ -1382,6 +1580,7 @@ async function loadMine() {
   const [p, res] = await Promise.all([Store.getProfile(), Store.myResults()]);
   state.profile = p; state.results = res;
   state.feedback = Store.online() ? await Store.feedbackFor(Store.uid) : {};
+  state.doneBlocks = doneBlockIds();
   renderAll();
 }
 Store.ready = Store.init();
