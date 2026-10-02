@@ -193,12 +193,14 @@ a{color:var(--sage-ink)}
 #timerRow .timer{color:#7a4a0c;font-weight:700}
 #timerRow .btn{border-color:#c7823a;color:#5c3712}
 #timerRow .btn.main{background:#d99a3a;border-color:#d99a3a;color:#fff}
+/* unsaved changes: the save button turns timer-orange */
+.btn.main.unsaved{background:#d99a3a;border-color:#d99a3a;color:#fff}
 /* before it starts there is only the start button, without the bar's own frame around it */
 #timerRow.idle{background:none;border:0;box-shadow:none;padding:0}
 #timerRow.idle .btn{background:#ffe7b8}
 /* 'part finished': part of the title itself, same handwriting and colour */
 .block-done{font:inherit;color:inherit}
-.btn.unsaved{background:#d99a3a;border-color:#d99a3a;color:#fff}
+
 .versions{margin:6px 0 4px;font-size:.92rem}
 .versions summary{cursor:pointer;color:var(--sage-ink);font-weight:700}
 .vlist{margin:6px 0;padding-left:1.4em;display:grid;gap:8px}
@@ -297,7 +299,10 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .opts{display:grid;gap:4px}
 .opt{display:flex;gap:8px;align-items:flex-start;cursor:pointer;padding:3px 6px;border-radius:6px}
 .opt input{margin-top:6px;accent-color:var(--sage-ink)}
-.opt.ok{background:var(--ok-bg)} .opt.bad{background:var(--bad-bg)}
+.opt.ok,.opt.right{background:var(--ok-bg)} .opt.bad{background:var(--bad-bg)}
+.hide-answers .opt.right{background:none}
+.hide-answers .spoiler:not(.open){filter:blur(6px);cursor:pointer;user-select:none;border-radius:4px;background:var(--tile)}
+.spoiler{transition:filter .2s}
 .tf{display:flex;gap:14px;flex-wrap:wrap}
 textarea{width:100%;min-height:90px;border:1.5px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--sheet);line-height:1.55;resize:vertical;
   background-image:linear-gradient(transparent calc(1.55em - 1px),var(--rule) 1px);background-size:100% 1.55em;background-attachment:local;background-position:0 10px}
@@ -1017,13 +1022,14 @@ function renderLearn() {
   const main = $('#main');
   main.innerHTML = `
     <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
-      <div class="row"><button class="btn" type="button" data-allfold="1">Свернуть всё</button><button class="btn" type="button" data-allfold="0">Развернуть всё</button></div></div>
+      <div class="row"><button class="btn" type="button" id="ansToggle">${ansLabel()}</button><button class="btn" type="button" data-allfold="1">Свернуть всё</button><button class="btn" type="button" data-allfold="0">Развернуть всё</button></div></div>
     ${hideHelp('tip') ? '' : `<div class="help-note tip-note"><p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ В словарь» рядом с ним, чтобы добавить его в свой словарь.</p>
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}<span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" aria-label="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}> ✓</span></span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
+  $('#ansToggle').onclick = () => { setAnswerSetting(ansSetting() === 'no' ? 'yes' : 'no'); toast(ansSetting() === 'no' ? 'Ответы скрыты: нажмите на размытое, чтобы увидеть' : 'Ответы видны'); };
   main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
     const fold = b.dataset.allfold === '1';
     t.blocks.forEach(bl => { setFold('b:' + bl.id, fold); bl.exercises.forEach(ex => setFold('e:' + ex.id, false)); });
@@ -1186,7 +1192,7 @@ function renderInput(sec, ex, n) {
       const fb = sec.querySelector('#' + ex.id + '-fb-' + i);
       fb.className = 'fb ' + (ok ? 'ok' : 'bad');
       fb.innerHTML = ok ? '✓ верно' + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '')
-        : `✗ правильно: <b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
+        : `✗ правильно: ${spoil(`<b>${esc(it.a.join(' / '))}</b>`)}` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
       answers.push({ p: it.box || (it.t + (it.h ? ' (' + it.h + ')' : '')), a: v, ok, c: it.a.join(' / ') });
     });
     if (save) { await submit(ex, { score, max: ex.items.length, answers, raw }); renderInput(sec, ex, n); refreshTabs(); }
@@ -1274,16 +1280,17 @@ function renderReading(sec, ex, n) {
         const hit = Math.min(need, q.keys.filter(alts => alts.some(a => nv.includes(norm(a)))).length);
         score += hit; max += need;
         fb.className = 'fb ' + (hit === need ? 'ok' : 'wait');
-        fb.innerHTML = `${hit}/${need} по ключевым словам · пример ответа: <i>${esc(q.model)}</i> <span class="why">· преподаватель проверит ответ</span>`;
+        fb.innerHTML = `${hit}/${need} по ключевым словам · пример ответа: ${spoil(`<i>${esc(q.model)}</i>`)} <span class="why">· преподаватель проверит ответ</span>`;
         answers.push({ p: q.q, a: v, ok: hit === need, c: q.model, open: true });
         return;
       }
       max++;
       const correct = q.kind === 'mc' ? String(q.answer) : (q.answer ? '1' : '0');
       const ok = v === correct; if (ok) score++;
-      box.querySelectorAll('.opt').forEach(o => { o.classList.remove('ok', 'bad'); if (o.dataset.oi === correct) o.classList.add('ok'); else if (o.dataset.oi === v) o.classList.add('bad'); });
-      fb.className = 'fb ' + (ok ? 'ok' : 'bad'); fb.textContent = ok ? '✓ oikein' : (v == null ? '✗ нет ответа' : '✗ väärin');
+      box.querySelectorAll('.opt').forEach(o => { o.classList.remove('ok', 'bad', 'right'); if (o.dataset.oi === correct) o.classList.add(o.dataset.oi === v ? 'ok' : 'right'); else if (o.dataset.oi === v) o.classList.add('bad'); });
       const label = y => q.kind === 'mc' ? (y == null ? '—' : 'abc'[y] + ') ' + q.options[y]) : (y == null ? '—' : y === '1' ? 'Oikein' : 'Väärin');
+      fb.className = 'fb ' + (ok ? 'ok' : 'bad');
+      fb.innerHTML = ok ? '✓ oikein' : (v == null ? '✗ нет ответа' : '✗ väärin') + ' · правильно: ' + spoil(esc(label(correct)));
       answers.push({ p: q.q, a: label(v), ok, c: label(correct) });
     });
     return { score, max, answers };
@@ -1406,6 +1413,29 @@ function renderWriting(sec, ex, n) {
     refreshTabs();
   });
 }
+
+/* ---------- "show answers?" setting: with 'no' only right/wrong is shown, the answer itself is blurred until clicked ---------- */
+const ANS_KEY = LS_KEY + ':showAnswers';
+const ansSetting = () => { try { return localStorage.getItem(ANS_KEY); } catch (e) { return null; } };
+const spoil = html => `<span class="spoiler" tabindex="0" title="Нажмите, чтобы увидеть ответ">${html}</span>`;
+function applyAnswerSetting() { document.documentElement.classList.toggle('hide-answers', ansSetting() === 'no'); }
+function setAnswerSetting(v) { try { localStorage.setItem(ANS_KEY, v); } catch (e) {} applyAnswerSetting(); const b = document.getElementById('ansToggle'); if (b) b.textContent = ansLabel(); }
+const ansLabel = () => ansSetting() === 'no' ? 'Ответы: скрыты' : 'Ответы: видны';
+document.addEventListener('click', e => { const sp = e.target.closest('.spoiler'); if (sp && document.documentElement.classList.contains('hide-answers')) sp.classList.toggle('open'); });
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('spoiler')) { e.preventDefault(); e.target.classList.toggle('open'); } });
+function askAnswerSetting() {
+  if (ansSetting() || Store.isOwner) return;
+  let m = document.getElementById('ansModal');
+  if (!m) { m = document.createElement('div'); m.id = 'ansModal'; m.className = 'modal'; document.body.appendChild(m); }
+  m.hidden = false;
+  m.innerHTML = `<div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="amT">
+    <h3 id="amT">Показывать правильные ответы?</h3>
+    <p>Если выбрать «Нет», после проверки будет видно только, верно или неверно. Правильный ответ будет размыт: нажмите на него, чтобы открыть.</p>
+    <p class="note">Изменить можно в любой момент кнопкой «Ответы» над заданиями.</p>
+    <div class="row" style="margin-top:12px"><button class="btn main" type="button" data-ans="yes">Да</button><button class="btn" type="button" data-ans="no">Нет</button></div></div>`;
+  m.querySelectorAll('[data-ans]').forEach(b => b.onclick = () => { setAnswerSetting(b.dataset.ans); m.hidden = true; });
+}
+applyAnswerSetting();
 
 function refreshTabs() {
   renderTopics();
@@ -2270,14 +2300,14 @@ function renderTrain() {
       } else {
         const prompt = tr.mode === 'write'
           ? `<div class="tr-q">${esc(it.ru)}</div>`
-          : `<div class="tr-q">${[...it.fi].map((ch, i) => i === it.gap ? `<span class="gap">${R.answered ? esc(ch) : '_'}</span>` : esc(ch)).join('')}</div><div class="note">${esc(it.ru)}</div>`;
+          : `<div class="tr-q">${[...it.fi].map((ch, i) => i === it.gap ? `<span class="gap">${R.answered ? (R.last && !R.last.ok ? spoil(esc(ch)) : esc(ch)) : '_'}</span>` : esc(ch)).join('')}</div><div class="note">${esc(it.ru)}</div>`;
         const L = R.last;
         body = `<div class="note">${R.i + 1} / ${R.items.length}</div>${prompt}
           <form class="row" id="trForm" style="margin-top:10px">
             <input class="field ${tr.mode === 'letter' ? 'one' : ''}" id="trIn" autocomplete="off" autocapitalize="off" spellcheck="false" ${tr.mode === 'letter' ? 'maxlength="1"' : ''} ${R.answered ? 'disabled' : ''} placeholder="${tr.mode === 'letter' ? '?' : 'suomeksi'}" value="${esc(L && R.answered ? L.given : '')}">
             ${R.answered ? '<button class="btn main" type="button" data-next>Дальше →</button>' : '<button class="btn main" type="submit">Tarkista!</button>'}
           </form>
-          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: <b>' + esc(L.right) + '</b>' + (it.dict ? ' <span class="why">· слово вернулось к изучению</span>' : '')}</p>` : ''}`;
+          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: ' + spoil('<b>' + esc(L.right) + '</b>') + (it.dict ? ' <span class="why">· слово вернулось к изучению</span>' : '')}</p>` : ''}`;
       }
     }
   }
@@ -2543,6 +2573,6 @@ async function loadMine() {
   renderAll();
 }
 Store.ready = Store.init();
-Store.ready.then(loadMine).then(() => Store.flushPending()).then(async () => { if (Store.isOwner) { await loadTeacherChats(); renderWho(); } });
+Store.ready.then(loadMine).then(() => { askAnswerSetting(); return Store.flushPending(); }).then(async () => { if (Store.isOwner) { await loadTeacherChats(); renderWho(); } });
 window.addEventListener('online', () => Store.flushPending());
 </script>
