@@ -193,6 +193,7 @@ a{color:var(--sage-ink)}
 #timerRow .timer{color:#7a4a0c;font-weight:700}
 #timerRow .btn{border-color:#c7823a;color:#5c3712}
 #timerRow .btn.main{background:#d99a3a;border-color:#d99a3a;color:#fff}
+.block-done{font-size:2.2rem;font-weight:800;color:var(--sage-ink);line-height:1;margin:0 2px}
 .ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
 .ex-state.done{color:var(--ok)}
@@ -1012,6 +1013,7 @@ function renderLearn() {
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
+      <span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}>✔</span>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
   main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
@@ -1372,7 +1374,11 @@ function renderWriting(sec, ex, n) {
   });
 }
 
-function refreshTabs() { renderTopics(); }
+function refreshTabs() {
+  renderTopics();
+  const t = topicObj();
+  t.blocks.forEach(bl => { const el = document.querySelector(`[data-bdone="${bl.id}"]`); if (!el) return; const sc = blockScore(t, bl, state.results); el.hidden = !(sc.total && sc.done === sc.total); });
+}
 
 /* ---------- a tap outside an open sheet closes it ---------- */
 document.addEventListener('pointerdown', e => {
