@@ -101,6 +101,8 @@
 .hist-score{font-weight:800;font-variant-numeric:tabular-nums}
 .hist-score.ok{color:var(--ok)}.hist-score.mid{color:var(--wait)}.hist-score.low{color:var(--bad)}
 @media (max-width:560px){.hist-row{grid-template-columns:1fr auto}.hist-meta{text-align:left;grid-column:1}.hist-row .btn{grid-column:2;grid-row:1 / span 2}}
+.pastebox{margin-top:8px;padding:14px;border:2px dashed var(--sage-ink);border-radius:10px;background:var(--tile);color:var(--ink-soft);font-size:.92rem;text-align:center;cursor:text;max-width:420px}
+.pastebox:focus{outline:none;border-style:solid;color:var(--ink)}
 .av-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:10px;border:1.5px dashed var(--sage-ink);border-radius:10px;width:fit-content;max-width:100%}
 .av-menu label.btn{display:inline-flex;align-items:center}
 .help-note{margin:0 0 14px}
@@ -348,7 +350,23 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .addsel [data-sel="dict"]{background:var(--sage);color:var(--on-accent);border:2px solid var(--sage-ink)}
 .addsel [data-sel="note"]{background:#ffd7a6;color:#5c3712;border:2px solid #c7823a}
 .addsel button:hover{filter:brightness(.96)}
-mark.hl{color:#24261f;border-radius:3px;padding:0 1px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+mark.hl{background:transparent;color:inherit;border-radius:3px;padding:0 1px;cursor:pointer;box-decoration-break:clone;-webkit-box-decoration-break:clone;text-decoration-skip-ink:none;text-underline-offset:3px}
+mark.hl-fill{background:var(--hl);color:#24261f}
+mark.hl-under{text-decoration:underline solid var(--hl-ink) 2px}
+mark.hl-double{text-decoration:underline double var(--hl-ink) 2px;text-underline-offset:2px}
+mark.hl-wavy{text-decoration:underline wavy var(--hl-ink) 1.5px}
+mark.hl-dashed{text-decoration:underline dashed var(--hl-ink) 2px}
+mark.hl-dotdash{padding-bottom:3px;background:repeating-linear-gradient(90deg,var(--hl-ink) 0 7px,transparent 7px 10px,var(--hl-ink) 10px 12px,transparent 12px 15px) left bottom / 100% 2px no-repeat}
+.hlstyles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hlst{display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;font-size:.78rem;color:var(--ink-soft);background:var(--paper);border:1.5px solid var(--tile-line);border-radius:8px;padding:6px 4px;cursor:pointer}
+.hlst mark{font-size:1.05rem;font-weight:700;pointer-events:none}
+.hlst.on{border-color:var(--sage-ink);box-shadow:0 0 0 2px var(--tape);color:var(--ink)}
+.nquote.plain{background:var(--paper)}
+.notepop{position:absolute;z-index:26;max-width:min(340px,calc(100vw - 16px));text-align:left;font:inherit;color:var(--ink);background:var(--sheet);border:2px solid var(--hl-ink,var(--sage-ink));border-color:var(--sage-ink);border-radius:14px;padding:10px 14px;box-shadow:0 8px 24px rgba(40,40,30,.25);cursor:pointer;display:grid;gap:4px}
+.notepop::after{content:"";position:absolute;left:var(--tail,50%);bottom:-8px;width:12px;height:12px;margin-left:-6px;background:var(--sheet);border-right:2px solid var(--sage-ink);border-bottom:2px solid var(--sage-ink);transform:rotate(45deg)}
+.notepop.below::after{bottom:auto;top:-8px;transform:rotate(225deg)}
+.notepop .np-text{white-space:pre-wrap;font-weight:600}
+.notepop .np-meta{font-size:.78rem;color:var(--ink-soft)}
 mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
 .note-row{padding:12px 0;border-bottom:1px dashed var(--rule);display:grid;gap:4px}
 .note-text{white-space:pre-wrap}
@@ -356,15 +374,15 @@ mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
 .thread{display:grid;gap:10px;max-height:46vh;overflow:auto;padding:4px 2px}
 .thread-card .thread{max-height:none}
 .bubble{display:flex;gap:8px;align-items:flex-start;max-width:92%}
-.bubble.from-s{margin-left:auto;flex-direction:row-reverse}
+.bubble.mine{margin-left:auto;flex-direction:row-reverse}
 .bubble-in{background:var(--tile);border:1px solid var(--tile-line);border-radius:12px;padding:6px 12px;min-width:0}
-.bubble.from-t .bubble-in{background:var(--ok-bg);border-color:var(--sage)}
+.bubble.theirs .bubble-in{background:var(--ok-bg);border-color:var(--sage)}
 .bubble-t{white-space:pre-wrap;overflow-wrap:anywhere}
 .bubble-h{font-size:.85rem}
 .thread-card{padding:14px 0;border-bottom:1px dashed var(--rule);display:grid;gap:8px}
 .thread-top{display:flex;gap:10px;align-items:center}
 .reply-form textarea{flex:1 1 220px;min-height:40px}
-.chat-sheet{max-height:calc(100vh - 24px);overflow:auto}
+.page-thread{max-height:none;margin-top:12px}
 .chat-row{display:grid;gap:4px;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:0;border-bottom:1px dashed var(--rule);padding:12px 0;cursor:pointer}
 .chat-row:hover .chat-last{color:var(--head)}
 .chat-row .newb{justify-self:start;margin-left:0}
@@ -817,7 +835,7 @@ function renderWho() {
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
   const tcb = $('#tchatBtn'); if (tcb) tcb.onclick = () => { state.view = state.view === 'tchat' ? 'learn' : 'tchat'; renderAll(); window.scrollTo(0, 0); };
-  const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
+  const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
@@ -1249,6 +1267,12 @@ function renderWriting(sec, ex, n) {
 
 function refreshTabs() { renderTopics(); celebrateNewlyDone(); }
 
+/* ---------- a tap outside an open sheet closes it ---------- */
+document.addEventListener('pointerdown', e => {
+  const sh = $('#wsheet');
+  if (sh && !sh.hidden && !e.target.closest('.wsheet-in')) sh.hidden = true;
+}, true);
+
 /* ---------- keep sheets inside the part of the screen the keyboard leaves free ---------- */
 (function () {
   const vv = window.visualViewport; if (!vv) return;
@@ -1392,10 +1416,10 @@ function renderTeacherChats(list, all, chats) {
     ${who.length > 1 ? `<div class="row" style="margin-bottom:6px"><label class="note" for="tcF">Ученик:</label><select class="field" id="tcF" style="flex:0 1 auto"><option value="">Все</option>${who.map(u => `<option value="${u}" ${u === filt ? 'selected' : ''}>${esc(names[u] || 'Ученик')}</option>`).join('')}</select></div>` : ''}
     ${shownRows.length ? shownRows.map(({ uid, n, msgs, prof, lastS }) => `<div class="thread-card" data-uid="${uid}" data-nid="${esc(n.id)}">
       <div class="thread-top">${avatarHTML(34, prof)}<div><b>${esc(names[uid] || 'Ученик')}</b>${!seen || lastS > seen ? ' <span class="newb">новый</span>' : ''}<div class="note">${esc(exTitleOf(n.ex))}</div></div></div>
-      <blockquote class="nquote" style="background:${esc(n.color || '#fff17a')}">${esc(n.exact)}</blockquote>
-      <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof })).join('')}</div>
+      <blockquote class="nquote plain"><mark class="hl hl-${n.style || 'fill'}" style="${hlVars(n)}">${esc(n.exact)}</mark></blockquote>
+      <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof }, m.from === 't')).join('')}</div>
       <form class="row reply-form"><textarea class="field" rows="1" placeholder="Ответить…" required></textarea><button class="btn small main" type="submit">Ответить</button></form>
-    </div>`).join('') : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «💬 Комментарий».</p>'}`;
+    </div>`).join('') : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «Заметка».</p>'}`;
   sec.querySelectorAll('.thread-card').forEach(card => card.querySelector('form').onsubmit = async e => {
     e.preventDefault(); const ta = card.querySelector('textarea'); const text = ta.value.trim(); if (!text) return;
     const uid = card.dataset.uid, nid = card.dataset.nid;
@@ -1548,7 +1572,7 @@ window.addEventListener('resize', () => { const b = $('#addSel'); if (b && !b.hi
 (function mountSelBar() {
   const bar = document.createElement('div');
   bar.id = 'addSel'; bar.className = 'addsel'; bar.hidden = true;
-  bar.innerHTML = '<button type="button" data-sel="dict">+ В словарь: <b></b></button><button type="button" data-sel="note">💬 Комментарий</button>';
+  bar.innerHTML = '<button type="button" data-sel="dict">+ В словарь: <b></b></button><button type="button" data-sel="note">Заметка</button>';
   bar.addEventListener('pointerdown', e => e.preventDefault()); // keep the selection while tapping
   bar.querySelector('[data-sel="dict"]').onclick = () => { const w = selState.text; bar.hidden = true; if (w) openWordSheet(w); };
   bar.querySelector('[data-sel="note"]').onclick = () => { const a = selState.anchor; bar.hidden = true; if (a) openNoteSheet(null, a); };
@@ -1562,6 +1586,11 @@ window.addEventListener('resize', () => { const b = $('#addSel'); if (b && !b.hi
    ========================================================= */
 const NOTE_KEY = '_merkinnat';
 const MARKERS = ['#fff17a', '#ffc2d4', '#c6eb9f', '#b5ddf5', '#ddcdf5', '#ffd3a3'];
+// a darker partner of each marker colour, for lines (underlines are thin, pastel would be invisible)
+const MARKER_INK = { '#fff17a': '#c49a00', '#ffc2d4': '#d0517a', '#c6eb9f': '#4f8f22', '#b5ddf5': '#2f82c0', '#ddcdf5': '#8456c4', '#ffd3a3': '#d27a1f' };
+// line styles as in Russian sentence parsing: подлежащее ─, сказуемое ═, дополнение ┄, определение ∿, обстоятельство ─·─
+const HL_STYLES = [['fill', 'Заливка'], ['under', 'Подчёркивание'], ['double', 'Двойное'], ['wavy', 'Волнистая'], ['dashed', 'Пунктир'], ['dotdash', 'Точка с тире']];
+const hlVars = n => `--hl:${n.color || MARKERS[0]};--hl-ink:${MARKER_INK[n.color] || '#c49a00'}`;
 const notes = () => ((state.results[NOTE_KEY] || {}).items || []);
 function textNodesOf(root) {
   const out = []; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null); let n;
@@ -1595,7 +1624,7 @@ function wrapRange(sec, [a, b], n) {
     const from = Math.max(a, s0) - s0, to = Math.min(b, s1) - s0;
     if (t.parentElement.closest('.hl, button, textarea, input, select')) continue;
     const mid = t.splitText(from); mid.splitText(to - from);
-    const m = document.createElement('mark'); m.className = 'hl'; m.dataset.note = n.id; m.style.background = n.color;
+    const m = document.createElement('mark'); m.className = 'hl hl-' + (n.style || 'fill'); m.dataset.note = n.id; m.style.cssText = hlVars(n);
     m.title = n.note ? n.note : 'Комментарий'; m.tabIndex = 0;
     mid.parentNode.insertBefore(m, mid); m.appendChild(mid);
   }
@@ -1626,24 +1655,77 @@ function exTitleOf(exId) {
   for (const t of TOPICS) for (const b of t.blocks) { const i = b.exercises.findIndex(e => e.id === exId); if (i >= 0) return `${b.fi} · Tehtävä ${i + 1} · ${b.exercises[i].title}`; }
   return '';
 }
+function showNotePop(m) {
+  const n = notes().find(x => x.id === m.dataset.note); if (!n) return;
+  let pop = $('#notePop');
+  if (!pop) { pop = document.createElement('button'); pop.type = 'button'; pop.id = 'notePop'; pop.className = 'notepop'; document.body.appendChild(pop); }
+  const replies = n.sent ? threadOf(n, myChat()).filter(x => x.from === 't').length : 0, unread = n.sent ? unreadOf(n) : 0;
+  pop.innerHTML = `<span class="np-text">${esc(n.note || 'Заметка без текста')}</span>
+    <span class="np-meta">${n.sent ? 'отправлено преподавателю' + (replies ? ` · ответов: ${replies}` : '') + (unread ? ` · <b>новых: ${unread}</b>` : '') : 'только для вас'} · нажмите, чтобы ${n.sent ? 'открыть переписку' : 'изменить'}</span>`;
+  pop.dataset.note = n.id; pop.hidden = false; pop.style.setProperty('--hl', n.color || MARKERS[0]);
+  const rect = m.getBoundingClientRect(), bw = pop.offsetWidth, bh = pop.offsetHeight;
+  let left = Math.max(8, Math.min(rect.left + rect.width / 2 - bw / 2, document.documentElement.clientWidth - bw - 8));
+  let top = rect.top - bh - 12, below = top < 8; if (below) top = rect.bottom + 12;
+  pop.classList.toggle('below', below);
+  pop.style.left = (left + scrollX) + 'px'; pop.style.top = (top + scrollY) + 'px';
+  pop.style.setProperty('--tail', (rect.left + rect.width / 2 - left) + 'px');
+  pop.onclick = () => { pop.hidden = true; openNoteSheet(n.id); };
+}
 document.addEventListener('click', e => {
+  const pop = $('#notePop');
+  if (pop && !pop.hidden && !e.target.closest('#notePop')) pop.hidden = true;
   const m = e.target.closest('.hl[data-note]'); if (!m) return;
-  e.preventDefault(); openNoteSheet(m.dataset.note);
+  e.preventDefault(); showNotePop(m);
 });
+window.addEventListener('resize', () => { const p = $('#notePop'); if (p) p.hidden = true; });
 // a thread = the student's messages (kept in her note) + the teacher's replies (kept in feedback "_chat")
 function threadOf(n, chat) {
   const mine = (n.msgs && n.msgs.length ? n.msgs : (n.sent ? [{ text: n.note, at: n.sentAt }] : [])).map(m => ({ ...m, from: 's' }));
   const theirs = (((chat || {}).threads || {})[n.id] || []).map(m => ({ ...m, from: 't' }));
   return mine.concat(theirs).sort((a, b) => (a.at < b.at ? -1 : 1));
 }
-function bubbleHTML(m, who) {
-  return `<div class="bubble ${m.from === 't' ? 'from-t' : 'from-s'}">${avatarHTML(28, who.av)}<div class="bubble-in"><div class="bubble-h"><b>${esc(who.name)}</b> <span class="note">${fmtDate(m.at)}</span></div><div class="bubble-t">${esc(m.text || '')}</div></div></div>`;
+// mine = the viewer's own message: on the right, like in any messenger
+function bubbleHTML(m, who, mine) {
+  return `<div class="bubble ${mine ? 'mine' : 'theirs'}">${avatarHTML(28, who.av)}<div class="bubble-in"><div class="bubble-h"><b>${esc(who.name)}</b> <span class="note">${fmtDate(m.at)}</span></div><div class="bubble-t">${esc(m.text || '')}</div></div></div>`;
 }
 const myChat = () => state.feedback._chat || {};
 function unreadOf(n) { return ((myChat().threads || {})[n.id] || []).filter(m => !n.readAt || m.at > n.readAt).length; }
 const unreadTotal = () => notes().filter(n => n.sent).reduce((a, n) => a + unreadOf(n), 0);
+function renderChatThread(main, id) {
+  const old = notes().find(x => x.id === id); if (!old) { state.chatOpen = null; return renderChats(); }
+  const t = myChat().teacher || {}; const me = { name: 'Вы', av: profDoc() };
+  const msgs = threadOf(old, myChat());
+  main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Чат с преподавателем</span></h1>
+    <p class="note"><button class="hl-pill" type="button" id="toList">← все переписки</button></p></div>
+    <section class="ex">
+      <div class="thread-top">${avatarHTML(40, t)}<div><b>${esc(t.name || 'Преподаватель')}</b><div class="note">${esc(exTitleOf(old.ex))}</div></div></div>
+      <blockquote class="nquote plain" style="margin-top:10px"><mark class="hl hl-${old.style || 'fill'}" style="${hlVars(old)}">${esc(old.exact)}</mark></blockquote>
+      <div class="thread page-thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: t.name || 'Преподаватель', av: t } : me, m.from === 's')).join('')}</div>
+      ${msgs.some(m => m.from === 't') ? '' : '<p class="note">Преподаватель ещё не ответил.</p>'}
+      <form class="row" id="cform" style="margin-top:12px"><textarea class="field" id="ctext" rows="2" placeholder="Написать сообщение…" required style="flex:1 1 220px"></textarea><button class="btn main" type="submit">Отправить</button></form>
+      <div class="row" style="margin-top:12px"><button class="btn small" type="button" data-goto="${esc((TOPICS.find(x => x.blocks.some(b => b.exercises.some(e => e.id === old.ex))) || TOPICS[0]).id)}:${esc(old.ex)}">Открыть задание</button>
+        <button class="btn small" type="button" id="ndel">Удалить заметку</button></div>
+    </section>`;
+  if (unreadOf(old)) { const n2 = { ...old, readAt: new Date().toISOString() }; saveNotes(notes().map(x => x.id === old.id ? n2 : x)).then(() => renderWho()); }
+  $('#toList').onclick = () => { state.chatOpen = null; renderChats(); renderWho(); window.scrollTo(0, 0); };
+  main.querySelector('[data-goto]').onclick = e => { const [tp, ex] = e.currentTarget.dataset.goto.split(':'); state.chatOpen = null; goToExercise(tp, ex); };
+  $('#cform').onsubmit = async e => {
+    e.preventDefault(); const text = $('#ctext').value.trim(); if (!text) return;
+    const now = new Date().toISOString(); const cur = notes().find(x => x.id === old.id) || old;
+    const msgs0 = cur.msgs && cur.msgs.length ? cur.msgs : [{ text: cur.note, at: cur.sentAt }];
+    const n2 = { ...cur, msgs: msgs0.concat([{ text, at: now }]), readAt: now };
+    const cloud = await saveNotes(notes().map(x => x.id === cur.id ? n2 : x));
+    toast(cloud ? 'Сообщение отправлено' : 'Сообщение сохранено и отправится, когда появится интернет');
+    renderChatThread(main, id);
+  };
+  const del = $('#ndel'); del.onclick = async () => {
+    if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
+    await saveNotes(notes().filter(x => x.id !== old.id)); state.chatOpen = null; toast('Заметка удалена'); renderAll();
+  };
+}
 function renderChats() {
   const main = $('#main');
+  if (state.chatOpen) return renderChatThread(main, state.chatOpen);
   const list = notes().filter(n => n.sent).map(n => ({ n, msgs: threadOf(n, myChat()) })).sort((a, b) => {
     const la = a.msgs.length ? a.msgs[a.msgs.length - 1].at : a.n.at, lb = b.msgs.length ? b.msgs[b.msgs.length - 1].at : b.n.at; return la < lb ? 1 : -1; });
   const t = myChat().teacher;
@@ -1656,8 +1738,8 @@ function renderChats() {
         <span class="note">${esc(exTitleOf(n.ex))}</span>
         <span class="chat-last">${last.from === 't' ? '<b>' + esc((t && t.name) || 'Преподаватель') + ':</b> ' : '<b>Вы:</b> '}${esc((last.text || '').slice(0, 120))}</span>
         ${u ? `<span class="newb">${u} новых</span>` : ''}</button>`; }).join('')
-      : '<p class="note">Пока пусто. Выделите текст в любом задании, нажмите «💬 Комментарий» и «Отправить преподавателю».</p>'}</section>`;
-  main.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openNoteSheet(b.dataset.open));
+      : '<p class="note">Пока пусто. Выделите текст в любом задании, нажмите «Заметка» и «Отправить преподавателю».</p>'}</section>`;
+  main.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { state.chatOpen = b.dataset.open; renderChats(); window.scrollTo(0, 0); });
 }
 
 function openNoteSheet(id, anchor) {
@@ -1667,48 +1749,22 @@ function openNoteSheet(id, anchor) {
   const a = old || anchor; if (!a) return;
   let lastColor = MARKERS[0]; try { lastColor = localStorage.getItem(LS_KEY + ':marker') || MARKERS[0]; } catch (e) {}
   let color = old ? old.color : lastColor;
+  let lastStyle = 'fill'; try { lastStyle = localStorage.getItem(LS_KEY + ':hlstyle') || 'fill'; } catch (e) {}
+  let hst = old ? (old.style || 'fill') : lastStyle;
   sh.hidden = false;
   if (old && old.sent) {
-    // a sent comment is a chat with the teacher
-    const t = myChat().teacher || {}; const me = { name: 'Вы', av: profDoc() };
-    const msgs = threadOf(old, myChat());
-    sh.innerHTML = `<form class="wsheet-in chat-sheet" id="cform">
-      <div class="row" style="justify-content:space-between"><h3>Чат с преподавателем</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
-      <blockquote class="nquote" style="background:${esc(old.color)}">${esc(old.exact)}</blockquote>
-      <div class="note">${esc(exTitleOf(old.ex))}</div>
-      <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: t.name || 'Преподаватель', av: t } : me)).join('')}</div>
-      ${msgs.some(m => m.from === 't') ? '' : '<p class="note">Преподаватель ещё не ответил.</p>'}
-      <div class="row"><textarea class="field" id="ctext" rows="2" placeholder="Написать сообщение…" required style="flex:1 1 200px"></textarea><button class="btn main" type="submit">Отправить</button></div>
-      <div class="row"><button class="btn small" type="button" id="ndel">Удалить комментарий</button></div>
-    </form>`;
-    try { window.getSelection().removeAllRanges(); } catch (e) {}
-    const close = () => { sh.hidden = true; if (state.view === 'chat') renderChats(); renderWho(); };
-    $('#nclose').onclick = close;
-    const th = sh.querySelector('.thread'); th.scrollTop = th.scrollHeight;
-    if (unreadOf(old)) { const n2 = { ...old, readAt: new Date().toISOString() }; saveNotes(notes().map(x => x.id === old.id ? n2 : x)).then(() => renderWho()); }
-    $('#cform').onsubmit = async e => {
-      e.preventDefault(); const text = $('#ctext').value.trim(); if (!text) return;
-      const now = new Date().toISOString(); const cur = notes().find(x => x.id === old.id) || old;
-      const msgs0 = cur.msgs && cur.msgs.length ? cur.msgs : [{ text: cur.note, at: cur.sentAt }];
-      const n2 = { ...cur, msgs: msgs0.concat([{ text, at: now }]), readAt: now };
-      const cloud = await saveNotes(notes().map(x => x.id === cur.id ? n2 : x));
-      toast(cloud ? 'Сообщение отправлено' : 'Сообщение сохранено и отправится, когда появится интернет');
-      openNoteSheet(old.id);
-    };
-    const del = $('#ndel'); del.onclick = async () => {
-      if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
-      clearHighlight(old.id); await saveNotes(notes().filter(x => x.id !== old.id)); close(); toast('Комментарий удалён');
-    };
-    setTimeout(() => $('#ctext').focus(), 50);
-    return;
+    // a sent note is a chat with the teacher: it opens as its own page
+    sh.hidden = true; state.view = 'chat'; state.chatOpen = old.id; renderAll(); window.scrollTo(0, 0); return;
   }
   sh.innerHTML = `<form class="wsheet-in" id="nform">
-    <div class="row" style="justify-content:space-between"><h3>Комментарий</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
-    <blockquote class="nquote" style="background:${esc(color)}">${esc(a.exact)}</blockquote>
+    <div class="row" style="justify-content:space-between"><h3>Заметка</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
+    <blockquote class="nquote plain"><mark class="hl hl-${hst}" id="nprev" style="${hlVars({ color })}">${esc(a.exact)}</mark></blockquote>
     <div class="note">${esc(exTitleOf(a.ex))}</div>
-    <label class="note" for="ntext">Ваш комментарий или вопрос</label>
+    <label class="note" for="ntext">Текст заметки или вопрос преподавателю</label>
     <textarea class="field" id="ntext" rows="3" placeholder="Например: почему здесь партитив?">${esc(old ? old.note : '')}</textarea>
-    <div class="note">Цвет маркера</div>
+    <div class="note">Вид выделения</div>
+    <div class="hlstyles">${HL_STYLES.map(([v, l]) => `<button type="button" class="hlst ${v === hst ? 'on' : ''}" data-hst="${v}" title="${l}" aria-label="${l}"><mark class="hl hl-${v}" style="${hlVars({ color })}">Abc</mark><span>${l}</span></button>`).join('')}</div>
+    <div class="note">Цвет</div>
     <div class="swatches">${MARKERS.map(c => `<button type="button" class="sw ${c === color ? 'on' : ''}" style="background:${c}" data-mk="${c}" aria-label="Цвет ${c}"></button>`).join('')}</div>
     ${old && old.sent ? `<p class="note">✓ Отправлено преподавателю ${fmtDate(old.sentAt)}${old.changed ? ' · после отправки есть изменения' : ''}</p>` : ''}
     <div class="row" style="margin-top:8px">
@@ -1721,15 +1777,20 @@ function openNoteSheet(id, anchor) {
   const close = () => { sh.hidden = true; };
   $('#nclose').onclick = close;
   sh.querySelectorAll('[data-mk]').forEach(b => b.onclick = () => {
-    color = b.dataset.mk; sh.querySelectorAll('[data-mk]').forEach(x => x.classList.toggle('on', x === b)); sh.querySelector('.nquote').style.background = color;
+    color = b.dataset.mk; sh.querySelectorAll('[data-mk]').forEach(x => x.classList.toggle('on', x === b));
+    sh.querySelectorAll('.hl').forEach(x => { x.style.cssText = hlVars({ color }); });
+  });
+  sh.querySelectorAll('[data-hst]').forEach(b => b.onclick = () => {
+    hst = b.dataset.hst; sh.querySelectorAll('[data-hst]').forEach(x => x.classList.toggle('on', x === b));
+    $('#nprev').className = 'hl hl-' + hst;
   });
   let act = 'save'; sh.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => { act = b.dataset.act; }));
   $('#nform').onsubmit = async e => {
     e.preventDefault();
-    try { localStorage.setItem(LS_KEY + ':marker', color); } catch (err) {}
+    try { localStorage.setItem(LS_KEY + ':marker', color); localStorage.setItem(LS_KEY + ':hlstyle', hst); } catch (err) {}
     const text = $('#ntext').value.trim(); const now = new Date().toISOString();
     const n = old ? { ...old } : { id: 'n' + Date.now().toString(36), ex: a.ex, exact: a.exact, prefix: a.prefix, suffix: a.suffix, topic: state.topic, at: now };
-    n.note = text; n.color = color; n.at = now;
+    n.note = text; n.color = color; n.style = hst; n.at = now;
     if (act === 'send') { n.sent = true; n.sentAt = now; n.changed = false; n.msgs = [{ text, at: now }]; n.readAt = now; } else if (n.sent) n.changed = true;
     const items = notes().filter(x => x.id !== n.id).concat([n]);
     clearHighlight(n.id);
@@ -1740,7 +1801,7 @@ function openNoteSheet(id, anchor) {
   };
   const del = $('#ndel'); if (del) del.onclick = async () => {
     if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
-    clearHighlight(id); await saveNotes(notes().filter(x => x.id !== id)); close(); toast('Комментарий удалён');
+    clearHighlight(id); await saveNotes(notes().filter(x => x.id !== id)); close(); toast('Заметка удалена');
   };
   setTimeout(() => $('#ntext').focus(), 50);
 }
@@ -2131,6 +2192,7 @@ function renderProfile() {
             <button class="btn small" type="button" id="avUrlBtn">По ссылке (URL)</button>
           </div>
           ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
+          <div class="pastebox" id="avPasteBox" contenteditable="true" hidden role="textbox" aria-label="Поле для вставки картинки">Вставьте сюда картинку: Ctrl+V (на Mac ⌘+V) или долгое нажатие → «Вставить»</div>
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
         </div>
@@ -2164,13 +2226,26 @@ function renderProfile() {
     test.onerror = () => toast('По этой ссылке не открывается картинка. Нужна прямая ссылка на изображение (обычно заканчивается на .jpg или .png)');
     test.src = url;
   };
+  // many browsers (Safari, Firefox, phones) do not let a page read the clipboard itself, so a paste field is shown too
+  const box = $('#avPasteBox');
   $('#avPaste').onclick = async () => {
+    box.hidden = false; box.focus();
     try {
+      if (!navigator.clipboard || !navigator.clipboard.read) return;
       const items = await navigator.clipboard.read();
       for (const it of items) { const type = it.types.find(t => t.startsWith('image/')); if (type) { await setAvatarFile(await it.getType(type)); return; } }
-      toast('В буфере нет картинки. Скопируйте картинку и нажмите ещё раз');
-    } catch (err) { toast('Браузер не дал доступ к буферу обмена. Разрешите доступ или выберите «С устройства»'); }
+    } catch (err) { /* the paste field below does the job */ }
   };
+  box.addEventListener('paste', async e => {
+    e.preventDefault();
+    const dt = e.clipboardData; if (!dt) return;
+    const f = [...dt.files].find(x => x.type.startsWith('image/')) || [...dt.items].filter(i => i.kind === 'file' && i.type.startsWith('image/')).map(i => i.getAsFile())[0];
+    if (f) { await setAvatarFile(f); return; }
+    const text = (dt.getData('text/plain') || '').trim();
+    if (/^https:\/\//i.test(text)) { $('#avUrlForm').hidden = false; $('#avUrl').value = text; $('#avUrlForm').requestSubmit(); return; }
+    toast('В буфере нет картинки. Скопируйте саму картинку (правый клик → «Копировать изображение») и вставьте снова');
+  });
+  box.addEventListener('beforeinput', e => { if (e.inputType !== 'insertFromPaste') e.preventDefault(); });
   $('#nameEdit').onclick = () => { $('#nameForm').hidden = false; $('#nameIn').focus(); };
   $('#nameForm').onsubmit = async e => { e.preventDefault(); const v = $('#nameIn').value.trim(); if (!v) return; await Store.saveProfile(v); state.profile = { ...(state.profile || {}), name: v }; toast('Имя сохранено'); renderAll(); };
 }
