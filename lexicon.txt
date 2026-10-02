@@ -1,0 +1,361 @@
+# Site dictionary: base form | Russian | word forms that appear on the site (space separated)
+# Used when a student selects a word: the base form and translation are offered.
+aamu | утро | aamun
+aika | время | aika
+aina | всегда | aina
+aivastaa | чихать | aivastaa aivastan aivasti
+aivastella | чихать (много раз) | aivastelee
+aivot | мозг | aivot aivoja aivojen
+ajanvaraus | запись (на приём) | ajanvarausta
+ajatella | думать | ajatteli ajattelin
+alkaa | начинаться | alkanut alkava
+alkoholi | алкоголь | alkoholi
+allergia | аллергия | allergia allergiasta
+alku | начало | alussa
+angiina | ангина | angiina angiinaan
+antaa | давать | anna annetaan antoi
+arkisin | по будням | arkisin
+asia | дело, вещь | asia asiaa asian
+aste | градус | astetta
+asuminen | жильё, проживание | asuminen
+blogikirjoitus | запись в блоге | blogikirjoitus
+Burana | Burana (обезболивающее) | buranaa
+bussi | автобус | bussissa
+edes | даже | edes
+ehdottaa | предлагать | ehdota
+ei | нет, не | ei en et eikä enkä etkä ettei etten
+eilen | вчера | eilen
+ensin | сначала | ensin
+ensinnäkin | во-первых | ensinnäkin
+enää | больше (не) | enää
+epidemia | эпидемия | epidemiana
+epämuodollinen | неформальный | epämuodollinen
+esimerkki | пример | esimerkki
+että | что (союз) | että
+flunssa | простуда | flunssa flunssaa flunssaan flunssan flunssasta
+hammas | зуб | hammas hammasta hampaan
+he | они | he
+hengittäminen | дыхание | hengittäminen
+heti | сразу | heti
+hoitaa | лечить, заниматься | hoitaa
+hoitaja | медсестра | hoitaja hoitajalle
+huimaus | головокружение | huimaus
+huono | плохой | huonompi huonosti
+hyvin | хорошо | hyvin
+hyvä | хороший | hyväksi
+hyöty | польза | hyötyä
+häiritä | мешать | häiritsee
+hän | он, она | hän hänellä hänen häntä
+ihminen | человек | ihmisellä
+ihottuma | сыпь | ihottuma ihottumaa
+ilta | вечер | illalla
+ilman | без | ilman
+iltapäivä | вторая половина дня | iltapäivällä
+imperfekti | имперфект (прош. время) | imperfekti
+influenssa | грипп | influenssa influenssaan influenssan
+influenssakausi | сезон гриппа | influenssakausi
+influenssarokotus | прививка от гриппа | influenssarokotuksia
+isoäiti | бабушка | isoäiti
+istua | сидеть | istuimme istuin
+itkeä | плакать | itkee
+ja | и | ja
+jalka | нога | jalka jalkaa jalkaan jalkoja
+jatkua | продолжаться | jatkui jatkuu
+jo | уже | jo
+joka | каждый; который | joka
+jos | если | jos
+joutua | быть вынужденным | jouduit
+juhlat | праздник, вечеринка | juhliin
+juoda | пить | juo juoda joimme
+jälkeen | после | jälkeen
+jäädä | оставаться | jään
+kaatua | упасть | kaaduin kaatui
+kaksi | два | kaksi kahden
+kahvi | кофе | kahvia
+kaikki | все | kaikille
+kannattaa | стоит, имеет смысл | kannata
+kanssa | с, вместе с | kanssa kanssaan
+kaula | шея | kaula
+kello | часы; (в) … часов | kello
+kukaan | никто, кто-либо | kenellekään kukaan
+kertoa | рассказывать, сообщать | kerro kertonut kertoo
+kerta | раз | kertaa
+keskustella | обсуждать | keskustellaan
+kestää | длиться | kestänyt
+kesä | лето | kesän kesänä
+keuhkot | лёгкие | keuhkoissa keuhkoja keuhkojen keuhkot
+keuhkokuume | воспаление лёгких | keuhkokuume keuhkokuumeen keuhkokuumetta
+kevät | весна | kevät keväällä
+kielioppi | грамматика | kielioppi
+kipeä | больной (о части тела) | kipeä
+kirjoittaa | писать | kirjoita kirjoittaa kirjoittanut kirjoitti
+kirjoittaminen | письмо (навык) | kirjoittaminen
+Kivikko | Кивикко (район) | kivikon
+koko | весь, целый | koko
+kokonaan | полностью | kokonaan
+kolme | три | kolme
+korkea | высокий | korkea
+korva | ухо | korva korvaan
+korvatulehdus | воспаление уха, отит | korvatulehdus
+koska | потому что; когда | koska
+koti | дом | kotiin kotona
+kova | сильный, твёрдый | kova kovaa kovasti
+kuin | как, чем | kuin
+kun | когда; так как | kun
+kunnolla | как следует | kunnolla
+kurkku | горло | kurkku kurkkunsa kurkkuun
+kurkkukipu | боль в горле | kurkkukipu
+kutista | чесаться | kutiavat kutista
+kuume | температура, жар | kuume kuumeen kuumetta
+kuunnella | слушать | kuunnella kuunteli
+kyllä | да | kyllä
+käsi | рука | käden käsi käsiä kättä
+kärsiä | страдать (от) | kärsi kärsin kärsinyt kärsiä
+käskeä | велеть, приказать | käski
+kävely | ходьба, прогулка | kävelyn
+käydä | ходить, посещать | kävin kävit käydä
+lapsi | ребёнок | lapsen lapset lapsi lapsiin lapsille
+laskea | снижаться; считать | laske
+lauantai | суббота | lauantaina
+lause | предложение | lauseet
+levätä | отдыхать | lepäsi lepää lepään levätä
+lihas | мышца | lihaksen lihaksia lihas lihasta
+liikaa | слишком много | liikaa
+lopulta | в конце концов | lopulta
+lukea | читать | luetun lukemaan
+lukeminen | чтение | lukemisesta
+lyhyesti | кратко | lyhyesti
+lääke | лекарство | lääke lääkettä lääkkeen
+lääkäri | врач | lääkäri lääkäriltä lääkärin lääkärissä lääkäriä
+maanantai | понедельник | maanantaina
+mahalaukku | желудок | mahalaukku
+mahatauti | кишечная инфекция | mahatauti
+mainita | упомянуть | mainitse
+maksa | печень | maksa maksalle
+maksuton | бесплатный | maksuton
+Mari | Мари (имя) | mari marilla marille marin
+marraskuu | ноябрь | marraskuun
+me | мы | me meitä
+mennä | идти | menee menevät meni menin mennä
+mielipideteksti | текст-мнение | mielipideteksti
+mielipide | мнение | mielipiteesi
+migreeni | мигрень | migreeni migreenistä
+mikä | что, какой | mihin mikä mistä mitkä mitä
+miksi | почему | miksi
+milloin | когда | milloin
+minä | я | minua minulla minulle minuun minä
+mitata | измерять | mitannut mitata mittaa mittasi
+miten | как | miten
+monikko | множественное число | mon
+moni | многие | monet
+munuainen | почка | munuainen munuaisen munuaista
+muodollinen | официальный, формальный | muodollinen
+mutta | но | mutta
+myrkytys | отравление | myrkytys
+myös | тоже | myös
+määräys | рецепт, предписание | määräyksen
+nauttia | наслаждаться (+ mistä) | nautti
+nenä | нос | nenä nenänsä
+nettisivu | веб-страница | nettisivulla nettisivulle
+nieleminen | глотание | nieleminen
+niellä | глотать | nielen
+nielurisat | миндалины | nielurisat
+nielutulehdus | воспаление глотки | nielutulehdus
+niin | так | niin
+noin | около, примерно | noin
+nopeasti | быстро | nopeasti
+norovirus | норовирус | noro norovirus
+nuha | насморк | nuha
+nuhakuume | простуда с температурой | nuhakuume
+nukkua | спать | nukkunut nukkuu
+numero | номер | numeroon
+nyt | сейчас | nyt
+objekti | дополнение (объект) | objektin
+odottaa | ждать | odottamaan
+oire | симптом | oire oireen oireet oireita oiretta
+oksentaa | рвать (о рвоте) | oksentaa
+olla | быть | ole olen olet oletko oleville oli olla ollut on ovat
+olo | самочувствие | oloni
+olkapää | плечо | olkapää
+oma | свой | oma omin
+opiskelu | учёба | opiskelu
+oppia | научиться, узнать | oppi oppinut
+ottaa | брать, принимать | ota otin ottaa ottanut
+otiitti | отит | otiitti
+pahoinvointi | тошнота | pahoinvointi pahoinvointia
+paikallislehti | местная газета | paikallislehden
+paikka | место | paikkansa
+palaute | отзыв, обратная связь | palaute
+palaveri | совещание | palaverissa
+paljon | много | paljon
+parata | поправиться, выздороветь | paranet paranevat parani paranin
+parantua | выздороветь (+ mistä) | parannuin parannun parannut parantua parantunut
+pelätä | бояться | pelkää
+perfekti | перфект | perfekti
+perustella | обосновать | perustele
+pian | скоро | pian
+pieni | маленький | pieni pienille
+pikkuveli | младший брат | pikkuveljeni
+pitkä | длинный, долгий | pitkän pitkässä pitkään
+pitää | нужно, следует; любить | pitää pitääkö
+pneumonia | пневмония | pneumonia
+poika | сын, мальчик | poika poikani pojaltaan
+polvi | колено | polvea polveen polven polvi
+portaat | лестница | portaissa
+puoli | половина; сторона | puolelta puolet
+pystyä | мочь, быть в состоянии | pystynyt
+pysyä | оставаться | pysy pysyy
+päivystys | дежурная служба, «скорая» | päivystykseen
+päiväkoti | детский сад | päiväkodin päiväkodissa päiväkodista
+päivä | день | päivän päivässä päivää
+pää | голова | pää päätä
+päänsärky | головная боль | päänsärky
+päästä | попасть, смочь прийти; через (время) | pääse päästä
+raskaana | беременная | raskaana
+rektio | управление (глагола) | rektiot
+resepti | рецепт | resepti reseptin reseptiä
+rinta | грудь | rinta
+ripuli | понос, диарея | ripuli
+rokotus | прививка | rokotukseen rokotuksesta rokotus
+ruokamyrkytys | пищевое отравление | ruokamyrkytys
+ruumiinosa | часть тела | ruumiinosat
+saada | получить | sai
+sairaana | больным (быть больным) | sairaana
+sairas | больной | sairaita sairas
+sairastua | заболеть (+ mihin) | sairastua sairastui sairastuin sairastuneet sairastunut sairastuu
+sairaus | болезнь | sairaudet sairaus
+sama | тот же | samaan
+sanakortti | словарная карточка | sanakortit
+sanasto | лексика | sanasto
+sankari | герой | sankari
+sanoa | сказать | sanoi
+sana | слово | sanoin
+sattua | болеть (резко); случиться | sattua sattui sattuu satu
+se | это, он/она (не о человеке) | se siitä tämä tästä
+selkä | спина | selkä selkää
+sijamuoto | падежная форма | sijamuodot
+silmä | глаз | silmiä silmä silmänsä silmät
+sinä | ты | sinulla sinun sinuun sinä
+sisäelin | внутренний орган | sisäelimet
+sitten | потом | sitten
+soittaa | звонить | soita soittaa
+sormi | палец | sormea sormen sormi
+suolisto | кишечник | suolisto
+suomalainen | финн; финский | suomalaiset
+suoraan | прямо | suoraan
+sydän | сердце | sydämen sydän sydäntä
+syntymäpäiväjuhlat | день рождения (праздник) | syntymäpäiväjuhliin
+syy | причина | syytä
+särkeä | болеть, ныть (+ P) | särkee särkenyt särkeä särki
+särky | боль (ноющая) | särky
+särkylääke | обезболивающее | särkylääke särkylääkettä
+tai | или | tai
+taivuttaa | сгибать | taivuttaa
+talvi | зима | talvella talvena
+tapaaminen | встреча | tapaamista
+tapahtua | случиться | tapahtui
+tarttua | заразить, передаться (+ mihin) | tarttua tarttui tartu
+tarvita | нуждаться | tarvitsetko
+tarvittaessa | при необходимости | tarvittaessa
+tauti | болезнь (заразная) | tauti tautiin
+tavallinen | обычный | tavallinen
+tehdä | делать | tehdä teki
+terve | здоровый | terve
+terveys | здоровье | terveys
+terveysasema | поликлиника | terveysasema terveysasemalla terveysasemalle terveysasemalta terveysaseman
+tiedote | объявление, сообщение | tiedote
+tiedottaa | сообщать | tiedottaa
+tietokone | компьютер | tietokoneella
+tietysti | конечно | tietysti
+tiimi | команда | tiimistä
+tiistai | вторник | tiistaina tiistaisin
+todella | действительно, очень | todella
+toiseksi | во-вторых | toiseksi
+toinen | второй, другой | toiselta
+toivoa | надеяться, желать | toivot
+toivottavasti | надеюсь, хорошо бы | toivottavasti
+torstai | четверг | torstaisin
+tulla | приходить | tule tulee
+tulehdus | воспаление | tulehduksen tulehdus tulehdusta
+tulehtua | воспалиться | tulehtuneet
+tulevaisuus | будущее | tulevaisuudessa
+tulos | результат | tuloksen
+tunti | час | tuntia
+tuntua | казаться, ощущаться | tuntuisi
+tutkia | обследовать | tutki tutkia
+tyytymätön | недовольный | tyytymätön
+työ | работа | työ töihin töitä
+työkaveri | коллега | työkavereiden työkavereista
+työpaikka | место работы | työpaikalla työpaikat
+tänä | в этот (период) | tänä
+tänään | сегодня | tänään
+tärkeä | важный | tärkeää
+täydentää | дополнить | täydennä
+täytyy | нужно, надо | täytyy
+useimmat | большинство | useimmat
+uudestaan | снова | uudestaan
+uusi | новый | uutta
+vaarallinen | опасный | vaarallista
+vai | или (в вопросе) | vai
+vaikea | трудный | vaikeaa
+vaikka | хотя | vaikka
+vain | только | vain
+vakava | серьёзный | vakava
+valo | свет | valo
+varata | заказать, записаться | varata
+vastata | отвечать | vastaa
+vatsa | живот | vatsa vatsaa vatsaan
+vatsaflunssa | «желудочный грипп» | vatsaflunssa
+vatsakipu | боль в животе | vatsakipu
+vatsatauti | кишечная инфекция | vatsatauti
+verbi | глагол | verbien verbit
+verenpaine | давление | verenpaine verenpaineen verenpainetta
+vesi | вода | vettä
+vielä | ещё | vielä
+viesti | сообщение | viesti
+viikko | неделя | viikolla viikon viikossa
+viikonloppu | выходные | viikonloppuna
+viime | прошлый | viime
+voida | мочь; чувствовать себя | voi voida voin voisivat voit
+vuosi | год | vuosia
+vuotaa | течь | vuotaa vuoti
+vuotias | …летний (о возрасте) | vuotiaille
+vähintään | по меньшей мере | vähintään
+vähän | немного | vähän
+väsymys | усталость | väsymys
+väsynyt | усталый | väsynyt
+yhteys | связь | yhteyttä
+yhtään | нисколько | yhtään
+yhä | всё ещё | yhä
+YKI-testi | экзамен YKI | yki-testi
+yli | более, свыше | yli
+ylös | вверх | ylös
+ymmärtäminen | понимание | ymmärtäminen
+yrittää | пытаться | yritä
+yskiä | кашлять | yski yskii yskin yskiä
+yskä | кашель | yskä
+ystävä | друг | ystävälle ystävällesi ystäväsi
+yö | ночь | yön
+älä | не (повелительное) | älä
+
+# Fixed expressions: phrase | Russian | how it appears on the site (regular expression, case-insensitive)
+@ ottaa yhteyttä (+ mihin) | связаться (с кем-то) | ota\s+(?:heti\s+)?yhteyttä
+@ niin kuin aina | как всегда | niin kuin aina
+@ kahden päivän päästä | через два дня | kahden päivän päästä
+@ olla sairaana | болеть, быть больным | (?:oli|olen|on|olet)\s+sairaana|sairaana\s+(?:jo|ei)
+@ ei kannata | не стоит | ei kannata
+@ käydä lääkärissä | сходить к врачу | kävin lääkärissä|käydä lääkärissä|kävit terveysasemalla
+@ voida paremmin | чувствовать себя лучше | voi jo paremmin
+@ olla raskaana | быть беременной | raskaana oleville
+@ pitää paikkansa | соответствовать действительности | pitää paikkansa
+@ varata aika | записаться (на приём) | varata ajan|ajanvarausta
+@ ilman ajanvarausta | без записи | ilman ajanvarausta
+@ tarvittaessa | при необходимости | tarvittaessa
+@ yrittää olla sankari | пытаться быть героем | yritä olla sankari
+@ jäädä kotiin | остаться дома | jään kotiin
+@ alkava keuhkokuume | начинающееся воспаление лёгких | alkava keuhkokuume
+@ pitkässä palaverissa | на долгом совещании | pitkässä palaverissa
+@ kertaa päivässä | раз в день | kertaa päivässä
+@ tänä talvena | этой зимой | tänä talvena
+@ viime viikolla | на прошлой неделе | viime viikolla
+@ koko yön | всю ночь | koko yön
