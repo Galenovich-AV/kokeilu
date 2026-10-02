@@ -196,7 +196,8 @@ a{color:var(--sage-ink)}
 /* before it starts there is only the start button, without the bar's own frame around it */
 #timerRow.idle{background:none;border:0;box-shadow:none;padding:0}
 #timerRow.idle .btn{background:#ffe7b8}
-.block-done{font-size:2.2rem;font-weight:800;color:var(--sage-ink);line-height:1;margin:0 2px}
+/* 'part finished': same round shape and size as the fold button next to it, filled */
+.block-done{width:32px;height:32px;flex:0 0 auto;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--sage);border:1.5px solid var(--sage-ink);color:var(--on-accent);font-size:1rem;font-weight:800;line-height:1}
 .ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
 .ex-state.done{color:var(--ok)}
@@ -210,7 +211,7 @@ a{color:var(--sage-ink)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
 .tab{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:var(--r);padding:8px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700}
 .block{margin:0 0 12px}
-.block-title{margin:40px 0 34px;font-family:var(--f-script);font-size:2.6rem}
+.block-title{margin:0;font-family:var(--f-script);font-size:2.6rem}
 .block-title .note{font-family:var(--f-body);font-size:.95rem;font-weight:400}
 .tab small{font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .tab[aria-selected="true"]{background:var(--sage);color:#22301a;border-color:#22301a}
@@ -334,12 +335,12 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .essay{white-space:pre-wrap;background:var(--paper);border-left:3px solid var(--sage);padding:8px 12px;border-radius:0 6px 6px 0;margin:6px 0}
 .exr{margin:10px 0 14px}
 .exr h5{margin:0 0 4px;font-size:1rem}
-.block-head{display:flex;align-items:center;gap:12px}
+.block-head{display:flex;align-items:center;gap:12px;margin:40px 0 34px}
 .fold{cursor:pointer;width:32px;height:32px;flex:0 0 auto;border:1.5px solid var(--sage-ink);border-radius:50%;background:transparent;color:var(--sage-ink);display:inline-flex;align-items:center;justify-content:center;padding:0}
 .fold::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(2px) rotate(-135deg);transition:transform .2s}
 .collapsed > .block-head .fold::before,.ex.collapsed .fold::before{transform:translateY(-2px) rotate(45deg)}
 .block.collapsed [data-exlist]{display:none}
-.block.collapsed .block-title{margin-bottom:10px}
+.block.collapsed .block-head{margin-bottom:10px}
 .ex.collapsed{padding-bottom:16px}
 .ex.collapsed > :not(.ex-head){display:none}
 .ex.collapsed .ex-head{margin-bottom:0}
@@ -1016,7 +1017,7 @@ function renderLearn() {
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
-      <span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}>✔</span>
+      <span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" aria-label="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}>✓</span>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
   main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
