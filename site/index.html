@@ -164,10 +164,16 @@ a{color:var(--sage-ink)}
 /* index of topics */
 .index{margin:18px 0 22px;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);padding:10px 0}
 .index-row{display:block}
+.toc-toggle{background:none;border:0;padding:4px 0;cursor:pointer;font-family:var(--f-script);font-weight:700;font-size:2rem;color:var(--head);display:inline-flex;align-items:center;gap:10px}
+.chev{display:inline-block;width:9px;height:9px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:translateY(-3px) rotate(45deg);transition:transform .2s;margin-left:8px}
+[aria-expanded="true"] > .chev{transform:translateY(2px) rotate(-135deg)}
+.toc-head{display:inline-flex;align-items:center;font:inherit;font-weight:700;font-size:1.1rem;color:var(--ink);background:none;border:0;padding:2px 0;cursor:pointer}
+.toc-topic.soon .toc-head{cursor:default;font-weight:600;color:var(--ink-soft)}
+.toc-head .note{margin-left:6px}
 .toc{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:8px}
 .toc-topic{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
 .toc-topic.soon{color:var(--ink-soft)}
-.toc .sig{display:inline-block;width:1.4em;font-size:1.05rem;font-weight:700;color:var(--sage-ink);line-height:1}
+.toc .sig{display:inline-block;width:1.5em;font-size:1.05rem;flex:0 0 auto;font-weight:700;color:var(--sage-ink);line-height:1}
 .toc-count{font-size:.85rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .toc-blocks{list-style:none;margin:2px 0 4px;padding:0 0 0 1.6em;display:grid;gap:2px;flex-basis:100%}
 .toc-blocks li{display:flex;flex-wrap:wrap;gap:0 12px;align-items:baseline}
@@ -923,26 +929,37 @@ function renderRegister() {
   };
 }
 
+// "Kappaleet": collapsed by default; open it to see the topics, open a topic to see its parts
+const TOC_KEY = LS_KEY + ':toc';
+let toc = { open: false, topics: [] }; try { toc = { ...toc, ...JSON.parse(localStorage.getItem(TOC_KEY)) }; } catch (e) {}
+const saveToc = () => { try { localStorage.setItem(TOC_KEY, JSON.stringify(toc)); } catch (e) {} };
 function renderTopics() {
   const el = $('#topics');
-  el.innerHTML = `<ul class="toc">${TOPICS.map(t => {
-    if (t.soon) return `<li class="toc-topic soon"><span class="sig">○</span>${esc(t.fi)} <span class="note">(tulossa)</span></li>`;
+  const rows = TOPICS.map(t => {
+    if (t.soon) return `<li class="toc-topic soon"><span class="toc-head"><span class="sig">○</span>${esc(t.fi)} <span class="note">(tulossa)</span></span></li>`;
     const scs = t.blocks.map(bl => blockScore(t, bl, state.results));
     const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
     const sig = done === total ? '●' : scs.some(x => x.started) ? '◐' : '○';
-    return `<li class="toc-topic"><button class="topic-btn" type="button" data-topic="${t.id}" aria-current="${t.id === state.topic}"><span class="sig">${sig}</span>${esc(t.fi)}</button>
+    const open = toc.topics.includes(t.id);
+    return `<li class="toc-topic"><button class="toc-head" type="button" data-ttopic="${t.id}" aria-expanded="${open}"><span class="sig">${sig}</span>${esc(t.fi)}<span class="chev"></span></button>
       <span class="toc-count">${done}/${total} tehtävää</span>
-      <ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
+      ${open ? `<ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
         return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}"><span class="sig">${sigOf(sc)}</span>${i + 1}. ${esc(bl.fi)}</a>
-          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · valmis' : ''}</span></li>`; }).join('')}</ul></li>`;
-  }).join('')}</ul>
-  <p class="toc-legend note">○ не начато · ◐ в процессе · ● закончено</p>`;
-  el.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { state.topic = b.dataset.topic; state.view = 'learn'; saveTab(); renderAll(); });
+          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · valmis' : ''}</span></li>`; }).join('')}</ul>` : ''}</li>`;
+  }).join('');
+  el.innerHTML = `<button class="toc-toggle" type="button" id="tocToggle" aria-expanded="${toc.open}">Kappaleet<span class="chev"></span></button>
+    ${toc.open ? `<ul class="toc">${rows}</ul><p class="toc-legend note">○ не начато · ◐ в процессе · ● закончено</p>` : ''}`;
+  $('#tocToggle').onclick = () => { toc.open = !toc.open; saveToc(); renderTopics(); };
+  el.querySelectorAll('[data-ttopic]').forEach(b => b.onclick = () => {
+    const id = b.dataset.ttopic;
+    toc.topics = toc.topics.includes(id) ? toc.topics.filter(x => x !== id) : toc.topics.concat([id]); saveToc();
+    if (state.topic !== id || state.view !== 'learn') { state.topic = id; state.view = 'learn'; saveTab(); renderAll(); } else renderTopics();
+  });
   el.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => {
     e.preventDefault(); const [tid, bid] = a.dataset.jump.split(':');
-    const go = () => { const tgt = document.getElementById('block-' + bid); if (tgt) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     if (state.topic !== tid || state.view !== 'learn') { state.topic = tid; state.view = 'learn'; saveTab(); renderAll(); }
-    go();
+    setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) blk.classList.remove('collapsed');
+    if (blk) blk.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 
