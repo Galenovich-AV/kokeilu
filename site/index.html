@@ -8,7 +8,7 @@
 <title>Suomi-muistikirja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
 <style>
 /* Layout: one long notebook page on dotted paper; each task is a paper sheet held by washi tape; vocabulary as tiles; ○ ◐ ✓ mark progress. */
 :root{
@@ -59,6 +59,16 @@
   --paper:#25222a;--sheet:#2d2933;--tile:#37323e;--tile-line:#4a4353;--dot:#3c3744;--rule:#433d4b;
   --sage:#c9b5e8;--sage-ink:#cdb8f0;--head:#e2d4f7;--tape:rgba(201,181,232,.25);--kraft:rgba(201,181,232,.3);
   --ok-bg:#3a3247;--on-accent:#2b2038}
+/* Asuminen topic: soft sky blue instead of green, so the two topics are easy to tell apart */
+:root.topic-asuminen{
+  --tile:#ebf1f2;--tile-line:#cfdee3;--dot:#d8dcd6;--rule:#dde5e4;
+  --sage:#a9d4ea;--sage-ink:#2f7196;--head:#265a78;--tape:rgba(169,212,234,.5);--kraft:rgba(169,212,234,.55);--on-accent:#173447}
+@media (prefers-color-scheme: dark){:root.topic-asuminen:not([data-theme="light"]){
+  --tile:#2d3639;--tile-line:#425157;--dot:#37403f;--rule:#3b4547;
+  --sage:#8fc3df;--sage-ink:#9fd0ec;--head:#cfe8f6;--tape:rgba(143,195,223,.25);--kraft:rgba(143,195,223,.3);--on-accent:#122a38}}
+:root.topic-asuminen[data-theme="dark"]{
+  --tile:#2d3639;--tile-line:#425157;--dot:#37403f;--rule:#3b4547;
+  --sage:#8fc3df;--sage-ink:#9fd0ec;--head:#cfe8f6;--tape:rgba(143,195,223,.25);--kraft:rgba(143,195,223,.3);--on-accent:#122a38}
 /* Teacher view: faint pink paper, pastel sunset accents (rose, coral, apricot) */
 :root.teacher-mode{
   --paper:#fbf0ee;--sheet:#fffaf8;--tile:#f8e7e3;--tile-line:#efd3cc;--dot:#efdcd6;--rule:#f2dfd9;
@@ -195,6 +205,7 @@ a{color:var(--sage-ink)}
 .toc,.toc .toc-head,.toc .toc-count,.toc .note,.toc .toc-blocks a,.index .toc-legend{font-family:var(--f-script);font-size:1.35rem;font-weight:700;font-style:normal;letter-spacing:0}
 .toc .toc-head .note{margin-left:6px}
 .toc .toc-head .chev{margin-left:12px}
+.index .toc .toc-count{font-size:1.1rem;font-weight:400}
 .index .sig{display:inline-flex;align-items:center;justify-content:flex-start;width:1.5em;flex:0 0 auto;vertical-align:-1px}
 .index .sig i{display:block;width:.8rem;height:.8rem;border-radius:50%;border:2px solid var(--sage-ink);box-sizing:border-box}
 .index .sig i.dot-full{background:var(--sage-ink)}
@@ -1330,7 +1341,7 @@ function renderTopics() {
       <span class="toc-count">${done}/${total} tehtävää</span>
       ${open ? `<ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
         return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}">${dotHTML(sigOf(sc))}${i + 1}. ${esc(bl.fi)}</a>
-          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · valmis' : ''}</span></li>`; }).join('')}</ul>` : ''}</li>`;
+          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}</span></li>`; }).join('')}</ul>` : ''}</li>`;
   }).join('');
   el.innerHTML = `<button class="toc-toggle" type="button" id="tocToggle" aria-expanded="${toc.open}">Kappaleet<span class="chev"></span></button>
     ${toc.open ? `<ul class="toc">${rows}</ul><p class="toc-legend note">${dotHTML('○')}не начато · ${dotHTML('◐')}в процессе · ${dotHTML('●')}закончено</p>` : ''}`;
@@ -2928,6 +2939,7 @@ function renderAll() {
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
+  document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
   if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics(); renderRegister();
   if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
