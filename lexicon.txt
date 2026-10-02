@@ -930,3 +930,213 @@ oma | свой | omat
 harava | грабли | haravat
 Sara | Сара (имя) | saran
 se / ne | он, она (разг.); они | ne
+kiitos | спасибо | kiitos
+kierrättää | сдавать в переработку | kierrätät
+jäte | отходы | jätteiden jätteitä
+lajittelu | сортировка | lajittelu lajittelun
+lajitella | сортировать | lajittelet
+osa | часть | osa
+asuminen | проживание, жильё | asumista
+avulla | с помощью | avulla
+säästää | экономить, беречь | säästää säästetään
+luonnonvara | природный ресурс | luonnonvaroja
+hidastaa | замедлять | hidastetaan
+ilmastonmuutos | изменение климата | ilmastonmuutosta
+materiaali | материал | materiaalit
+voida | мочь | voidaan
+käyttää | использовать | käyttää
+uudelleen | снова, повторно | uudelleen
+lukea | читать | lue lukee
+lajitteluohje | инструкция по сортировке | lajitteluohjeet
+uusin | новейший | uusimmat
+ohje | инструкция | ohjeet
+löytää | находить | löydät
+Kiertokaari | Kiertokaari (компания по вывозу мусора) | kiertokaari kiertokaaren
+verkkosivut | веб-сайт | verkkosivuilta
+syntyä | возникать | syntyy
+se | это | sitä
+harvemmin | реже | harvemmin
+jäteauto | мусоровоз | jäteauton
+taloyhtiö | жилищная компания | taloyhtiösi taloyhtiöiden
+jätekustannukset | расходы на вывоз мусора | jätekustannuksia
+jäteastia | мусорный контейнер | jäteastiat jäteastioihin
+pakkausjäteastia | контейнер для упаковочных отходов | pakkausjäteastiat
+kunta | муниципалитет | kuntien
+jätehuoltoyhtiö | компания по вывозу мусора | jätehuoltoyhtiö
+paperiastia | контейнер для бумаги | paperiastiat
+yritys | фирма | yritys
+joka | который | jonka
+valita | выбирать | valinnut
+pitää (siistinä) | держать (в чистоте) | pidämme
+siisti | чистый, опрятный | siistinä
+huolehtia | заботиться | huolehtivat
+siisteys | чистота, порядок | siisteydestä
+kaikki | все | kaikkia
+vaarallinen | опасный | vaaralliset vaarallisten
+keräyspiste | пункт сбора | keräyspisteeseen
+mahtua | помещаться | mahdu
+rikkinäinen | сломанный | rikkinäiset rikkinäisen
+jäteasema | станция приёма отходов | jäteasemalle
+jätehuolto | обращение с отходами | jätehuollossa
+ongelma | проблема | ongelmia
+isännöitsijä | управляющий домом | isännöitsijään
+lähde | источник | lähde
+lajitteluinfo | информация о сортировке | lajitteluinfo
+jätekatos | площадка с мусорными баками | jätekatoksiin
+mukautettu | адаптированный | mukautettu
+lyhennetty | сокращённый | lyhennetty
+teksti | текст | tekstin
+raha | деньги | rahaa
+muuten | иначе; в остальном | muuten
+tyhjentää | опорожнять | tyhjennä
+astia | ёмкость, контейнер | astioita
+tarkistaa | проверять | tarkistaa
+jokainen | каждый | jokaisen
+roskapussi | мусорный пакет | roskapussin
+sekajäteastia | контейнер для смешанных отходов | sekajäteastian sekajäteastiaan
+viedä | относить | viet
+vieressä / viereen | рядом / к | viereen
+uutinen | новость | uutinen
+Yle | Yle (финская телерадиокомпания) | yle
+saada | разрешено (можно) | saako
+suihku | душ | suihkussa suihkun suihku
+Paula Ahokainen | Паула Ахокайнен (имя) | paula ahokainen ahokaisen ahokaiselle
+Lappeenranta | Лаппеэнранта | lappeenrannassa
+vuosi | год | vuotta vuoden
+hallitus | правление | hallituksen
+puheenjohtaja | председатель | puheenjohtaja
+kerran | однажды | kerran
+täytyä | быть должным | täytynyt
+puuttua | вмешиваться | puuttua puututaan
+häiritsevä | мешающий | häiritsevään
+elämä | жизнь | elämään elämää
+käydä | ходить, бывать | kävi
+juuri | как раз | juuri
+olla | быть | olin
+nukahtaa | заснуть | nukahtanut
+alkaa | начинаться | alkoi
+herne | горошина | herneitä
+heittää | бросать | heitetty
+lattia | пол | lattialle
+työ | работа | töissä
+opiskella | учиться | opiskeli
+päivä | день | päivät
+raskas | тяжёлый | raskaita
+kerätä | собирать | keräsi
+rohkeus | смелость | rohkeutensa
+puhua | говорить | puhumaan
+pyytää anteeksi | извиниться | pyysi anteeksi
+ajatella | думать | ajatellut
+käynti | посещение | käynti
+loppua | закончиться | loppui
+lähes | почти | lähes
+järjestysmääräykset | правила внутреннего распорядка | järjestysmääräyksissä
+melu | шум | melua
+välttää | избегать | välttää
+yörauha | ночная тишина | yörauhan
+Kiinteistöliitto | Союз владельцев недвижимости | kiinteistöliiton
+päälakimies | главный юрист | päälakimies
+Jenni Hupli | Йенни Хупли (имя) | jenni hupli huplin
+muistuttaa | напоминать | muistuttaa
+kuitenkin | однако | kuitenkin
+oikeus | право | oikeus
+elää | жить | elää
+tavallinen | обычный | tavallista
+WC | туалет | wc:ssä
+huoletta | без опасений | huoletta
+aika | время | aikaan
+tahansa | любой (-нибудь) | tahansa
+tavanomainen | обычный | tavanomaista
+pesukone | стиральная машина | pesukonetta
+mukaan | по словам | mukaansa
+yöllä | ночью | yölläkin
+juhlat | праздник, вечеринка | juhlia
+joskus | иногда | joskus
+järjestää | устраивать | järjestää
+asia | дело | asiaan
+talo | дом | talossaan taloon talon
+alle | меньше, до | alle
+kymmenen | десять | kymmenen
+uni | сон | unta
+suuttua | рассердиться | suuttui
+juhlia | праздновать | juhlii
+Suomi24 | Suomi24 (финский форум) | suomi24
+valitus | жалоба | valitus valitukset
+asua | жить | asuneet
+lokakuu | октябрь | lokakuun
+yläkerta | верхний этаж | yläkertaamme yläkerrasta
+luultavasti | вероятно | luultavasti
+ok | нормально | ok
+kamala | ужасный | kamala
+kolina | грохот, стук | kolinaa
+töminä | топот | töminää
+ovi | дверь | ovien
+paiskoa | хлопать (дверью) | paiskomista
+kaksi | два | kahtena kahdesta
+yö | ночь | yönä yötä
+valvoa | не спать | valvoneet
+kuunnella | слушать | kuunnelleet
+riita | ссора | riitaa riidat
+viimeksi | в последний раз | viimeksi
+herätä | проснуться | heräsimme
+haluta | хотеть | haluaisi halua
+epäreilu | несправедливый | epäreilua
+me | мы | emme meille
+koskaan | никогда | koskaan
+häiritä | мешать | häiritse
+kukaan | никто | ketään
+ottaa tosissaan | воспринимать всерьёз | otetaanko tosissaan
+kirjallinen | письменный | kirjallinen
+kirjallisesti | письменно | kirjallisesti
+häiriö | нарушение порядка | häiriöitä
+kirjoittaa | писать | kirjoittakaa
+päivämäärä | дата | päivämäärät
+kellonaika | время (на часах) | kellonajat
+muisti | память | muistiin
+kysyä | спрашивать | kysyä
+muu | другой | muilta
+asukas | жилец | asukkailta
+olla | быть | ovatko
+hekin | они тоже | hekin
+häiriintyä | быть потревоженным | häiriintyneet
+useampi | больше (людей) | useampi
+valittaja | жалующийся | valittaja
+paremmin | лучше | paremmin
+meluava | шумный | meluava meluavat
+kuulua | быть слышным | kuuluivat
+pitkin | на протяжении | pitkin
+sanoa | сказать | sanoimme
+he | они | heille heidän
+pari | пара, несколько | pari
+auttaa | помогать | auttanut
+laittaa | класть | laitoimme
+postiluukku | щель для почты (в двери) | postiluukustaan
+kopio | копия | kopion
+järjestyssäännöt | правила распорядка | järjestyssäännöistä
+soittaa | звонить | soitimme
+naapuri | сосед | naapurit
+muuttaa | переезжать | muuttivat
+tehdä | делать | teimme
+ilmoitus | сообщение, заявление | ilmoituksen
+vastaus | ответ | vastaukseksi
+kuulla | слышать | kuulimme
+uskaltaa | осмеливаться | uskallan
+häirikkö | нарушитель спокойствия | häirikkö
+jäädä | оставаться | jää
+kunnollinen | порядочный | kunnollinen
+keskustelu | обсуждение, форум | keskustelu
+kirjoittaja | автор | kirjoittajan kirjoittaja
+polttaa | курить | polttaa
+tupakka | табак, сигареты | tupakkaa
+halpa | дешёвый | halpa
+kauan | долго | kauan
+ensimmäinen | первый | ensimmäisen ensimmäinen
+vastaaja | отвечающий | vastaajan
+toinen | второй | toisen
+kolmas | третий | kolmannen
+@ ottaa yhteyttä | связаться | ota yhteyttä
+@ pyytää anteeksi | извиниться | pyysi anteeksi
+@ kerätä rohkeutensa | набраться смелости | keräsi rohkeutensa
+@ mitä vähemmän..., sitä harvemmin | чем меньше..., тем реже | mitä vähemmän
+@ joka kerta | каждый раз | joka kerta
+@ ottaa tosissaan | воспринимать всерьёз | otetaanko\s+\p{L}+\s+tosissaan
