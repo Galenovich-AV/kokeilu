@@ -620,7 +620,8 @@ myydä | продавать | myin
 myöhään | поздно | myöhään
 märkä | мокрый | märkä
 naapuri | сосед | naapuri naapuria naapurin naapuriin naapurille naapurista naapurisi naapureita
-neliö | квадратный метр | neliö neliötä
+neliö | квадрат; разг. кв. метр | neliö neliötä
+neliömetri | квадратный метр | neliömetri neliömetrin neliömetriä
 neljäs | четвёртый | neljännessä
 nenäliina | носовой платок | nenäliina
 nettilehti | интернет-газета | nettilehdessä
