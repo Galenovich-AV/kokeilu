@@ -45,9 +45,27 @@
   --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}
 
+/* Dictionary view: ivory paper, soft lilac instead of green, so the switch is obvious */
+:root{--on-accent:#1f2c17}
+:root.dict-mode{
+  --paper:#fbf8f1;--sheet:#fffdf9;--tile:#f3eef6;--tile-line:#e2d8ea;--dot:#e7e1d6;--rule:#ece5ee;
+  --sage:#d8c8ef;--sage-ink:#7a5ca3;--head:#5e4683;--tape:rgba(216,200,239,.55);--kraft:rgba(216,200,239,.6);
+  --ok-bg:#f1eaf8;--on-accent:#3a2a52}
+@media (prefers-color-scheme: dark){:root.dict-mode:not([data-theme="light"]){
+  --paper:#25222a;--sheet:#2d2933;--tile:#37323e;--tile-line:#4a4353;--dot:#3c3744;--rule:#433d4b;
+  --sage:#c9b5e8;--sage-ink:#cdb8f0;--head:#e2d4f7;--tape:rgba(201,181,232,.25);--kraft:rgba(201,181,232,.3);
+  --ok-bg:#3a3247;--on-accent:#2b2038}}
+:root.dict-mode[data-theme="dark"]{
+  --paper:#25222a;--sheet:#2d2933;--tile:#37323e;--tile-line:#4a4353;--dot:#3c3744;--rule:#433d4b;
+  --sage:#c9b5e8;--sage-ink:#cdb8f0;--head:#e2d4f7;--tape:rgba(201,181,232,.25);--kraft:rgba(201,181,232,.3);
+  --ok-bg:#3a3247;--on-accent:#2b2038}
+.dict-mode .index,.dict-mode #register{display:none}
+.dict-hero{margin:14px 0 22px}
+.dict-hero p{margin:6px 0 0}
+
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
+body{transition:background-color .4s;background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
   color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
 .wrap{max-width:1020px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
 h1,h2,h3,.hand{font-family:var(--f-body);font-weight:800;line-height:1.15;text-wrap:balance;color:var(--head)}
@@ -166,7 +184,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
 .btn{cursor:pointer;border:2px solid var(--sage-ink);background:transparent;color:var(--head);border-radius:999px;padding:7px 20px;font-family:var(--f-body);font-weight:700;font-size:.98rem}
-.btn.main{background:var(--sage);color:#1f2c17;border-color:var(--sage)}
+.btn.main{background:var(--sage);color:var(--on-accent);border-color:var(--sage)}
 .btn:hover{transform:translateY(-1px)}
 .btn:disabled{opacity:.5;cursor:default;transform:none}
 .btn.small{padding:4px 14px;font-size:.9rem;border-width:1.5px}
@@ -1248,8 +1266,10 @@ function renderDict() {
   const words = dictWords().slice().sort((a, b) => a.w.localeCompare(b.w, 'fi'));
   const shown = words.filter(w => !q || norm(w.w + ' ' + w.t).includes(norm(q)));
   main.innerHTML = `
+    <div class="dict-hero"><h1 class="topic-title"><span class="tape">Oma sanakirja</span></h1>
+      <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой «← к заданиям» вверху</p></div>
     <section class="ex">
-      <div class="ex-head"><h3>Oma sanakirja</h3><span class="note">${words.length} слов</span></div>
+      <div class="ex-head"><h3>Мои слова</h3></div>
       <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ В словарь» рядом с ним. Или впишите слово здесь.</p>
       <form class="row" id="dictAdd" style="margin-bottom:16px">
         <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
@@ -1278,6 +1298,7 @@ function renderDict() {
    BOOT
    ========================================================= */
 function renderAll() {
+  document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   renderWho(); renderTopics(); renderRegister();
   if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else renderLearn();
 }
