@@ -73,7 +73,7 @@
   --sage:#f0a99a;--sage-ink:#f4a7b5;--head:#f8cfd6;--tape:rgba(240,169,154,.25);--kraft:rgba(240,190,140,.3);
   --ok-bg:#45333a;--on-accent:#3a1620}
 .teacher-mode .ex::before{background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,var(--kraft) 12px 24px)}
-.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index{display:none}
+.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index,.chat-mode .index,.chat-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
 .totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
@@ -108,6 +108,8 @@
 .hist-score{font-weight:800;font-variant-numeric:tabular-nums}
 .hist-score.ok{color:var(--ok)}.hist-score.mid{color:var(--wait)}.hist-score.low{color:var(--bad)}
 @media (max-width:560px){.hist-row{grid-template-columns:1fr auto}.hist-meta{text-align:left;grid-column:1}.hist-row .btn{grid-column:2;grid-row:1 / span 2}}
+.av-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:10px;border:1.5px dashed var(--sage-ink);border-radius:10px;width:fit-content;max-width:100%}
+.av-menu label.btn{display:inline-flex;align-items:center}
 .help-note{margin:0 0 14px}
 .prof-card{margin-top:24px}
 .prof-card::before{display:none}
@@ -346,6 +348,22 @@ mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
 .note-row{padding:12px 0;border-bottom:1px dashed var(--rule);display:grid;gap:4px}
 .note-text{white-space:pre-wrap}
 .newb{font-size:.72rem;font-weight:800;background:var(--sage-ink);color:var(--sheet);border-radius:999px;padding:1px 8px;margin-left:4px}
+.thread{display:grid;gap:10px;max-height:46vh;overflow:auto;padding:4px 2px}
+.thread-card .thread{max-height:none}
+.bubble{display:flex;gap:8px;align-items:flex-start;max-width:92%}
+.bubble.from-s{margin-left:auto;flex-direction:row-reverse}
+.bubble-in{background:var(--tile);border:1px solid var(--tile-line);border-radius:12px;padding:6px 12px;min-width:0}
+.bubble.from-t .bubble-in{background:var(--ok-bg);border-color:var(--sage)}
+.bubble-t{white-space:pre-wrap;overflow-wrap:anywhere}
+.bubble-h{font-size:.85rem}
+.thread-card{padding:14px 0;border-bottom:1px dashed var(--rule);display:grid;gap:8px}
+.thread-top{display:flex;gap:10px;align-items:center}
+.reply-form textarea{flex:1 1 220px;min-height:40px}
+.chat-sheet{max-height:calc(100vh - 24px);overflow:auto}
+.chat-row{display:grid;gap:4px;width:100%;text-align:left;font:inherit;color:inherit;background:none;border:0;border-bottom:1px dashed var(--rule);padding:12px 0;cursor:pointer}
+.chat-row:hover .chat-last{color:var(--head)}
+.chat-row .newb{justify-self:start;margin-left:0}
+.chat-q{justify-self:start;padding:1px 8px;border-radius:4px;color:#24261f;font-weight:600}
 .nquote{margin:4px 0;padding:8px 12px;border-radius:6px;color:#24261f;font-weight:600;max-height:7.5em;overflow:auto}
 .addsel:hover{transform:none}
 .addsel::after{content:"";position:absolute;left:var(--tail,50%);bottom:-8px;width:12px;height:12px;margin-left:-6px;background:var(--sage);border-right:2px solid var(--sage-ink);border-bottom:2px solid var(--sage-ink);transform:rotate(45deg)}
@@ -709,17 +727,27 @@ const Store = {
     const q = await this.call(() => this.db.collection('results/' + uid + '/ex').get());
     const out = {}; if (q) q.docs.forEach(d => { out[d.id] = d.data(); }); return out;
   },
-  // comments every student has sent: { uid: [items] }
+  // for the teacher: every student's comments and avatar { uid: { items, prof } }, and the replies { uid: chatDoc }
   async notesOf(list) {
     const out = {};
     if (this.mode === 'supa') {
-      const { data } = await this.sb.from('results').select('user_id, data').eq('key', '_merkinnat');
-      (data || []).forEach(r => { out[r.user_id] = (r.data && r.data.items) || []; });
+      const { data } = await this.sb.from('results').select('user_id, key, data').in('key', ['_merkinnat', '_profil']);
+      (data || []).forEach(r => { const o = out[r.user_id] || (out[r.user_id] = { items: [], prof: {} }); if (r.key === '_merkinnat') o.items = (r.data && r.data.items) || []; else o.prof = r.data || {}; });
     } else if (this.mode === 'cloud') {
       await Promise.all(list.map(async st => {
-        const snap = await this.call(() => this.db.doc('results/' + st.id + '/ex/_merkinnat').get());
-        if (snap && snap.exists) out[st.id] = (snap.data().items || []);
+        const [n, pr] = await Promise.all(['_merkinnat', '_profil'].map(k => this.call(() => this.db.doc('results/' + st.id + '/ex/' + k).get())));
+        out[st.id] = { items: n && n.exists ? (n.data().items || []) : [], prof: pr && pr.exists ? pr.data() : {} };
       }));
+    }
+    return out;
+  },
+  async chatsOf(list) {
+    const out = {};
+    if (this.mode === 'supa') {
+      const { data } = await this.sb.from('feedback').select('user_id, data').eq('key', '_chat');
+      (data || []).forEach(r => { out[r.user_id] = r.data || {}; });
+    } else if (this.mode === 'cloud') {
+      await Promise.all(list.map(async st => { const c = await this.call(() => this.db.doc('results/' + st.id + '/fb/_chat').get()); if (c && c.exists) out[st.id] = c.data(); }));
     }
     return out;
   },
@@ -776,12 +804,14 @@ function renderWho() {
   el.innerHTML = `
     ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
+    ${notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : '💬 Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
+  const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
@@ -1282,22 +1312,8 @@ async function renderTeacher() {
   main.innerHTML = hero(list.length + ' чел.') + `<section class="ex" id="notesSec"><div class="ex-head"><h3>Комментарии учеников</h3></div><p class="note">Загрузка…</p></section>
     <section class="ex"><div class="ex-head"><h3>Ученики</h3></div>
     <p class="ex-task">Нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div></section>`;
-  // comments the students sent; "новый" = sent since the teacher last opened this page
-  Store.notesOf(list).then(all => {
-    let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
-    const names = Object.fromEntries(list.map(st => [st.id, st.name || 'Без имени']));
-    const rows = [];
-    Object.entries(all).forEach(([uid, items]) => items.filter(n => n.sent).forEach(n => rows.push({ uid, n })));
-    rows.sort((a, b) => (a.n.sentAt < b.n.sentAt ? 1 : -1));
-    const sec = $('#notesSec'); if (!sec) return;
-    const fresh = rows.filter(x => !seen || x.n.sentAt > seen).length;
-    sec.innerHTML = `<div class="ex-head"><h3>Комментарии учеников</h3>${fresh ? `<span class="score ok">${fresh} новых</span>` : ''}</div>
-      ${rows.length ? `<ul class="hist">${rows.map(({ uid, n }) => `<li class="note-row">
-        <div class="hist-main"><b>${esc(names[uid] || 'Ученик')}</b> <span class="note">${esc(exTitleOf(n.ex))} · ${fmtDate(n.sentAt)}</span>${!seen || n.sentAt > seen ? ' <span class="newb">новый</span>' : ''}</div>
-        <blockquote class="nquote" style="background:${esc(n.color || '#fff17a')}">${esc(n.exact)}</blockquote>
-        <div class="note-text">${esc(n.note || '(без текста)')}</div></li>`).join('')}</ul>` : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «💬 Комментарий».</p>'}`;
-    try { localStorage.setItem(LS_KEY + ':notesSeen', new Date().toISOString()); } catch (e) {}
-  });
+  // comments the students sent, as chats; "новый" = a student message since the teacher last opened this page
+  Promise.all([Store.notesOf(list), Store.chatsOf(list)]).then(([all, chats]) => renderTeacherChats(list, all, chats));
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
@@ -1305,6 +1321,39 @@ async function renderTeacher() {
     wrap.appendChild(d);
     d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
   });
+}
+
+function renderTeacherChats(list, all, chats) {
+  const sec = $('#notesSec'); if (!sec) return;
+  let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
+  const names = Object.fromEntries(list.map(st => [st.id, st.name || 'Без имени']));
+  const rows = [];
+  Object.entries(all).forEach(([uid, o]) => (o.items || []).filter(n => n.sent).forEach(n => {
+    const msgs = threadOf(n, chats[uid]);
+    const lastS = msgs.filter(m => m.from === 's').map(m => m.at).sort().pop() || n.sentAt;
+    rows.push({ uid, n, msgs, prof: o.prof || {}, lastS, last: msgs.length ? msgs[msgs.length - 1].at : n.sentAt });
+  }));
+  rows.sort((a, b) => (a.last < b.last ? 1 : -1));
+  const fresh = rows.filter(x => !seen || x.lastS > seen).length;
+  const me = { name: (state.profile && state.profile.name) || 'Преподаватель', ...profDoc() };
+  sec.innerHTML = `<div class="ex-head"><h3>Комментарии учеников</h3>${fresh ? `<span class="score ok">${fresh} новых</span>` : ''}</div>
+    ${rows.length ? rows.map(({ uid, n, msgs, prof, lastS }) => `<div class="thread-card" data-uid="${uid}" data-nid="${esc(n.id)}">
+      <div class="thread-top">${avatarHTML(34, prof)}<div><b>${esc(names[uid] || 'Ученик')}</b>${!seen || lastS > seen ? ' <span class="newb">новый</span>' : ''}<div class="note">${esc(exTitleOf(n.ex))}</div></div></div>
+      <blockquote class="nquote" style="background:${esc(n.color || '#fff17a')}">${esc(n.exact)}</blockquote>
+      <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof })).join('')}</div>
+      <form class="row reply-form"><textarea class="field" rows="1" placeholder="Ответить…" required></textarea><button class="btn small main" type="submit">Ответить</button></form>
+    </div>`).join('') : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «💬 Комментарий».</p>'}`;
+  sec.querySelectorAll('.thread-card').forEach(card => card.querySelector('form').onsubmit = async e => {
+    e.preventDefault(); const ta = card.querySelector('textarea'); const text = ta.value.trim(); if (!text) return;
+    const uid = card.dataset.uid, nid = card.dataset.nid;
+    const doc = { ...(chats[uid] || {}) }; doc.threads = { ...(doc.threads || {}) };
+    doc.threads[nid] = (doc.threads[nid] || []).concat([{ text, at: new Date().toISOString() }]);
+    doc.teacher = { name: me.name, color: me.color || null, img: me.img || null };
+    const ok = await Store.saveFeedback(uid, '_chat', doc);
+    if (!ok) { toast('Не удалось отправить ответ, попробуйте ещё раз'); return; }
+    chats[uid] = doc; toast('Ответ отправлен'); renderTeacherChats(list, all, chats);
+  });
+  try { localStorage.setItem(LS_KEY + ':notesSeen', new Date().toISOString()); } catch (e) {}
 }
 
 async function renderStudent(el, st) {
@@ -1527,6 +1576,36 @@ document.addEventListener('click', e => {
   const m = e.target.closest('.hl[data-note]'); if (!m) return;
   e.preventDefault(); openNoteSheet(m.dataset.note);
 });
+// a thread = the student's messages (kept in her note) + the teacher's replies (kept in feedback "_chat")
+function threadOf(n, chat) {
+  const mine = (n.msgs && n.msgs.length ? n.msgs : (n.sent ? [{ text: n.note, at: n.sentAt }] : [])).map(m => ({ ...m, from: 's' }));
+  const theirs = (((chat || {}).threads || {})[n.id] || []).map(m => ({ ...m, from: 't' }));
+  return mine.concat(theirs).sort((a, b) => (a.at < b.at ? -1 : 1));
+}
+function bubbleHTML(m, who) {
+  return `<div class="bubble ${m.from === 't' ? 'from-t' : 'from-s'}">${avatarHTML(28, who.av)}<div class="bubble-in"><div class="bubble-h"><b>${esc(who.name)}</b> <span class="note">${fmtDate(m.at)}</span></div><div class="bubble-t">${esc(m.text || '')}</div></div></div>`;
+}
+const myChat = () => state.feedback._chat || {};
+function unreadOf(n) { return ((myChat().threads || {})[n.id] || []).filter(m => !n.readAt || m.at > n.readAt).length; }
+const unreadTotal = () => notes().filter(n => n.sent).reduce((a, n) => a + unreadOf(n), 0);
+function renderChats() {
+  const main = $('#main');
+  const list = notes().filter(n => n.sent).map(n => ({ n, msgs: threadOf(n, myChat()) })).sort((a, b) => {
+    const la = a.msgs.length ? a.msgs[a.msgs.length - 1].at : a.n.at, lb = b.msgs.length ? b.msgs[b.msgs.length - 1].at : b.n.at; return la < lb ? 1 : -1; });
+  const t = myChat().teacher;
+  main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Чат с преподавателем</span></h1>
+    <p class="note">Здесь ваши отправленные комментарии и ответы на них · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
+    <section class="ex"><div class="ex-head"><h3>Переписка</h3></div>
+    ${list.length ? list.map(({ n, msgs }) => { const last = msgs[msgs.length - 1] || { text: n.note, from: 's' }; const u = unreadOf(n);
+      return `<button class="chat-row" type="button" data-open="${esc(n.id)}">
+        <span class="chat-q" style="background:${esc(n.color)}">${esc(n.exact.length > 70 ? n.exact.slice(0, 68) + '…' : n.exact)}</span>
+        <span class="note">${esc(exTitleOf(n.ex))}</span>
+        <span class="chat-last">${last.from === 't' ? '<b>' + esc((t && t.name) || 'Преподаватель') + ':</b> ' : '<b>Вы:</b> '}${esc((last.text || '').slice(0, 120))}</span>
+        ${u ? `<span class="newb">${u} новых</span>` : ''}</button>`; }).join('')
+      : '<p class="note">Пока пусто. Выделите текст в любом задании, нажмите «💬 Комментарий» и «Отправить преподавателю».</p>'}</section>`;
+  main.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openNoteSheet(b.dataset.open));
+}
+
 function openNoteSheet(id, anchor) {
   let sh = $('#wsheet');
   if (!sh) { sh = document.createElement('div'); sh.id = 'wsheet'; sh.className = 'wsheet'; document.body.appendChild(sh); }
@@ -1535,6 +1614,40 @@ function openNoteSheet(id, anchor) {
   let lastColor = MARKERS[0]; try { lastColor = localStorage.getItem(LS_KEY + ':marker') || MARKERS[0]; } catch (e) {}
   let color = old ? old.color : lastColor;
   sh.hidden = false;
+  if (old && old.sent) {
+    // a sent comment is a chat with the teacher
+    const t = myChat().teacher || {}; const me = { name: 'Вы', av: profDoc() };
+    const msgs = threadOf(old, myChat());
+    sh.innerHTML = `<form class="wsheet-in chat-sheet" id="cform">
+      <div class="row" style="justify-content:space-between"><h3>Чат с преподавателем</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
+      <blockquote class="nquote" style="background:${esc(old.color)}">${esc(old.exact)}</blockquote>
+      <div class="note">${esc(exTitleOf(old.ex))}</div>
+      <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: t.name || 'Преподаватель', av: t } : me)).join('')}</div>
+      ${msgs.some(m => m.from === 't') ? '' : '<p class="note">Преподаватель ещё не ответил.</p>'}
+      <div class="row"><textarea class="field" id="ctext" rows="2" placeholder="Написать сообщение…" required style="flex:1 1 200px"></textarea><button class="btn main" type="submit">Отправить</button></div>
+      <div class="row"><button class="btn small" type="button" id="ndel">Удалить комментарий</button></div>
+    </form>`;
+    try { window.getSelection().removeAllRanges(); } catch (e) {}
+    const close = () => { sh.hidden = true; if (state.view === 'chat') renderChats(); renderWho(); };
+    $('#nclose').onclick = close;
+    const th = sh.querySelector('.thread'); th.scrollTop = th.scrollHeight;
+    if (unreadOf(old)) { const n2 = { ...old, readAt: new Date().toISOString() }; saveNotes(notes().map(x => x.id === old.id ? n2 : x)).then(() => renderWho()); }
+    $('#cform').onsubmit = async e => {
+      e.preventDefault(); const text = $('#ctext').value.trim(); if (!text) return;
+      const now = new Date().toISOString(); const cur = notes().find(x => x.id === old.id) || old;
+      const msgs0 = cur.msgs && cur.msgs.length ? cur.msgs : [{ text: cur.note, at: cur.sentAt }];
+      const n2 = { ...cur, msgs: msgs0.concat([{ text, at: now }]), readAt: now };
+      const cloud = await saveNotes(notes().map(x => x.id === cur.id ? n2 : x));
+      toast(cloud ? 'Сообщение отправлено' : 'Сообщение сохранено и отправится, когда появится интернет');
+      openNoteSheet(old.id);
+    };
+    const del = $('#ndel'); del.onclick = async () => {
+      if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
+      clearHighlight(old.id); await saveNotes(notes().filter(x => x.id !== old.id)); close(); toast('Комментарий удалён');
+    };
+    setTimeout(() => $('#ctext').focus(), 50);
+    return;
+  }
   sh.innerHTML = `<form class="wsheet-in" id="nform">
     <div class="row" style="justify-content:space-between"><h3>Комментарий</h3><button class="btn small" type="button" id="nclose">Закрыть</button></div>
     <blockquote class="nquote" style="background:${esc(color)}">${esc(a.exact)}</blockquote>
@@ -1563,12 +1676,13 @@ function openNoteSheet(id, anchor) {
     const text = $('#ntext').value.trim(); const now = new Date().toISOString();
     const n = old ? { ...old } : { id: 'n' + Date.now().toString(36), ex: a.ex, exact: a.exact, prefix: a.prefix, suffix: a.suffix, topic: state.topic, at: now };
     n.note = text; n.color = color; n.at = now;
-    if (act === 'send') { n.sent = true; n.sentAt = now; n.changed = false; } else if (n.sent) n.changed = true;
+    if (act === 'send') { n.sent = true; n.sentAt = now; n.changed = false; n.msgs = [{ text, at: now }]; n.readAt = now; } else if (n.sent) n.changed = true;
     const items = notes().filter(x => x.id !== n.id).concat([n]);
     clearHighlight(n.id);
     const cloud = await saveNotes(items);
     applyHighlights(); close();
-    toast(act === 'send' ? (cloud ? 'Комментарий отправлен преподавателю' : 'Комментарий сохранён и отправится, когда появится интернет') : 'Комментарий сохранён');
+    toast(act === 'send' ? (cloud ? 'Комментарий отправлен преподавателю. Ответ появится в «Чате»' : 'Комментарий сохранён и отправится, когда появится интернет') : 'Комментарий сохранён');
+    renderWho();
   };
   const del = $('#ndel'); if (del) del.onclick = async () => {
     if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
@@ -1906,12 +2020,6 @@ async function setAvatarFile(file) {
   try { const img = await shrinkImage(file); await saveProf({ img }); toast('Фото сохранено'); renderWho(); if (state.view === 'profile') renderProfile(); }
   catch (err) { toast('Не получилось открыть картинку. Попробуйте JPG или PNG'); }
 }
-// Ctrl+V / ⌘+V with a copied picture while the profile is open
-document.addEventListener('paste', e => {
-  if (state.view !== 'profile' || (e.target.closest && e.target.closest('input, textarea'))) return;
-  const f = [...(e.clipboardData ? e.clipboardData.files : [])].find(x => x.type.startsWith('image/'));
-  if (f) { e.preventDefault(); setAvatarFile(f); }
-});
 function goToExercise(topicId, exId) {
   const t = TOPICS.find(x => x.id === topicId); if (!t) return;
   const b = t.blocks.find(bl => bl.exercises.some(e => e.id === exId));
@@ -1959,16 +2067,17 @@ function renderProfile() {
           <h1 class="topic-title" style="font-size:2.6rem">${esc(name || 'Профиль')}</h1>
           <p class="note">${last ? 'последнее задание ' + fmtDate(last) : 'Заданий пока нет'}</p>
           <div class="row" style="margin-top:8px">
-            <label class="btn small" for="avFile">${d.img ? 'Сменить фото' : 'Загрузить фото'}</label>
-            <input type="file" id="avFile" accept="image/*" hidden>
-            <button class="btn small" type="button" id="avUrlBtn">Ссылка на фото</button>
-            <button class="btn small" type="button" id="avPaste">Вставить из буфера</button>
+            <button class="btn small" type="button" id="avMenuBtn" aria-expanded="false">${d.img ? 'Сменить фото' : 'Загрузить фото'}</button>
             ${d.img ? '<button class="btn small" type="button" id="avDel">Убрать фото</button>' : ''}
             <button class="btn small" type="button" id="nameEdit">Изменить имя</button>
           </div>
+          <div class="av-menu" id="avMenu" hidden>
+            <label class="btn small" for="avFile">С устройства</label><input type="file" id="avFile" accept="image/*" hidden>
+            <button class="btn small" type="button" id="avPaste">Из буфера обмена</button>
+            <button class="btn small" type="button" id="avUrlBtn">По ссылке (URL)</button>
+          </div>
           ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
-          <p class="note" style="margin:6px 0 0">Можно и просто нажать Ctrl+V (на Mac ⌘+V) на этой странице, если картинка скопирована.</p>
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
         </div>
       </div>
@@ -1991,6 +2100,7 @@ function renderProfile() {
   main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
   $('#avFile').onchange = e => { const f = e.target.files[0]; if (f) setAvatarFile(f); };
   const del = $('#avDel'); if (del) del.onclick = async () => { await saveProf({ img: null }); renderWho(); renderProfile(); };
+  $('#avMenuBtn').onclick = () => { const m = $('#avMenu'); m.hidden = !m.hidden; $('#avMenuBtn').setAttribute('aria-expanded', String(!m.hidden)); };
   $('#avUrlBtn').onclick = () => { $('#avUrlForm').hidden = false; $('#avUrl').focus(); };
   $('#avUrlForm').onsubmit = e => {
     e.preventDefault(); const url = $('#avUrl').value.trim();
@@ -2005,7 +2115,7 @@ function renderProfile() {
       const items = await navigator.clipboard.read();
       for (const it of items) { const type = it.types.find(t => t.startsWith('image/')); if (type) { await setAvatarFile(await it.getType(type)); return; } }
       toast('В буфере нет картинки. Скопируйте картинку и нажмите ещё раз');
-    } catch (err) { toast('Браузер не дал доступ к буферу. Нажмите Ctrl+V (на Mac ⌘+V) на этой странице'); }
+    } catch (err) { toast('Браузер не дал доступ к буферу обмена. Разрешите доступ или выберите «С устройства»'); }
   };
   $('#nameEdit').onclick = () => { $('#nameForm').hidden = false; $('#nameIn').focus(); };
   $('#nameForm').onsubmit = async e => { e.preventDefault(); const v = $('#nameIn').value.trim(); if (!v) return; await Store.saveProfile(v); state.profile = { ...(state.profile || {}), name: v }; toast('Имя сохранено'); renderAll(); };
@@ -2018,9 +2128,10 @@ function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', state.view === 'teacher' && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
+  document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics(); renderRegister();
-  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else renderLearn();
+  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else renderLearn();
 }
 
 state.results = lsRead().results || {};
