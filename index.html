@@ -66,7 +66,7 @@
   --sage:#f0a99a;--sage-ink:#f4a7b5;--head:#f8cfd6;--tape:rgba(240,169,154,.25);--kraft:rgba(240,190,140,.3);
   --ok-bg:#45333a;--on-accent:#3a1620}
 .teacher-mode .ex::before{background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,var(--kraft) 12px 24px)}
-.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register{display:none}
+.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
 .totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
@@ -79,6 +79,29 @@
 .board-h{margin:0 0 8px;font-family:var(--f-script);font-size:1.4rem;color:var(--sage-ink)}
 .board-h .note{font-family:var(--f-body)}
 .oldw{color:var(--sage-ink);font-size:.75rem}
+.who-me{cursor:pointer;gap:8px;padding:3px 12px 3px 4px;font:inherit}
+.who-me.on{border-color:var(--sage-ink);background:var(--sage)}
+.avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:rgba(40,45,35,.55);object-fit:cover;flex:0 0 auto;overflow:hidden}
+.prof-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.prof-av .avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 6px var(--sage)}
+.prof-id{min-width:0;flex:1 1 260px}
+.prof-id label.btn{display:inline-flex;align-items:center}
+.swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--sheet);box-shadow:0 0 0 1.5px var(--tile-line);cursor:pointer;padding:0}
+.sw.on{box-shadow:0 0 0 2.5px var(--sage-ink)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
+.stat{background:var(--tile);border:1px solid var(--tile-line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.stat-n{font-size:1.9rem;font-weight:800;color:var(--head);font-variant-numeric:tabular-nums;line-height:1.1}
+.stat-n small{font-size:1rem;color:var(--ink-soft);font-weight:700}
+.hist{list-style:none;margin:0;padding:0}
+.hist-row{display:grid;grid-template-columns:1fr auto auto;gap:6px 16px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--rule)}
+.hist-main,.hist-meta{display:flex;flex-direction:column;min-width:0}
+.hist-meta{text-align:right}
+.hist-score{font-weight:800;font-variant-numeric:tabular-nums}
+.hist-score.ok{color:var(--ok)}.hist-score.mid{color:var(--wait)}.hist-score.low{color:var(--bad)}
+@media (max-width:560px){.hist-row{grid-template-columns:1fr auto}.hist-meta{text-align:left;grid-column:1}.hist-row .btn{grid-column:2;grid-row:1 / span 2}}
+.help-note{margin:0 0 14px}
+.prof-card{margin-top:34px}
 .learned{color:var(--sage-ink);font-size:.8rem}
 .match{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:640px}
 .mcol{display:grid;gap:8px;align-content:start}
@@ -368,7 +391,7 @@ const TOPICS = [
         ['särkeä + P', 'ныть, болеть', 'minua särkee päätä'], ['sattua + mihin', 'болеть (резко), ушибиться', 'jalkaan sattuu'],
         ['tarttua + mihin', 'заразить, передаться', 'flunssa tarttui minuun'], ['sairastua + mihin', 'заболеть чем', 'sairastuin flunssaan'],
         ['parantua + mistä', 'выздороветь', 'parannun, parannuin; parannuin flunssasta'], ['kärsiä + mistä', 'страдать от', 'kärsin migreenistä'],
-        ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (тошнить)', 'oksennan, oksensi'],
+        ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (о рвоте)', 'oksennan, oksensi; oksentelu — рвота'],
         ['levätä', 'отдыхать', 'lepään, lepäsi'], ['voida hyvin / huonosti', 'чувствовать себя хорошо / плохо', 'voin huonosti'] ]},
       { name: 'Lääkärissä', cards: [
         ['lääkäri', 'врач'], ['lääke', 'лекарство', 'lääkkeen, lääkettä'], ['särkylääke', 'обезболивающее'], ['resepti', 'рецепт'],
@@ -718,7 +741,7 @@ function renderWho() {
   const cloud = Store.online();
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
-    ${name ? `<span class="chip">✎ ${esc(name)}</span>` : ''}
+    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
@@ -726,6 +749,7 @@ function renderWho() {
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
+  const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
 
@@ -899,7 +923,10 @@ function savedLine(r) { return r ? `<span class="saved-note">сохранено 
 
 async function submit(ex, doc) {
   const t = topicObj(), b = t.blocks.find(bl => bl.exercises.includes(ex));
-  const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.fi, ex: ex.id, exTitle: ex.title, type: ex.type, at: new Date().toISOString(), ...doc };
+  const prevR = state.results[key(t.id, ex.id)];
+  const at = new Date().toISOString();
+  const hist = ((prevR && prevR.hist) || []).concat([{ at, score: doc.score || 0, max: doc.max || 0 }]).slice(-30);
+  const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.fi, ex: ex.id, exTitle: ex.title, type: ex.type, at, ...doc, hist };
   state.results[key(t.id, ex.id)] = full;
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
@@ -1518,6 +1545,7 @@ function nextReview() {
   const ds = dictWords().filter(w => !isLearned(w) && !isDue(w) && w.due).map(w => w.due).sort();
   return ds[0] || null;
 }
+const hideTrainHelp = () => { try { return localStorage.getItem(LS_KEY + ':hideTrainHelp') === '1'; } catch (e) { return false; } };
 function nextModeBtn(mode) {
   const i = TRAIN_MODES.findIndex(m => m[0] === mode); const nx = TRAIN_MODES[(i + 1) % TRAIN_MODES.length];
   return `<button class="btn" type="button" data-nextmode="${nx[0]}">Следующее задание: ${nx[1]} →</button>`;
@@ -1569,12 +1597,14 @@ function renderTrain() {
     }
   }
   sec.innerHTML = `<div class="ex-head"><h3>Harjoittelu</h3></div>
-    <p class="ex-task">Слово из «Моего словаря» становится выученным в три шага: правильно сделайте с ним все три упражнения, потом ещё раз через 3 дня и ещё раз через неделю. После ошибки слово начинает учиться заново.</p>
+    ${hideTrainHelp() ? '' : `<div class="help-note"><p class="ex-task" style="margin:0">Слово из «Моего словаря» становится выученным в три шага: правильно сделайте с ним все три упражнения, потом ещё раз через 3 дня и ещё раз через неделю.</p>
+      <label class="note row" style="gap:6px;margin-top:6px"><input type="checkbox" id="trHelpOff"> Больше не показывать</label></div>`}
     <div class="row" style="margin-bottom:10px">${TRAIN_MODES.map(([id, fi, ru]) => `<button type="button" class="btn small ${tr.mode === id ? 'main' : ''}" data-mode="${id}" title="${ru}">${fi}</button>`).join('')}</div>
     <div class="row" style="margin-bottom:14px"><label class="note" for="trSrc">Слова:</label>
       <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
       <span class="note">${TRAIN_MODES.find(m => m[0] === tr.mode)[2]}</span></div>
     <div class="tr-area">${body}</div>`;
+  const ho = $('#trHelpOff'); if (ho) ho.onchange = () => { try { localStorage.setItem(LS_KEY + ':hideTrainHelp', '1'); } catch (e) {} renderTrain(); };
   sec.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { tr.mode = b.dataset.mode; tr.round = null; renderTrain(); });
   $('#trSrc').onchange = e => { tr.src = e.target.value; tr.chosen = true; tr.round = null; renderTrain(); };
   const again = sec.querySelector('[data-again]'); if (again) again.onclick = () => { tr.round = null; renderTrain(); };
@@ -1637,13 +1667,128 @@ function renderProgress() {
 }
 
 /* =========================================================
+   PROFILE: avatar, statistics, quick links to every task
+   Stored with the results under "_profil": { color, img }
+   ========================================================= */
+const PROF_KEY = '_profil';
+const AV_COLORS = ['#b9e094', '#f7c2b5', '#d8c8ef', '#fad4a6', '#a8d8e0', '#f3e08b', '#c9c1b4', '#8fb6e8'];
+const profDoc = () => state.results[PROF_KEY] || {};
+function avatarHTML(size, doc) {
+  const d = doc || profDoc(); const c = d.color || AV_COLORS[0];
+  if (d.img) return `<img class="avatar" src="${esc(d.img)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  return `<span class="avatar" style="width:${size}px;height:${size}px;background:${esc(c)}" aria-hidden="true"><svg viewBox="0 0 24 24" width="${Math.round(size * .62)}" height="${Math.round(size * .62)}"><circle cx="12" cy="8.2" r="4.2" fill="currentColor"/><path d="M3.6 21c.6-4.6 4.1-7.4 8.4-7.4s7.8 2.8 8.4 7.4z" fill="currentColor"/></svg></span>`;
+}
+async function saveProf(patch) {
+  const doc = { ...profDoc(), ...patch, at: new Date().toISOString() };
+  state.results[PROF_KEY] = doc;
+  await Store.saveResult(PROF_KEY, doc);
+}
+function shrinkImage(file) {
+  return new Promise((ok, fail) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const S = 160, cv = document.createElement('canvas'); cv.width = cv.height = S;
+      const k = Math.max(S / img.width, S / img.height), w = img.width * k, h = img.height * k;
+      cv.getContext('2d').drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+      URL.revokeObjectURL(url); ok(cv.toDataURL('image/jpeg', .85));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); fail(new Error('bad image')); };
+    img.src = url;
+  });
+}
+function goToExercise(topicId, exId) {
+  const t = TOPICS.find(x => x.id === topicId); if (!t) return;
+  const b = t.blocks.find(bl => bl.exercises.some(e => e.id === exId));
+  state.topic = topicId; state.view = 'learn'; saveTab();
+  if (b) setFold('b:' + b.id, false); setFold('e:' + exId, false);
+  renderAll();
+  const el = document.getElementById('ex-' + exId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function renderProfile() {
+  const main = $('#main'); const d = profDoc(); const name = state.profile ? state.profile.name : '';
+  // gather every task that has a result
+  const rows = [];
+  TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach((ex, i) => {
+    const r = state.results[key(t.id, ex.id)]; if (!r) return;
+    rows.push({ t, b, ex, n: i + 1, r, tries: (r.hist || []).length || 1 });
+  })));
+  const graded = rows.filter(x => x.ex.type !== 'cards' && x.ex.type !== 'writing' && x.r.max);
+  const S = graded.reduce((a, x) => a + x.r.score, 0), M = graded.reduce((a, x) => a + x.r.max, 0);
+  const tries = rows.filter(x => x.ex.type !== 'cards').reduce((a, x) => a + x.tries, 0);
+  const allTotal = TOPICS.reduce((a, t) => a + t.blocks.reduce((c, b) => c + b.exercises.length, 0), 0);
+  const doneN = rows.filter(x => exDone(x.ex, x.r)).length;
+  const dw = dictWords();
+  const last = rows.map(x => x.r.at).sort().pop();
+  const bar = p => `<div class="pbar"><span style="width:${p}%"></span></div>`;
+  const blocks = [];
+  TOPICS.forEach(t => t.blocks.forEach(b => {
+    const g = rows.filter(x => x.b === b && x.ex.type !== 'cards' && x.ex.type !== 'writing' && x.r.max);
+    if (!g.length) return;
+    const s = g.reduce((a, x) => a + x.r.score, 0), m = g.reduce((a, x) => a + x.r.max, 0);
+    blocks.push(`<div class="prow"><div class="prow-h"><b>${esc(t.fi)} · ${esc(b.fi)}</b><span class="note"><b>${pct(s, m)}%</b> правильно · ${s}/${m}</span></div>${bar(pct(s, m))}</div>`);
+  }));
+  const list = rows.slice().sort((a, b) => (a.r.at < b.r.at ? 1 : -1)).map(x => {
+    const p = x.ex.type === 'cards' ? `${x.r.score}/${x.r.max} слов` : x.ex.type === 'writing' ? `${(x.r.answers || []).length}/${x.ex.tasks.length} текстов` : `${pct(x.r.score, x.r.max)}% · ${x.r.score}/${x.r.max}`;
+    const cls = x.ex.type === 'writing' || x.ex.type === 'cards' ? '' : scoreClass(x.r.score, x.r.max);
+    return `<li class="hist-row"><div class="hist-main"><b>${esc(x.ex.title)}</b><span class="note">${esc(x.t.fi)} · ${esc(x.b.fi)} · Tehtävä ${x.n}</span></div>
+      <div class="hist-meta"><span class="hist-score ${cls}">${p}</span><span class="note">${fmtDate(x.r.at)}${x.ex.type !== 'cards' ? ' · попыток: ' + x.tries : ''}</span></div>
+      <button class="btn small" type="button" data-goto="${x.t.id}:${x.ex.id}">Открыть</button></li>`;
+  }).join('');
+  main.innerHTML = `
+    <section class="ex prof-card">
+      <div class="prof-head">
+        <div class="prof-av">${avatarHTML(96)}</div>
+        <div class="prof-id">
+          <h1 class="topic-title" style="font-size:2.6rem">${esc(name || 'Профиль')}</h1>
+          <p class="note">${last ? 'последнее задание ' + fmtDate(last) : 'Заданий пока нет'}</p>
+          <div class="row" style="margin-top:8px">
+            <label class="btn small" for="avFile">${d.img ? 'Сменить фото' : 'Загрузить фото'}</label>
+            <input type="file" id="avFile" accept="image/*" hidden>
+            ${d.img ? '<button class="btn small" type="button" id="avDel">Убрать фото</button>' : ''}
+            <button class="btn small" type="button" id="nameEdit">Изменить имя</button>
+          </div>
+          ${d.img ? '' : `<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
+          <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="stat-n">${M ? pct(S, M) + '%' : '—'}</span><span class="note">правильных ответов в тестах</span></div>
+        <div class="stat"><span class="stat-n">${doneN}<small>/${allTotal}</small></span><span class="note">заданий выполнено</span></div>
+        <div class="stat"><span class="stat-n">${tries}</span><span class="note">попыток всего</span></div>
+        <div class="stat"><span class="stat-n">${dw.filter(isLearned).length}<small>/${dw.length}</small></span><span class="note">слов выучено в словаре</span></div>
+      </div>
+    </section>
+    <section class="ex">
+      <div class="ex-head"><h3>Правильность по разделам</h3></div>
+      ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
+    </section>
+    <section class="ex">
+      <div class="ex-head"><h3>Мои задания</h3></div>
+      <p class="ex-task">Когда выполнено и с каким результатом. «Открыть» переносит прямо к заданию, чтобы посмотреть ответы.</p>
+      ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
+    </section>`;
+  main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
+  main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { await saveProf({ color: b.dataset.color }); renderWho(); renderProfile(); });
+  $('#avFile').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { const img = await shrinkImage(f); await saveProf({ img }); toast('Фото сохранено'); renderWho(); renderProfile(); }
+    catch (err) { toast('Не получилось открыть картинку. Попробуйте JPG или PNG'); }
+  };
+  const del = $('#avDel'); if (del) del.onclick = async () => { await saveProf({ img: null }); renderWho(); renderProfile(); };
+  $('#nameEdit').onclick = () => { $('#nameForm').hidden = false; $('#nameIn').focus(); };
+  $('#nameForm').onsubmit = async e => { e.preventDefault(); const v = $('#nameIn').value.trim(); if (!v) return; await Store.saveProfile(v); state.profile = { ...(state.profile || {}), name: v }; toast('Имя сохранено'); renderAll(); };
+}
+
+/* =========================================================
    BOOT
    ========================================================= */
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', state.view === 'teacher' && Store.isOwner);
+  document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   renderWho(); renderTopics(); renderRegister();
-  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else renderLearn();
+  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else renderLearn();
 }
 
 state.results = lsRead().results || {};
