@@ -697,7 +697,7 @@ poikki | перекрыт, отключён | poikki
 pois | прочь | pois
 poisvieminen | вывоз | poisvieminen
 polkupyörä | велосипед | polkupyörän
-porraskäytävä | лестница, подъезд | porraskäytävä porraskäytävän porraskäytävässä porraskäytävään porraskäytävissä
+porraskäytävä | лестничная клетка, подъезд | porraskäytävä porraskäytävän porraskäytävässä porraskäytävään porraskäytävissä
 puhelin (puh.) | телефон | puh
 pullo | бутылка | pullo
 punainen | красный | punaisia
@@ -894,3 +894,4 @@ yö | ночь | yö yöllä
 @ olla vastuussa | быть ответственным | on vastuussa
 @ on pakko | обязательно, надо | on pakko
 @ ennen kuin | прежде чем | ennen kuin
+luiska | пандус | luiska luiskaa luiskan ramppi pyörätuoliluiska
