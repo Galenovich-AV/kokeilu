@@ -52,10 +52,25 @@
   --paper:#25222a;--sheet:#2d2933;--tile:#37323e;--tile-line:#4a4353;--dot:#3c3744;--rule:#433d4b;
   --sage:#c9b5e8;--sage-ink:#cdb8f0;--head:#e2d4f7;--tape:rgba(201,181,232,.25);--kraft:rgba(201,181,232,.3);
   --ok-bg:#3a3247;--on-accent:#2b2038}
-.dict-mode .index,.dict-mode #register{display:none}
+/* Teacher view: faint pink paper, pastel sunset accents (rose, coral, apricot) */
+:root.teacher-mode{
+  --paper:#fbf0ee;--sheet:#fffaf8;--tile:#f8e7e3;--tile-line:#efd3cc;--dot:#efdcd6;--rule:#f2dfd9;
+  --sage:#f7c2b5;--sage-ink:#c25d72;--head:#9e4860;--tape:rgba(247,194,181,.55);--kraft:rgba(250,212,166,.75);
+  --ok-bg:#fdeee9;--on-accent:#5b2232}
+@media (prefers-color-scheme: dark){:root.teacher-mode:not([data-theme="light"]){
+  --paper:#2a2224;--sheet:#33292b;--tile:#3d3134;--tile-line:#523f43;--dot:#45383b;--rule:#4a3c3f;
+  --sage:#f0a99a;--sage-ink:#f4a7b5;--head:#f8cfd6;--tape:rgba(240,169,154,.25);--kraft:rgba(240,190,140,.3);
+  --ok-bg:#45333a;--on-accent:#3a1620}}
+:root.teacher-mode[data-theme="dark"]{
+  --paper:#2a2224;--sheet:#33292b;--tile:#3d3134;--tile-line:#523f43;--dot:#45383b;--rule:#4a3c3f;
+  --sage:#f0a99a;--sage-ink:#f4a7b5;--head:#f8cfd6;--tape:rgba(240,169,154,.25);--kraft:rgba(240,190,140,.3);
+  --ok-bg:#45333a;--on-accent:#3a1620}
+.teacher-mode .ex::before{background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,var(--kraft) 12px 24px)}
+.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
-.hl-pill{display:inline-block;background:var(--sage);color:var(--on-accent);font-weight:700;padding:0 10px;border-radius:999px;white-space:nowrap}
+.hl-pill{display:inline-block;background:var(--sage);color:var(--on-accent);font:inherit;font-weight:700;padding:1px 12px;border:0;border-radius:999px;white-space:nowrap;cursor:pointer}
+.hl-pill:hover{filter:brightness(.95)}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -683,7 +698,7 @@ function renderWho() {
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
-  const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); };
+  const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
   const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
@@ -1127,14 +1142,16 @@ async function exportMine() {
    ========================================================= */
 async function renderTeacher() {
   const main = $('#main');
-  main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2><p class="note">Загрузка…</p>`;
+  const hero = sub => `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Ответы учеников</span></h1><p class="note">${sub} · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>`;
+  main.innerHTML = hero('Загрузка…');
   const list = (await Store.students()).sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
   if (!list.length) {
-    main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2>
+    main.innerHTML = hero('Пока пусто') + `
       <div class="panel"><p>Пока никто не сохранил результаты.</p><p class="note">Когда ученик зарегистрируется и проверит хотя бы одно задание, он появится здесь.</p></div>`;
     return;
   }
-  main.innerHTML = `<h2 style="margin:6px 0 4px">Ответы учеников</h2><p class="note">${list.length} чел. · нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div>`;
+  main.innerHTML = hero(list.length + ' чел.') + `<section class="ex"><div class="ex-head"><h3>Ученики</h3></div>
+    <p class="ex-task">Нажмите на имя, чтобы открыть ответы. Письменные задания ждут вашей оценки.</p><div id="stList"></div></section>`;
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
@@ -1192,6 +1209,9 @@ const FOLD_KEY = LS_KEY + ':folded';
 let folded = new Set(); try { folded = new Set(JSON.parse(localStorage.getItem(FOLD_KEY)) || []); } catch (e) {}
 const isFolded = id => folded.has(id);
 function setFold(id, on) { on ? folded.add(id) : folded.delete(id); try { localStorage.setItem(FOLD_KEY, JSON.stringify([...folded])); } catch (e) {} }
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-back]')) { state.view = 'learn'; renderAll(); window.scrollTo(0, 0); }
+});
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-fold]'); if (!b) return;
   const id = b.dataset.fold; const on = !isFolded(id); setFold(id, on);
@@ -1308,7 +1328,7 @@ function renderDict() {
   const shown = words.filter(w => !q || norm(w.w + ' ' + w.t).includes(norm(q)));
   main.innerHTML = `
     <div class="dict-hero"><h1 class="topic-title"><span class="tape">Oma sanakirja</span></h1>
-      <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой <span class="hl-pill">← к заданиям</span> вверху</p></div>
+      <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
     <section class="ex">
       <div class="ex-head"><h3>Мои слова</h3></div>
       <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ В словарь» рядом с ним. Или впишите слово здесь.</p>
@@ -1340,6 +1360,7 @@ function renderDict() {
    ========================================================= */
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
+  document.documentElement.classList.toggle('teacher-mode', state.view === 'teacher' && Store.isOwner);
   renderWho(); renderTopics(); renderRegister();
   if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else renderLearn();
 }
