@@ -55,6 +55,7 @@
 .dict-mode .index,.dict-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
+.hl-pill{display:inline-block;background:var(--sage);color:var(--on-accent);font-weight:700;padding:0 10px;border-radius:999px;white-space:nowrap}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -175,6 +176,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .fb .why{color:var(--ink-soft)}
 .symptoms{background:var(--paper);border-left:3px solid var(--sage);padding:4px 10px;margin-bottom:6px;border-radius:0 6px 6px 0}
 
+.part-actions{margin:14px 0 26px;padding-top:12px;border-top:1px dashed var(--rule)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
 .btn{cursor:pointer;border:2px solid var(--sage-ink);background:transparent;color:var(--head);border-radius:999px;padding:7px 20px;font-family:var(--f-body);font-weight:700;font-size:.98rem}
 .btn.main{background:var(--sage);color:var(--on-accent);border-color:var(--sage)}
@@ -521,7 +523,7 @@ const Store = {
   },
   async afterAuth(session) {
     await this.setSession(session);
-    if (!this.uid) { lsWrite({}); state.view = 'learn'; }
+    if (!this.uid) { lsWrite({}); try { localStorage.removeItem(LS_KEY + ':pending'); } catch (e) {} state.view = 'learn'; }
     await loadMine();
   },
   async call(fn, fallback) {
@@ -554,7 +556,9 @@ const Store = {
     await this.ready;
     const s = lsRead(); s.results = s.results || {}; s.results[key] = doc; lsWrite(s);
     if (this.mode === 'supa' && this.uid) {
-      const { error } = await this.sb.from('results').upsert({ user_id: this.uid, key, data: doc, updated_at: doc.at });
+      let error = null;
+      try { ({ error } = await this.sb.from('results').upsert({ user_id: this.uid, key, data: doc, updated_at: doc.at })); } catch (e) { error = e; }
+      this.markPending(key, !!error);
       if (!error && state.profile) await this.sb.from('profiles').upsert({ id: this.uid, name: state.profile.name, updated_at: doc.at });
       return !error;
     }
@@ -563,6 +567,23 @@ const Store = {
       if (!this.cloudBlocked && state.profile) await this.call(() => this.db.doc('results/' + this.uid).set({ name: state.profile.name, updatedAt: doc.at }));
     }
     return this.online();
+  },
+  // results that could not reach the site wait here and go up when the connection is back
+  markPending(key, on) {
+    let p = []; try { p = JSON.parse(localStorage.getItem(LS_KEY + ':pending')) || []; } catch (e) {}
+    p = p.filter(x => x !== key); if (on) p.push(key);
+    try { localStorage.setItem(LS_KEY + ':pending', JSON.stringify(p)); } catch (e) {}
+  },
+  async flushPending() {
+    if (this.mode !== 'supa' || !this.uid) return;
+    let p = []; try { p = JSON.parse(localStorage.getItem(LS_KEY + ':pending')) || []; } catch (e) {}
+    if (!p.length) return;
+    const local = lsRead().results || {}; let sent = 0;
+    for (const k of p) {
+      if (!local[k]) { this.markPending(k, false); continue; }
+      try { const { error } = await this.sb.from('results').upsert({ user_id: this.uid, key: k, data: local[k], updated_at: local[k].at }); if (!error) { this.markPending(k, false); sent++; } } catch (e) {}
+    }
+    if (sent) toast('Несохранённые ответы отправлены на сайт');
   },
   async myResults() {
     await this.ready;
@@ -632,7 +653,11 @@ const fmtDate = iso => { try { return new Date(iso).toLocaleString('ru-RU', { da
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2600); }
 function scoreClass(s, m) { const p = m ? s / m : 0; return p >= .8 ? 'ok' : p >= .5 ? 'mid' : 'low'; }
 // an exercise counts as finished once it is checked or sent; cards once every word is marked
-const exDone = (ex, r) => !!r && (ex.type !== 'cards' || r.score >= r.max);
+const exDone = (ex, r) => !!r && (
+  ex.type === 'cards' ? r.score >= r.max
+  : ex.type === 'reading' ? !r.checked || r.checked.length >= ex.texts.length
+  : ex.type === 'writing' ? ex.tasks.every(t => ((r.raw || {})[t.id] || '').trim())
+  : true);
 function blockScore(topic, block, res) {
   let s = 0, m = 0, done = 0, started = 0;
   block.exercises.forEach(ex => {
@@ -837,7 +862,7 @@ async function submit(ex, doc) {
   state.results[key(t.id, ex.id)] = full;
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
-  toast(cloud ? 'Результат сохранён на сайте' : Store.mode === 'supa' ? 'Сохранено в браузере. Зарегистрируйтесь, чтобы результат увидел преподаватель' : 'Результат сохранён в этом браузере');
+  toast(cloud ? 'Результат сохранён на сайте' : Store.mode === 'supa' && Store.uid ? 'Нет связи с сайтом. Ответ сохранён в браузере и отправится, когда появится интернет' : Store.mode === 'supa' ? 'Сохранено в браузере. Зарегистрируйтесь, чтобы результат увидел преподаватель' : 'Результат сохранён в этом браузере');
 }
 
 /* ---------- cards ---------- */
@@ -970,25 +995,38 @@ function renderReading(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
   const prev = (r && r.raw) || {};
-  let qn = 0;
+  let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
+  const vals = { ...prev, ...drafts };
+  // older results were checked all at once
+  const checked = new Set(r && r.raw ? (r.checked || ex.texts.map((_, i) => i)) : []);
+  const qs = []; ex.texts.forEach((tx, ti) => tx.questions.forEach(q => qs.push({ q, ti, id: `${ex.id}-q${qs.length}` })));
   sec.innerHTML = exHead(ex, n, r) + ex.texts.map((tx, ti) => `
     <div class="section-title"><span class="n">Teksti ${ti + 1}</span></div>
     <article class="yki-text"><div class="kind">${esc(tx.kind)}</div><h4>${esc(tx.title)}</h4>${tx.body.map(p => `<p>${esc(p)}</p>`).join('')}</article>
-    ${tx.questions.map(q => { const id = `${ex.id}-q${qn++}`; const v = prev[id];
-      if (q.kind === 'mc') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${qn}. ${esc(q.q)}</legend><div class="opts">${q.options.map((o, oi) =>
+    ${qs.filter(x => x.ti === ti).map(({ q, id }) => { const num = qs.findIndex(x => x.id === id) + 1; const v = vals[id];
+      if (q.kind === 'mc') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="opts">${q.options.map((o, oi) =>
         `<label class="opt" data-oi="${oi}"><input type="radio" name="${id}" value="${oi}" ${String(v) === String(oi) ? 'checked' : ''}><span>${'abc'[oi]}) ${esc(o)}</span></label>`).join('')}</div><span class="fb"></span></fieldset>`;
-      if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${qn}. ${esc(q.q)}</legend><div class="tf">
+      if (q.kind === 'tf') return `<fieldset class="q" style="border:0;padding:0" id="${id}"><legend class="qt">${num}. ${esc(q.q)}</legend><div class="tf">
         <label class="opt" data-oi="1"><input type="radio" name="${id}" value="1" ${v === '1' ? 'checked' : ''}><span>Oikein</span></label>
         <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
-      return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${qn}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
-    }).join('')}`).join('') + `
-    <div class="actions"><button class="btn main" type="button" data-check>Tarkista!</button>${savedLine(r)}</div>`;
-  const check = async (save) => {
-    let score = 0, max = 0, i = 0; const answers = [], raw = {};
-    ex.texts.forEach(tx => tx.questions.forEach(q => {
-      const id = `${ex.id}-q${i++}`; const box = sec.querySelector('#' + id); const fb = box.querySelector('.fb');
+      return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${num}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
+    }).join('')}
+    <div class="actions part-actions"><button class="btn main" type="button" data-check="${ti}">Tarkista! · Teksti ${ti + 1}</button>
+      ${checked.has(ti) ? `<span class="saved-note">● проверено и сохранено ${r && r.parts && r.parts[ti] ? fmtDate(r.parts[ti]) : fmtDate(r.at)}</span>` : '<span class="saved-note">○ ещё не проверено</span>'}</div>`).join('');
+  const readVal = ({ q, id }) => {
+    const box = sec.querySelector('#' + id);
+    if (q.kind === 'open') return box.querySelector('textarea').value;
+    const sel = box.querySelector('input:checked'); return sel ? sel.value : null;
+  };
+  // keep unsent answers in this browser while typing
+  const keepDraft = () => { const d = {}; qs.forEach(x => { d[x.id] = readVal(x); }); try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(d)); } catch (e) {} };
+  sec.oninput = keepDraft; sec.onchange = keepDraft;
+  const grade = (set) => {
+    let score = 0, max = 0; const answers = [];
+    qs.forEach(x => {
+      const { q, id, ti } = x; if (!set.has(ti)) return;
+      const box = sec.querySelector('#' + id); const fb = box.querySelector('.fb'); const v = readVal(x);
       if (q.kind === 'open') {
-        const v = box.querySelector('textarea').value; raw[id] = v;
         const nv = norm(v); const need = q.need || q.keys.length;
         const hit = Math.min(need, q.keys.filter(alts => alts.some(a => nv.includes(norm(a)))).length);
         score += hit; max += need;
@@ -998,18 +1036,24 @@ function renderReading(sec, ex, n) {
         return;
       }
       max++;
-      const sel = box.querySelector('input:checked'); const v = sel ? sel.value : null; raw[id] = v;
       const correct = q.kind === 'mc' ? String(q.answer) : (q.answer ? '1' : '0');
       const ok = v === correct; if (ok) score++;
       box.querySelectorAll('.opt').forEach(o => { o.classList.remove('ok', 'bad'); if (o.dataset.oi === correct) o.classList.add('ok'); else if (o.dataset.oi === v) o.classList.add('bad'); });
       fb.className = 'fb ' + (ok ? 'ok' : 'bad'); fb.textContent = ok ? '✓ oikein' : (v == null ? '✗ нет ответа' : '✗ väärin');
-      const label = x => q.kind === 'mc' ? (x == null ? '—' : 'abc'[x] + ') ' + q.options[x]) : (x == null ? '—' : x === '1' ? 'Oikein' : 'Väärin');
+      const label = y => q.kind === 'mc' ? (y == null ? '—' : 'abc'[y] + ') ' + q.options[y]) : (y == null ? '—' : y === '1' ? 'Oikein' : 'Väärin');
       answers.push({ p: q.q, a: label(v), ok, c: label(correct) });
-    }));
-    if (save) { await submit(ex, { score, max, answers, raw }); renderReading(sec, ex, n); refreshTabs(); }
+    });
+    return { score, max, answers };
   };
-  if (r && r.raw) check(false);
-  sec.querySelector('[data-check]').onclick = () => check(true);
+  if (checked.size) grade(checked);
+  sec.querySelectorAll('[data-check]').forEach(btn => btn.onclick = async () => {
+    const ti = +btn.dataset.check; const set = new Set([...checked, ti]);
+    const raw = { ...prev }; qs.forEach(x => { if (x.ti === ti) raw[x.id] = readVal(x); });
+    const parts = { ...((r && r.parts) || {}) }; parts[ti] = new Date().toISOString();
+    const res = grade(set);
+    await submit(ex, { ...res, raw, checked: [...set].sort(), parts });
+    renderReading(sec, ex, n); refreshTabs();
+  });
 }
 
 /* ---------- YKI writing ---------- */
@@ -1018,36 +1062,41 @@ function renderWriting(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
   const prev = (r && r.raw) || {};
+  const savedAt = (r && r.savedAt) || {};
   let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
   const fb = state.feedback[k] || null;
   sec.innerHTML = exHead(ex, n, null) + `
     <div class="row" style="margin-bottom:8px"><button class="btn small" type="button" id="timerBtn">⏱ Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span></div>
     ${ex.tasks.map((t, i) => { const v = drafts[t.id] != null ? drafts[t.id] : (prev[t.id] || ''); const f = fb && fb.items && fb.items[t.id];
+      const sent = (prev[t.id] || '').trim(); const changed = drafts[t.id] != null && drafts[t.id] !== (prev[t.id] || '');
       return `<div class="wtask">
       <div class="section-title" style="margin-top:0"><span class="n">Tehtävä ${i + 1}</span><b>${esc(t.kind)}</b></div>
       <p style="margin:0 0 4px;max-width:65ch"><b>${esc(t.title)}.</b> ${esc(t.text)}</p>
       <ul>${t.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
       <textarea id="${ex.id}-${t.id}" rows="7" aria-label="${esc(t.title)}" data-tid="${t.id}" data-min="${t.words[0]}" data-max="${t.words[1]}">${esc(v)}</textarea>
       <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span></div>
+      <div class="actions part-actions"><button class="btn main" type="button" data-send="${t.id}">Tallenna · Tehtävä ${i + 1}</button>
+        <span class="saved-note" id="${ex.id}-${t.id}-st">${sent ? (changed ? '◐ есть несохранённые изменения' : '● сохранено ' + fmtDate(savedAt[t.id] || r.at)) : '○ ещё не сохранено'}</span></div>
       ${f && (f.grade || f.comment) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}<div style="white-space:pre-wrap">${esc(f.comment || '')}</div></div>` : ''}
-    </div>`; }).join('')}
-    <div class="actions"><button class="btn main" type="button" data-send>Отправить на проверку</button>${savedLine(r)}${r ? '<span class="saved-note">· можно исправить и отправить снова</span>' : ''}</div>`;
+    </div>`; }).join('')}`;
   const upd = ta => { const c = words(ta.value); const el = sec.querySelector('#' + ta.id + '-c'); el.textContent = c + ' слов'; el.classList.toggle('good', c >= +ta.dataset.min && c <= +ta.dataset.max); };
   sec.querySelectorAll('textarea').forEach(ta => { upd(ta); ta.addEventListener('input', () => {
-    upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {} }); });
+    upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
+    const st = sec.querySelector('#' + ta.id + '-st'); if (st) st.textContent = '◐ есть несохранённые изменения'; }); });
   const tick = () => { const left = Math.max(0, timer.end - Date.now()); const out = $('#timerOut'); if (!out) return;
     out.textContent = timer.end ? `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : '';
     if (timer.end && !left) { clearInterval(timer.h); toast('Время вышло!'); } };
   sec.querySelector('#timerBtn').onclick = () => { timer.end = Date.now() + ex.minutes * 60000; clearInterval(timer.h); timer.h = setInterval(tick, 1000); tick(); };
   tick(); if (timer.end > Date.now()) { clearInterval(timer.h); timer.h = setInterval(tick, 1000); }
-  sec.querySelector('[data-send]').onclick = async () => {
-    const raw = {}, answers = [];
-    ex.tasks.forEach(t => { const v = sec.querySelector('#' + ex.id + '-' + t.id).value; raw[t.id] = v; answers.push({ p: t.kind + ': ' + t.title, a: v, ok: null, words: words(v), tid: t.id }); });
-    if (!answers.some(a => a.words)) { toast('Сначала напишите хотя бы один текст'); return; }
-    await submit(ex, { score: 0, max: 0, answers, raw, pending: true });
-    try { localStorage.removeItem(LS_KEY + ':draft:' + k); } catch (e) {}
+  sec.querySelectorAll('[data-send]').forEach(btn => btn.onclick = async () => {
+    const tid = btn.dataset.send; const v = sec.querySelector('#' + ex.id + '-' + tid).value;
+    if (!v.trim()) { toast('Сначала напишите текст'); return; }
+    const raw = { ...prev, [tid]: v }; const sa = { ...savedAt, [tid]: new Date().toISOString() };
+    const answers = ex.tasks.filter(t => (raw[t.id] || '').trim()).map(t => ({ p: t.kind + ': ' + t.title, a: raw[t.id], ok: null, words: words(raw[t.id]), tid: t.id }));
+    await submit(ex, { score: 0, max: 0, answers, raw, savedAt: sa, pending: true });
+    delete drafts[tid]; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
     renderWriting(sec, ex, n); refreshTabs();
-  };
+  });
 }
 
 function refreshTabs() { renderTopics(); }
@@ -1259,7 +1308,7 @@ function renderDict() {
   const shown = words.filter(w => !q || norm(w.w + ' ' + w.t).includes(norm(q)));
   main.innerHTML = `
     <div class="dict-hero"><h1 class="topic-title"><span class="tape">Oma sanakirja</span></h1>
-      <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой «← к заданиям» вверху</p></div>
+      <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой <span class="hl-pill">← к заданиям</span> вверху</p></div>
     <section class="ex">
       <div class="ex-head"><h3>Мои слова</h3></div>
       <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ В словарь» рядом с ним. Или впишите слово здесь.</p>
@@ -1307,5 +1356,6 @@ async function loadMine() {
   renderAll();
 }
 Store.ready = Store.init();
-Store.ready.then(loadMine);
+Store.ready.then(loadMine).then(() => Store.flushPending());
+window.addEventListener('online', () => Store.flushPending());
 </script>
