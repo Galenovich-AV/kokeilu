@@ -405,7 +405,7 @@ const TOPICS = [
 const LS_KEY = 'suomi-muistikirja:v1';
 const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } };
 const lsWrite = s => { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) {} };
-const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js';
 const loadScript = src => new Promise((ok, fail) => { const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = fail; document.head.appendChild(sc); });
 const rowsToMap = rows => { const out = {}; (rows || []).forEach(r => { out[r.key] = r.data; }); return out; };
 
@@ -607,6 +607,7 @@ const AUTH_ERR = m => /invalid login/i.test(m) ? 'Неверный email или 
   : /at least 6|password should be/i.test(m) ? 'Пароль должен быть не короче 6 символов.'
   : /email not confirmed/i.test(m) ? 'Email ещё не подтверждён: откройте письмо от сайта и нажмите ссылку.'
   : /rate limit/i.test(m) ? 'Слишком много попыток, подождите немного.'
+  : /failed to fetch|network/i.test(m) ? 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.'
   : 'Ошибка: ' + m;
 
 function renderAuth(el) {
