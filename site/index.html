@@ -135,6 +135,8 @@ a{color:var(--sage-ink)}
 .face .g{font-size:.8rem;color:var(--ink-soft);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .face.back .g{color:#33461f}
 .card:hover .face.front{border-color:var(--sage-ink)}
+.card.indict .face{border:2.5px solid #5d9a2f;box-shadow:0 0 0 3px rgba(185,224,148,.75)}
+.card.indict .face.front::before{content:"в словаре";position:absolute;top:-9px;right:10px;font-size:.66rem;font-weight:800;letter-spacing:.04em;padding:0 6px;border-radius:999px;background:#5d9a2f;color:#fff}
 .card.known .face.front{background:var(--sheet);border-style:dashed}
 .card.known .face.front::after{content:"✓";position:absolute;top:50%;right:12px;transform:translateY(-50%);font-weight:700;color:var(--ok)}
 .card-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
@@ -240,7 +242,8 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .knowbtn{font-size:.78rem;font-weight:800;padding:3px 10px;border-radius:999px;background:#1f2c17;color:var(--sage);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .knowbtn:hover{background:#33461f}
 .knowbtn .short{display:none}
-@media (max-width:560px){.knowbtn .long{display:none}.knowbtn .short{display:inline}}
+.card-in{container-type:inline-size}
+@container (max-width:175px){.knowbtn .long{display:none}.knowbtn .short{display:inline}}
 .card.leaving{transition:opacity .25s,transform .25s;opacity:0;transform:scale(.92)}
 .modal{position:fixed;inset:0;z-index:30;background:rgba(30,35,25,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 .modal-in{background:var(--sheet);border-radius:14px;border:1.5px solid var(--sage-ink);padding:20px 22px;max-width:440px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
@@ -842,7 +845,7 @@ function renderCards(sec, ex, n) {
           <span class="face front" title="${esc(c[2] || '')}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
           <span class="face back"><span class="w">${esc(c[1])}</span>
             <span class="back-tools">
-              <span class="knowbtn" role="button" tabindex="0" data-knowcard="${esc(id)}" data-ex="${ex.id}" aria-label="Я знаю это слово">✓ <span class="long">Я знаю это слово</span><span class="short">Знаю</span></span>
+              <span class="knowbtn" role="button" tabindex="0" data-knowcard="${esc(id)}" data-ex="${ex.id}" title="Я знаю это слово" aria-label="Я знаю это слово">✓ <span class="long">Знаю слово</span><span class="short">Знаю</span></span>
               <span class="addw" role="button" tabindex="0" title="В мой словарь" data-addw="${esc(c[0].split(' + ')[0])}" data-tr="${esc(c[1])}">+</span>
             </span></span>
         </span></button>`; }).join('')}</div>` : '<p class="note">● Все слова этой группы выучены.</p>'}</div>`; }).join('') + `
@@ -854,6 +857,7 @@ function renderCards(sec, ex, n) {
   sec.querySelectorAll('[data-card]').forEach(b => b.onclick = () => {
     const id = b.dataset.card; state.flips[id] = !state.flips[id]; b.classList.toggle('flipped', state.flips[id]);
   });
+  markDictCards();
   sec.querySelector('[data-flipall]').onclick = () => { const to = all.some(c => !known.has(c[0]) && !state.flips[c[0]]); all.forEach(c => state.flips[c[0]] = to); renderCards(sec, ex, n); };
   const rs = sec.querySelector('[data-reset]');
   if (rs) rs.onclick = async () => { await saveKnown(ex, []); state.flips = {}; renderCards(sec, ex, n); refreshTabs(); };
@@ -1143,9 +1147,19 @@ const cardIndex = () => {
   TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach(ex => { if (ex.type === 'cards') ex.groups.forEach(g => g.cards.forEach(c => { m[norm(c[0].split(' + ')[0])] = c[1]; })); })));
   return m;
 };
+// cards whose word is in the personal dictionary get a bright outline
+function markDictCards() {
+  const inDict = new Set(dictWords().map(w => norm(w.w)));
+  document.querySelectorAll('[data-card]').forEach(c => {
+    const on = inDict.has(norm(c.dataset.card.split(' + ')[0]));
+    c.classList.toggle('indict', on);
+    c.title = on ? 'Это слово есть в вашем словаре' : '';
+  });
+}
 async function saveDict(words) {
   const doc = { at: new Date().toISOString(), words };
   state.results[DICT_KEY] = doc;
+  markDictCards();
   const cloud = await Store.saveResult(DICT_KEY, doc);
   renderWho();
   return cloud;
