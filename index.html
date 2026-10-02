@@ -826,8 +826,8 @@ function renderWho() {
   el.innerHTML = `
     ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
-    ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : '💬 Чаты' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
-    ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : '💬 Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
+    ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чаты' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
+    ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
@@ -853,7 +853,7 @@ function renderAuth(el) {
   if (state.checkEmail) {
     const email = state.checkEmail;
     el.innerHTML = `<section class="panel notice" role="status" aria-live="polite">
-      <h3>✉ Проверьте почту</h3>
+      <h3>Проверьте почту</h3>
       <p>Мы отправили письмо на <b>${esc(email)}</b>.</p>
       <p>Откройте его и нажмите ссылку, чтобы подтвердить email. Потом вернитесь сюда и войдите.</p>
       <p class="note">Письмо не пришло? Подождите пару минут и проверьте папку «Спам» или «Промоакции».</p>
@@ -1252,7 +1252,7 @@ function renderWriting(sec, ex, n) {
   let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
   const fb = state.feedback[k] || null;
   sec.innerHTML = exHead(ex, n, null) + `
-    <div class="row" style="margin-bottom:8px"><button class="btn small" type="button" id="timerBtn">⏱ Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span></div>
+    <div class="row" style="margin-bottom:8px"><button class="btn small" type="button" id="timerBtn">Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span></div>
     ${ex.tasks.map((t, i) => { const v = drafts[t.id] != null ? drafts[t.id] : (prev[t.id] || ''); const f = fb && fb.items && fb.items[t.id];
       const sent = (prev[t.id] || '').trim(); const changed = drafts[t.id] != null && drafts[t.id] !== (prev[t.id] || '');
       return `<div class="wtask">
