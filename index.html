@@ -1,12 +1,16 @@
 <title>Suomi-muistikirja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,500;0,700;1,400&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <style>
-/* Layout: one notebook page on dotted paper; washi-tape headings, bullet-journal signifiers (• ○ ✓ ✗) mark task state. */
+/* Layout: one long notebook page on dotted paper; each task is a paper sheet held by washi tape; vocabulary as tiles; ○ ◐ ✓ mark progress. */
 :root{
-  --paper:#fbf7ec;      /* beige page */
-  --sheet:#fffdf6;      /* raised card */
+  --paper:#f5efe3;      /* beige page */
+  --sheet:#fcf9f1;      /* paper sheet */
+  --tile:#f1eadb;       /* vocabulary tile */
+  --tile-line:#e0d5be;
+  --head:#3f6328;       /* headings: deep green */
+  --kraft:rgba(214,190,145,.8);
   --ink:#2f3a2c;        /* main text, green-tinted near-black */
   --ink-soft:#6b7563;
   --dot:#ddd4bf;        /* dot grid */
@@ -18,17 +22,17 @@
   --bad:#b5513e; --bad-bg:#f8e3dc;
   --wait:#9a7b2d; --wait-bg:#f5ecd2;
   --shadow:0 1px 0 rgba(60,50,20,.06),0 6px 18px -10px rgba(60,50,20,.25);
-  --f-hand:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  --f-hand:"Gelasio",Georgia,"Times New Roman",serif;
   --f-body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#22261f;--sheet:#2a2f26;--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
+  --paper:#22261f;--sheet:#2a2f26;--tile:#33392d;--tile-line:#464d3e;--head:#cfe9b3;--kraft:rgba(150,130,95,.55);--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
   --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
   --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}}
 :root[data-theme="dark"]{
-  --paper:#22261f;--sheet:#2a2f26;--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
+  --paper:#22261f;--sheet:#2a2f26;--tile:#33392d;--tile-line:#464d3e;--head:#cfe9b3;--kraft:rgba(150,130,95,.55);--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
   --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
   --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}
@@ -36,11 +40,13 @@
 *{box-sizing:border-box}
 body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
   color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
-.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
-h1,h2,h3,.hand{font-family:var(--f-hand);font-weight:700;line-height:1.1;text-wrap:balance}
-h1{font-size:clamp(2.6rem,7vw,3.6rem);margin:0}
-h2{font-size:2.1rem;margin:0}
-h3{font-size:1.65rem;margin:0}
+.wrap{max-width:1020px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
+h1,h2,h3,.hand{font-family:var(--f-hand);font-weight:700;line-height:1.15;text-wrap:balance;color:var(--head)}
+h1{font-size:clamp(2rem,6vw,3rem);margin:0}
+.title-slip{display:inline-block;background:var(--sheet);border:1px solid var(--rule);box-shadow:var(--shadow);padding:14px 28px 16px;transform:rotate(-.5deg)}
+.title-slip mark{background:var(--sage);color:inherit;padding:0 4px}
+h2{font-size:1.9rem;margin:0}
+h3{font-size:1.5rem;margin:0}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:2px dashed var(--sage-ink);outline-offset:3px}
 a{color:var(--sage-ink)}
@@ -53,7 +59,7 @@ a{color:var(--sage-ink)}
 .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--wait)}
 .chip.cloud .dot{background:var(--ok)}
 .tape{position:relative;display:inline-block;padding:2px 14px 0;z-index:0}
-.tape::before{content:"";position:absolute;inset:18% -6px 4% -6px;background:var(--tape);transform:rotate(-1.2deg);z-index:-1;border-radius:2px;
+.tape::before{content:"";position:absolute;inset:30% -4px 6% -4px;background:var(--tape);transform:rotate(-.8deg);z-index:-1;border-radius:2px;
   -webkit-mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent 0);mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent 0)}
 
 /* index of topics */
@@ -82,38 +88,43 @@ a{color:var(--sage-ink)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
 .tab{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:var(--r);padding:8px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700}
 .block{margin:0 0 12px}
-.block-title{margin:34px 0 16px;font-size:2.3rem}
+.block-title{margin:40px 0 34px;font-size:2.1rem}
 .block-title .note{font-family:var(--f-body);font-size:.95rem;font-weight:400}
 .tab small{font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .tab[aria-selected="true"]{background:var(--sage);color:#22301a;border-color:#22301a}
 .tab[aria-selected="true"] small{color:#33461f}
 
 /* exercise card */
-.ex{background:var(--sheet);border:1px solid var(--rule);border-radius:4px var(--r) var(--r) var(--r);box-shadow:var(--shadow);padding:22px 20px 20px;margin:0 0 28px;position:relative}
+.ex{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);padding:34px 28px 24px;margin:0 0 40px;position:relative}
+.ex::before{content:"";position:absolute;top:-16px;left:48px;width:min(220px,40%);height:34px;transform:rotate(-3deg);opacity:.9;
+  background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,color-mix(in srgb,var(--sage) 55%,var(--sheet)) 12px 24px);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.ex:nth-child(even)::before{left:auto;right:40px;width:min(210px,38%);transform:rotate(3deg);background:var(--kraft)}
 .ex-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
-.ex-head .sig{font-family:var(--f-hand);font-size:1.6rem;color:var(--sage-ink);margin-right:4px}
-.ex-task{color:var(--ink-soft);margin:0 0 16px;max-width:65ch}
+.ex-head .sig{color:var(--head);margin-right:2px}
+.ex-task{color:var(--ink-soft);font-style:italic;margin:2px 0 20px;max-width:65ch}
 .score{font-family:var(--f-hand);font-size:1.6rem;font-weight:700;padding:0 10px;border:2px solid currentColor;border-radius:8px;transform:rotate(-3deg);font-variant-numeric:tabular-nums}
 .score.ok{color:var(--ok)} .score.mid{color:var(--wait)} .score.low{color:var(--bad)}
 .saved-note{font-size:.85rem;color:var(--ink-soft)}
 
 /* flashcards */
-.groups{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.gbtn{cursor:pointer;border:1px dashed var(--ink-soft);background:transparent;border-radius:999px;padding:3px 12px;font-size:.92rem}
-.gbtn[aria-pressed="true"]{background:var(--sage);border:1px solid #22301a;color:#22301a;font-weight:700}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-.card{display:block;width:100%;perspective:900px;height:132px;cursor:pointer;border:0;background:none;padding:0;text-align:center}
+.vgroup{margin:0 0 18px}
+.vgroup h4{margin:0 0 8px;font-family:var(--f-hand);font-style:italic;font-weight:400;color:var(--ink-soft);font-size:1.05rem}
+.vgroup h4 .note{font-family:var(--f-body);font-style:normal;font-size:.82rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 16px}
+.card{display:block;width:100%;perspective:900px;height:62px;cursor:pointer;border:0;background:none;padding:0;text-align:left;font:inherit}
 .card-in{display:block;position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
 .card.flipped .card-in{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:10px 12px;gap:4px;
-  border:1.5px solid var(--ink);background:var(--sheet);background-image:linear-gradient(var(--rule) 1px,transparent 1px);background-size:100% 22px;background-position:0 11px}
-.face.back{transform:rotateY(180deg);background:var(--sage);color:#1f2c17;border-color:#1f2c17;background-image:none}
-.face .w{font-weight:700;font-size:1.08rem;line-height:1.25}
-.face .g{font-size:.82rem;color:var(--ink-soft);line-height:1.3}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:7px;display:flex;flex-direction:column;justify-content:center;padding:6px 16px;
+  border:1.5px solid var(--tile-line);background:var(--tile);box-shadow:0 1px 0 rgba(60,50,20,.05)}
+.face.back{transform:rotateY(180deg);background:var(--sage);border-color:var(--sage);color:#1f2c17}
+.face .w{font-weight:700;font-size:1rem;line-height:1.25;color:var(--head)}
+.face.back .w{color:#1f2c17}
+.face .g{font-size:.8rem;color:var(--ink-soft);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .face.back .g{color:#33461f}
-.card.known .face.front{border-style:dashed;opacity:.75}
-.card.known .face.front::after{content:"✓";position:absolute;top:4px;right:9px;font-family:var(--f-hand);font-size:1.4rem;color:var(--ok)}
-.card-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.card:hover .face.front{border-color:var(--sage-ink)}
+.card.known .face.front{background:var(--sheet);border-style:dashed}
+.card.known .face.front::after{content:"✓";position:absolute;top:50%;right:12px;transform:translateY(-50%);font-weight:700;color:var(--ok)}
+.card-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
 
 /* bank, items */
 .bank{border:1.5px dashed var(--sage-ink);border-radius:8px;padding:6px 12px;margin-bottom:16px;width:fit-content;max-width:100%}
@@ -139,11 +150,11 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-hand);font-size:1
 .symptoms{background:var(--paper);border-left:3px solid var(--sage);padding:4px 10px;margin-bottom:6px;border-radius:0 6px 6px 0}
 
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
-.btn{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:8px;padding:8px 16px;font-weight:700}
-.btn.main{background:var(--sage);color:#1f2c17;border-color:#1f2c17}
+.btn{cursor:pointer;border:2px solid var(--sage-ink);background:transparent;color:var(--head);border-radius:999px;padding:8px 22px;font-family:var(--f-hand);font-weight:700;font-size:1.05rem}
+.btn.main{background:var(--sage);color:#1f2c17;border-color:var(--sage)}
 .btn:hover{transform:translateY(-1px)}
 .btn:disabled{opacity:.5;cursor:default;transform:none}
-.btn.small{padding:4px 10px;font-size:.88rem}
+.btn.small{padding:4px 14px;font-size:.9rem;border-width:1.5px}
 
 /* YKI reading */
 .yki-text{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 16px;max-width:70ch}
@@ -197,14 +208,14 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .exr{margin:10px 0 14px}
 .exr h5{margin:0 0 4px;font-size:1rem}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-weight:600;font-size:.92rem;z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center}
-@media (max-width:520px){.ex{padding:18px 14px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.card{height:120px}}
+@media (max-width:520px){.ex{padding:30px 16px 18px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.title-slip{padding:12px 18px}}
 @media (prefers-reduced-motion:reduce){.card-in{transition:none}.btn:hover{transform:none}}
 </style>
 
 <div class="wrap">
   <header class="top">
     <div>
-      <h1><span class="tape">Suomi-muistikirja</span></h1>
+      <h1 class="title-slip"><mark>Suomi</mark>-muistikirja</h1>
     </div>
     <div class="who" id="who"><span class="chip"><span class="dot"></span>подключение…</span></div>
   </header>
@@ -729,7 +740,7 @@ function exHead(ex, n, r) {
   const sc = r && r.max && ex.type !== 'cards' ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>`
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
   const st = exDone(ex, r) ? '<span class="ex-state done">✓ выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
-  return `<div class="ex-head"><h3><span class="sig">${n}.</span>${esc(ex.title)}</h3><div class="row">${st}${sc}</div></div>
+  return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}</div></div>
     <p class="ex-task">${esc(ex.task)}</p>`;
 }
 function savedLine(r) { return r ? `<span class="saved-note">сохранено ${fmtDate(r.at)}</span>` : ''; }
@@ -748,36 +759,35 @@ function renderCards(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
   const known = new Set((r && r.known) || []);
-  const total = ex.groups.reduce((a, g) => a + g.cards.length, 0);
-  const g = ex.groups[state.cardGroup] || ex.groups[0];
-  sec.innerHTML = exHead(ex, n, r) + `
-    <div class="groups">${ex.groups.map((gr, i) => `<button class="gbtn" type="button" data-g="${i}" aria-pressed="${gr === g}">${esc(gr.name)} <span class="note">${gr.cards.filter(c => known.has(c[0])).length}/${gr.cards.length}</span></button>`).join('')}</div>
-    <div class="cards">${g.cards.map(c => {
-      const id = c[0]; const flipped = state.flips[id];
-      return `<button class="card ${flipped ? 'flipped' : ''} ${known.has(id) ? 'known' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
+  const all = ex.groups.flatMap(g => g.cards);
+  const anyFlipped = () => all.some(c => state.flips[c[0]]);
+  sec.innerHTML = exHead(ex, n, r) + ex.groups.map(gr => `
+    <div class="vgroup"><h4>${esc(gr.name)} <span class="note">· ${gr.cards.filter(c => known.has(c[0])).length}/${gr.cards.length}</span></h4>
+    <div class="cards">${gr.cards.map(c => {
+      const id = c[0];
+      return `<button class="card ${state.flips[id] ? 'flipped' : ''} ${known.has(id) ? 'known' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
         <span class="card-in">
-          <span class="face front"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
+          <span class="face front" title="${esc(c[2] || "")}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
           <span class="face back"><span class="w">${esc(c[1])}</span><span class="g">${esc(c[0])}</span></span>
-        </span></button>`; }).join('')}</div>
+        </span></button>`; }).join('')}</div></div>`).join('') + `
     <div class="card-tools">
-      <span class="note">Перевернули и знаете слово? Отметьте его:</span>
-      <button class="btn small" type="button" id="markKnown" ${Object.keys(state.flips).some(i => state.flips[i] && g.cards.some(c => c[0] === i)) ? '' : 'disabled'}>✓ Знаю открытые</button>
-      <button class="btn small" type="button" id="flipAll">Перевернуть все</button>
-      <button class="btn small" type="button" id="resetKnown">Начать заново</button>
-      <span class="note" style="margin-left:auto">Выучено: <b>${known.size}/${total}</b></span>
+      <button class="btn small main" type="button" data-known ${anyFlipped() ? '' : 'disabled'}>✓ Знаю открытые</button>
+      <button class="btn small" type="button" data-flipall>Перевернуть все</button>
+      <button class="btn small" type="button" data-reset>Начать заново</button>
+      <span class="note" style="margin-left:auto">Выучено: <b>${known.size}/${all.length}</b></span>
     </div>`;
-  sec.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { state.cardGroup = +b.dataset.g; state.flips = {}; renderCards(sec, ex, n); });
+  const knownBtn = sec.querySelector('[data-known]');
   sec.querySelectorAll('[data-card]').forEach(b => b.onclick = () => {
     const id = b.dataset.card; state.flips[id] = !state.flips[id]; b.classList.toggle('flipped', state.flips[id]);
-    $('#markKnown').disabled = !g.cards.some(c => state.flips[c[0]]);
+    knownBtn.disabled = !anyFlipped();
   });
-  $('#flipAll').onclick = () => { const any = g.cards.some(c => !state.flips[c[0]]); g.cards.forEach(c => state.flips[c[0]] = any); renderCards(sec, ex, n); };
+  sec.querySelector('[data-flipall]').onclick = () => { const to = all.some(c => !state.flips[c[0]]); all.forEach(c => state.flips[c[0]] = to); renderCards(sec, ex, n); };
   const persist = async () => {
-    await submit(ex, { score: known.size, max: total, known: [...known], answers: [{ p: 'Выучено карточек', a: known.size + ' из ' + total, ok: null }] });
+    await submit(ex, { score: known.size, max: all.length, known: [...known], answers: [{ p: 'Выучено карточек', a: known.size + ' из ' + all.length, ok: null }] });
     state.flips = {}; renderCards(sec, ex, n); refreshTabs();
   };
-  $('#markKnown').onclick = () => { g.cards.forEach(c => { if (state.flips[c[0]]) known.add(c[0]); }); persist(); };
-  $('#resetKnown').onclick = () => { known.clear(); persist(); };
+  knownBtn.onclick = () => { all.forEach(c => { if (state.flips[c[0]]) known.add(c[0]); }); persist(); };
+  sec.querySelector('[data-reset]').onclick = () => { known.clear(); persist(); };
 }
 
 /* ---------- input (fill-in) ---------- */
@@ -794,7 +804,8 @@ function renderInput(sec, ex, n) {
         : esc(it.t).replace('___', inp) + (it.h ? ` <span class="hint">(${esc(it.h)})</span>` : '');
       return `<li><div class="it-body">${body}<span class="fb" id="${ex.id}-fb-${i}"></span></div></li>`; }).join('')}</ol>
     <div class="actions">
-      <button class="btn main" type="button" data-check>Проверить</button>
+      <button class="btn main" type="button" data-check>Tarkista!</button>
+      <button class="btn" type="button" data-show>Näytä vastaukset</button>
       <button class="btn" type="button" data-clear>Очистить</button>
       ${savedLine(r)}
     </div>`;
@@ -816,6 +827,10 @@ function renderInput(sec, ex, n) {
   };
   if (checked) check(false);
   sec.querySelector('[data-check]').onclick = () => check(true);
+  sec.querySelector('[data-show]').onclick = () => ex.items.forEach((it, i) => {
+    const fb = sec.querySelector('#' + ex.id + '-fb-' + i);
+    fb.className = 'fb wait'; fb.innerHTML = `ответ: <b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
+  });
   sec.querySelector('[data-clear]').onclick = () => {
     sec.querySelectorAll('.blank').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
     sec.querySelectorAll('.fb').forEach(f => { f.textContent = ''; f.className = 'fb'; });
@@ -842,7 +857,7 @@ function renderReading(sec, ex, n) {
         <label class="opt" data-oi="0"><input type="radio" name="${id}" value="0" ${v === '0' ? 'checked' : ''}><span>Väärin</span></label></div><span class="fb"></span></fieldset>`;
       return `<div class="q" id="${id}"><label class="qt" for="${id}-t">${qn}. ${esc(q.q)}</label><textarea id="${id}-t" rows="2">${esc(v || '')}</textarea><span class="fb"></span></div>`;
     }).join('')}`).join('') + `
-    <div class="actions"><button class="btn main" type="button" data-check>Проверить и сохранить</button>${savedLine(r)}</div>`;
+    <div class="actions"><button class="btn main" type="button" data-check>Tarkista!</button>${savedLine(r)}</div>`;
   const check = async (save) => {
     let score = 0, max = 0, i = 0; const answers = [], raw = {};
     ex.texts.forEach(tx => tx.questions.forEach(q => {
