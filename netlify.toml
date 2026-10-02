@@ -1,6 +1,7 @@
+# site/ is built by build.py and committed, so Netlify only publishes it (no build step that could fail)
 [build]
   publish = "site"
-  command = "python3 build.py"
+  command = ""
 
 # always check for a fresh page, so phones don't keep showing an old version
 [[headers]]
