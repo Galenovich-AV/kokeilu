@@ -196,6 +196,8 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 /* register / notices */
 .panel{background:var(--sheet);border:1.5px solid var(--ink);border-radius:var(--r);padding:18px 20px;margin:0 0 22px;box-shadow:var(--shadow)}
 .panel p{margin:.3em 0}
+.panel.notice{border-color:var(--sage-ink);background:var(--ok-bg)}
+.panel.notice h3{margin-bottom:6px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .field{border:1.5px solid var(--ink-soft);border-radius:8px;padding:8px 12px;background:var(--paper);min-width:0;flex:1 1 220px}
 .note{font-size:.9rem;color:var(--ink-soft)}
@@ -620,6 +622,24 @@ const AUTH_ERR = m => /invalid login/i.test(m) ? 'Неверный email или 
 
 function renderAuth(el) {
   const mode = state.authMode || 'signup';
+  if (state.checkEmail) {
+    const email = state.checkEmail;
+    el.innerHTML = `<section class="panel notice" role="status" aria-live="polite">
+      <h3>✉ Проверьте почту</h3>
+      <p>Мы отправили письмо на <b>${esc(email)}</b>.</p>
+      <p>Откройте его и нажмите ссылку, чтобы подтвердить email. Потом вернитесь сюда и войдите.</p>
+      <p class="note">Письмо не пришло? Подождите пару минут и проверьте папку «Спам» или «Промоакции».</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn main" type="button" id="toLogin">Email подтверждён, войти</button>
+        <button class="btn" type="button" id="resend">Отправить письмо ещё раз</button>
+      </div><p class="note" id="authMsg"></p></section>`;
+    $('#toLogin').onclick = () => { state.checkEmail = null; state.authMode = 'login'; renderRegister(); const f = $('#authEmail'); if (f) f.value = email; };
+    $('#resend').onclick = async () => {
+      const { error } = await Store.sb.auth.resend({ type: 'signup', email, options: { emailRedirectTo: location.origin + location.pathname } });
+      $('#authMsg').textContent = error ? AUTH_ERR(error.message) : 'Письмо отправлено ещё раз.';
+    };
+    return;
+  }
   if (Store.recovery) {
     el.innerHTML = `<section class="panel"><h3>Новый пароль</h3>
       <form class="row" id="pwForm" style="margin-top:10px"><input class="field" id="pwNew" type="password" autocomplete="new-password" minlength="6" placeholder="Новый пароль" required>
@@ -661,7 +681,7 @@ function renderAuth(el) {
         const name = $('#authName').value.trim();
         const { data, error } = await Store.sb.auth.signUp({ email, password, options: { data: { name }, emailRedirectTo: location.origin + location.pathname } });
         if (error) { msg.textContent = AUTH_ERR(error.message); return; }
-        if (!data.session) { msg.textContent = 'Почти готово: мы отправили письмо на ' + email + '. Откройте его и нажмите ссылку, потом войдите.'; state.authMode = 'login'; return; }
+        if (!data.session) { state.checkEmail = email; toast('Письмо отправлено на ' + email); renderRegister(); $('#register').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
       } else {
         const { error } = await Store.sb.auth.signInWithPassword({ email, password });
         if (error) { msg.textContent = AUTH_ERR(error.message); return; }
