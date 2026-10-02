@@ -548,13 +548,13 @@ const TOPICS = [
         'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
         '– Mari, 34' ],
         questions: [
-        { kind: 'mc', q: 'Mistä Mari sai flunssan?', options: ['Työkavereilta.', 'Pojaltaan.', 'Lääkäriltä.'], answer: 1 },
-        { kind: 'mc', q: 'Miksi Mari meni töihin?', options: ['Hän ajatteli, että sairaus ei ole vakava.', 'Hänellä oli tärkeä palaveri.', 'Lääkäri sanoi, että se on hyvä idea.'], answer: 0 },
-        { kind: 'mc', q: 'Mitä lääkäri teki?', options: ['Mittasi verenpaineen.', 'Kuunteli keuhkoja ja kirjoitti reseptin.', 'Lähetti Marin sairaalaan.'], answer: 1 },
-        { kind: 'tf', q: 'Marin työkaverit sairastuivat myös.', answer: true },
+        { kind: 'mc', q: 'Mistä Mari sai flunssan?', options: ['Päiväkodista.', 'Pojaltaan.', 'Lääkäriltä.'], answer: 1 },
+        { kind: 'mc', q: 'Miksi Mari meni töihin?', options: ['Hän ajatteli, että sairaus ei ole vakava.', 'Hän menee aina töihin sairaana.', 'Koska hänellä oli vain nuha.'], answer: 0 },
+        { kind: 'mc', q: 'Mitä lääkäri teki?', options: ['Mittasi verenpaineen.', 'Kuunteli keuhkoja ja kirjoitti määräyksen.', 'Antoi Marille Buranaa.'], answer: 1 },
+        { kind: 'tf', q: 'Yli puolet Marin työkavereista sairastui myös.', answer: false },
         { kind: 'tf', q: 'Mari parani nopeasti eikä ollut enää väsynyt.', answer: false },
-        { kind: 'tf', q: 'Viikonloppuna Mari pystyi lukemaan.', answer: false },
-        { kind: 'tf', q: 'Jos poika on sairas, Mari jää nyt kotiin.', answer: true },
+        { kind: 'tf', q: 'Viikonloppuna Mari nautti lukemisesta.', answer: false },
+        { kind: 'tf', q: 'Jos poika on sairas, Mari pysyy kotona.', answer: true },
         { kind: 'open', q: 'Mitä oireita Marilla oli viikonloppuna? Mainitse kolme.', keys: [['kuume'], ['ysk'], ['pää', 'särk']], model: 'kuume, yskä, päänsärky' },
         { kind: 'open', q: 'Mitkä kaksi asiaa Mari oppi? Vastaa lyhyesti omin sanoin.', keys: [['töihin', 'töissä', 'työhön'], ['lev', 'lepä', 'lepo']], model: 'Sairaana ei kannata mennä töihin. On tärkeää levätä kunnolla.' }
       ]}
