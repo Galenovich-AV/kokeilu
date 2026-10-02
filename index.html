@@ -189,7 +189,10 @@ a{color:var(--sage-ink)}
 .wtask.collapsed > :not(.wtask-head){display:none}
 .wtask.collapsed .fold::before{transform:translateY(-2px) rotate(45deg)}
 /* the exam timer stays in view while scrolling through the writing tasks */
-#timerRow{position:sticky;top:calc(6px + env(safe-area-inset-top,0px));z-index:5;background:var(--sheet);border:1px solid var(--rule);border-radius:999px;padding:4px 12px;width:fit-content;max-width:100%;box-shadow:0 4px 12px rgba(40,50,30,.12)}
+#timerRow{position:sticky;top:calc(6px + env(safe-area-inset-top,0px));z-index:5;background:#ffe7b8;border:2px solid #d99a3a;border-radius:999px;padding:4px 12px;width:fit-content;max-width:100%;box-shadow:0 6px 16px rgba(120,80,20,.25)}
+#timerRow .timer{color:#7a4a0c;font-weight:700}
+#timerRow .btn{border-color:#c7823a;color:#5c3712}
+#timerRow .btn.main{background:#d99a3a;border-color:#d99a3a;color:#fff}
 .ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
 .ex-state.done{color:var(--ok)}
