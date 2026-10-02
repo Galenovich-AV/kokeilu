@@ -193,6 +193,9 @@ a{color:var(--sage-ink)}
 #timerRow .timer{color:#7a4a0c;font-weight:700}
 #timerRow .btn{border-color:#c7823a;color:#5c3712}
 #timerRow .btn.main{background:#d99a3a;border-color:#d99a3a;color:#fff}
+/* before it starts there is only the start button, without the bar's own frame around it */
+#timerRow.idle{background:none;border:0;box-shadow:none;padding:0}
+#timerRow.idle .btn{background:#ffe7b8}
 .block-done{font-size:2.2rem;font-weight:800;color:var(--sage-ink);line-height:1;margin:0 2px}
 .ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
@@ -1345,6 +1348,7 @@ function renderWriting(sec, ex, n) {
   };
   const drawTimer = () => {
     const row = sec.querySelector('#timerRow'); const running = timer.end > Date.now() && !timer.paused;
+    row.classList.toggle('idle', !timer.end && !timer.paused);
     row.innerHTML = !timer.end && !timer.paused
       ? `<button class="btn small" type="button" data-t="start">Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span>`
       : `<span class="timer" id="timerOut"></span>
