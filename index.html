@@ -1,7 +1,7 @@
 <title>Suomi-muistikirja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Gelasio:ital,wght@0,500;0,700;1,400&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap">
 <style>
 /* Layout: one long notebook page on dotted paper; each task is a paper sheet held by washi tape; vocabulary as tiles; ○ ◐ ✓ mark progress. */
 :root{
@@ -22,7 +22,7 @@
   --bad:#b5513e; --bad-bg:#f8e3dc;
   --wait:#9a7b2d; --wait-bg:#f5ecd2;
   --shadow:0 1px 0 rgba(60,50,20,.06),0 6px 18px -10px rgba(60,50,20,.25);
-  --f-hand:"Gelasio",Georgia,"Times New Roman",serif;
+  --f-hand:var(--f-body);
   --f-script:"Caveat","Segoe Print","Comic Sans MS",cursive;
   --f-body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
   --r:10px;
@@ -43,8 +43,12 @@
 body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,transparent 1.3px);background-size:22px 22px;
   color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;margin:0}
 .wrap{max-width:1020px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
-h1,h2,h3,.hand{font-family:var(--f-hand);font-weight:700;line-height:1.15;text-wrap:balance;color:var(--head)}
+h1,h2,h3,.hand{font-family:var(--f-body);font-weight:800;line-height:1.15;text-wrap:balance;color:var(--head)}
 h1{font-size:clamp(2rem,6vw,3rem);margin:0}
+.brand{font-weight:800;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-ink)}
+.topic-title{font-family:var(--f-script);font-weight:700;font-size:clamp(2.6rem,7vw,3.4rem);line-height:1}
+.linkbtn{background:none;border:0;padding:2px 0;cursor:pointer;color:var(--ink-soft);font-size:.9rem;font-weight:600;border-bottom:1px dashed currentColor}
+.linkbtn:hover{color:var(--sage-ink)}
 .title-slip{display:inline-block;background:var(--sheet);border:1px solid var(--rule);box-shadow:var(--shadow);padding:14px 28px 16px;transform:rotate(-.5deg)}
 .title-slip mark{background:var(--tape);color:inherit;padding:0 4px}
 h2{font-size:1.9rem;margin:0}
@@ -54,7 +58,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 a{color:var(--sage-ink)}
 
 /* header */
-.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:8px}
 .top .sub{color:var(--ink-soft);font-size:.95rem;margin:2px 0 0}
 .who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.92rem}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--ink);border-radius:999px;padding:3px 12px;background:var(--sheet)}
@@ -152,7 +156,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .symptoms{background:var(--paper);border-left:3px solid var(--sage);padding:4px 10px;margin-bottom:6px;border-radius:0 6px 6px 0}
 
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
-.btn{cursor:pointer;border:2px solid var(--sage-ink);background:transparent;color:var(--head);border-radius:999px;padding:8px 22px;font-family:var(--f-hand);font-weight:700;font-size:1.05rem}
+.btn{cursor:pointer;border:2px solid var(--sage-ink);background:transparent;color:var(--head);border-radius:999px;padding:7px 20px;font-family:var(--f-body);font-weight:700;font-size:.98rem}
 .btn.main{background:var(--sage);color:#1f2c17;border-color:var(--sage)}
 .btn:hover{transform:translateY(-1px)}
 .btn:disabled{opacity:.5;cursor:default;transform:none}
@@ -185,7 +189,7 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .count.good{color:var(--ok)}
 .timer{font-family:var(--f-script);font-size:1.5rem;font-variant-numeric:tabular-nums}
 .teacher-fb{margin-top:10px;border:1.5px solid var(--sage-ink);border-radius:8px;padding:10px 12px;background:var(--ok-bg)}
-.teacher-fb b{font-family:var(--f-hand);font-size:1.3rem}
+.teacher-fb b{font-weight:800}
 
 /* register / notices */
 .panel{background:var(--sheet);border:1.5px solid var(--ink);border-radius:var(--r);padding:18px 20px;margin:0 0 22px;box-shadow:var(--shadow)}
@@ -235,7 +239,7 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 <div class="wrap">
   <header class="top">
     <div>
-      <h1 class="title-slip"><mark>Suomi</mark>-muistikirja</h1>
+      <span class="brand">Kielententti</span>
     </div>
     <div class="who" id="who"></div>
   </header>
@@ -760,8 +764,8 @@ function renderLearn() {
   const t = topicObj();
   const main = $('#main');
   main.innerHTML = `
-    <div class="row" style="justify-content:space-between;margin:6px 0 4px"><h2>${esc(t.fi)}</h2>
-      <div class="row"><button class="btn small" type="button" data-allfold="1">Свернуть всё</button><button class="btn small" type="button" data-allfold="0">Развернуть всё</button></div></div>
+    <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
+      <div class="row" style="gap:14px"><button class="linkbtn" type="button" data-allfold="1">свернуть всё</button><button class="linkbtn" type="button" data-allfold="0">развернуть всё</button></div></div>
     <p class="note" style="margin:0">Совет: зажмите любое слово на странице, чтобы добавить его в свой словарь.</p>
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
