@@ -355,35 +355,32 @@ const TOPICS = [
       ]}
   ]},
   { id: 'yki', fi: 'YKI-testi', ru: 'YKI-тест', exercises: [
-    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте короткие тексты и ответьте на вопросы. На открытые вопросы отвечайте коротко по-фински.',
+    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
       texts: [
-      { kind: 'Tekstiviesti', title: 'Viesti Liisalle', body: [
-        'Hei Liisa! Olen sairas tänään. Minulla on kuumetta ja kurkku on kipeä. En tule suomen kurssille illalla. Voitko kertoa opettajalle? Menen huomenna lääkäriin. Terveisin Anna' ],
+      { kind: 'Tiedote', title: 'Kivikon terveysasema tiedottaa', body: [
+        'Influenssakausi on alkanut. Jos sinulla on korkea kuume, yskä ja lihaksia särkee, älä tule terveysasemalle ilman ajanvarausta. Soita ensin hoitajalle numeroon 09 310 5555 arkisin kello 8–16. Hoitaja kertoo, tarvitsetko lääkärin.',
+        'Useimmat sairastuneet paranevat kotona noin viikossa. Lepää, juo paljon vettä ja ota tarvittaessa särkylääkettä. Jos kuume on yli 39 astetta yli kolme päivää tai hengittäminen on vaikeaa, ota heti yhteyttä päivystykseen.',
+        'Influenssarokotuksia annetaan ilman ajanvarausta tiistaisin ja torstaisin kello 12–15. Rokotus on maksuton yli 65-vuotiaille, raskaana oleville ja pienille lapsille.' ],
         questions: [
-        { kind: 'mc', q: 'Miksi Anna ei tule kurssille?', options: ['Hän on töissä.', 'Hän on sairas.', 'Hän on lääkärissä.'], answer: 1 },
-        { kind: 'mc', q: 'Mitä Liisan pitää tehdä?', options: ['Soittaa lääkärille.', 'Kertoa opettajalle.', 'Ostaa lääkettä.'], answer: 1 },
-        { kind: 'tf', q: 'Anna menee lääkäriin tänään.', answer: false }
+        { kind: 'mc', q: 'Mitä sinun pitää tehdä ensin, jos sinulla on influenssan oireet?', options: ['Mennä suoraan terveysasemalle.', 'Soittaa hoitajalle.', 'Mennä päivystykseen.'], answer: 1 },
+        { kind: 'mc', q: 'Milloin pitää ottaa yhteyttä päivystykseen?', options: ['Kun lihaksia särkee.', 'Heti kun sairastuu.', 'Kun korkea kuume on kestänyt yli kolme päivää.'], answer: 2 },
+        { kind: 'mc', q: 'Mikä pitää paikkansa rokotuksesta?', options: ['Rokotukseen täytyy varata aika.', 'Rokotukseen voi mennä tiistaina iltapäivällä.', 'Rokotus on maksuton kaikille.'], answer: 1 }
       ]},
-      { kind: 'Ilmoitus', title: 'Kivikon terveysasema', body: [
-        'Terveysasema on auki maanantaista perjantaihin kello 8–16. Lauantaina ja sunnuntaina terveysasema on kiinni.',
-        'Ajanvaraus puhelimella numerosta 09 310 5555 kello 8–12.',
-        'Jos olet viikonloppuna hyvin sairas, soita päivystykseen: 116 117.' ],
+      { kind: 'Blogikirjoitus', title: 'Ajattelin, että flunssa on pieni asia', body: [
+        'Marraskuun alussa poikani toi päiväkodista flunssan, ja tietysti se tarttui myös minuun. Ensin nenä vuoti ja kurkku oli kipeä. Ajattelin, että tämä on vain tavallinen nuha, ja menin töihin niin kuin aina. Joimme työkavereiden kanssa kahvia ja istuimme pitkässä palaverissa. Kahden päivän päästä puolet tiimistä oli sairaana.',
+        'Viikonloppuna oloni oli vielä huonompi. Minulla oli kuumetta, yskin koko yön, ja päätä särki niin, etten pystynyt lukemaan. Maanantaina kävin lääkärissä. Lääkäri kuunteli keuhkoja ja sanoi, että minulla on alkava keuhkokuume. Hän kirjoitti reseptin ja käski levätä vähintään viikon.',
+        'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
+        '– Mari, 34' ],
         questions: [
-        { kind: 'mc', q: 'Milloin voit varata ajan puhelimella?', options: ['Maanantaista perjantaihin kello 8–12.', 'Joka päivä kello 8–16.', 'Lauantaina.'], answer: 0 },
-        { kind: 'tf', q: 'Terveysasema on auki lauantaina.', answer: false },
-        { kind: 'open', q: 'Mihin numeroon soitat, jos olet sunnuntaina hyvin sairas?', keys: [['116 117', '116117']], model: '116 117 (päivystys)' }
-      ]},
-      { kind: 'Kertomus', title: 'Mikko sairastui', body: [
-        'Mikko on 35-vuotias. Hän on yleensä terve, mutta viime viikolla hän sairastui flunssaan. Ensin hänen nenänsä vuoti, sitten tuli yskä ja kuumetta.',
-        'Mikko oli kotona kolme päivää. Hän joi paljon teetä, lepäsi ja nukkui paljon. Hänen vaimonsa osti apteekista särkylääkettä.',
-        'Torstaina Mikko voi jo paremmin, ja perjantaina hän meni taas töihin.' ],
-        questions: [
-        { kind: 'mc', q: 'Mitä oireita Mikolla oli ensin?', options: ['Vatsa oli kipeä.', 'Nenä vuoti.', 'Päätä särki.'], answer: 1 },
-        { kind: 'mc', q: 'Kuinka kauan Mikko oli kotona?', options: ['Yhden päivän.', 'Kolme päivää.', 'Viikon.'], answer: 1 },
-        { kind: 'mc', q: 'Mitä Mikon vaimo teki?', options: ['Soitti lääkärille.', 'Osti lääkettä.', 'Keitti teetä.'], answer: 1 },
-        { kind: 'tf', q: 'Mikko on usein sairas.', answer: false },
-        { kind: 'tf', q: 'Perjantaina Mikko meni töihin.', answer: true },
-        { kind: 'open', q: 'Mitä Mikko teki kotona? Kirjoita kaksi asiaa.', keys: [['tee', 'joi'], ['lepä'], ['nukku', 'nukkui']], need: 2, model: 'Hän joi teetä, lepäsi ja nukkui paljon.' }
+        { kind: 'mc', q: 'Mistä Mari sai flunssan?', options: ['Työkavereilta.', 'Pojaltaan.', 'Lääkäriltä.'], answer: 1 },
+        { kind: 'mc', q: 'Miksi Mari meni töihin?', options: ['Hän ajatteli, että sairaus ei ole vakava.', 'Hänellä oli tärkeä palaveri.', 'Lääkäri sanoi, että se on hyvä idea.'], answer: 0 },
+        { kind: 'mc', q: 'Mitä lääkäri teki?', options: ['Mittasi verenpaineen.', 'Kuunteli keuhkoja ja kirjoitti reseptin.', 'Lähetti Marin sairaalaan.'], answer: 1 },
+        { kind: 'tf', q: 'Marin työkaverit sairastuivat myös.', answer: true },
+        { kind: 'tf', q: 'Mari parani nopeasti eikä ollut enää väsynyt.', answer: false },
+        { kind: 'tf', q: 'Viikonloppuna Mari pystyi lukemaan.', answer: false },
+        { kind: 'tf', q: 'Jos poika on sairas, Mari jää nyt kotiin.', answer: true },
+        { kind: 'open', q: 'Mitä oireita Marilla oli viikonloppuna? Mainitse kolme.', keys: [['kuume'], ['ysk'], ['pää', 'särk']], model: 'kuume, yskä, päänsärky' },
+        { kind: 'open', q: 'Mitkä kaksi asiaa Mari oppi? Vastaa lyhyesti omin sanoin.', keys: [['töihin', 'töissä', 'työhön'], ['lev', 'lepä', 'lepo']], model: 'Sairaana ei kannata mennä töihin. On tärkeää levätä kunnolla.' }
       ]}
     ]},
     { id: 'kirjoittaminen', type: 'writing', title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть: три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
