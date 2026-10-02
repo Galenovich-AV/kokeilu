@@ -107,6 +107,11 @@
 .av-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:10px;border:1.5px dashed var(--sage-ink);border-radius:10px;width:fit-content;max-width:100%}
 .av-menu label.btn{display:inline-flex;align-items:center}
 .q-actions{margin-top:6px;gap:8px}
+.tmark{background:#ffe3a8;color:#2a2418;border-radius:3px;padding:0 1px;cursor:help}
+.tmark::after{content:attr(data-n);font-size:.68em;font-weight:800;vertical-align:super;color:#b06a12;margin-left:1px}
+.tmarks{margin:6px 0 10px;padding-left:1.4em;font-size:.92rem}
+.tmarks li{margin:3px 0}
+.tm-q{font-style:italic;color:var(--ink-soft)}
 .qfold{margin:4px 0 14px}
 .help-note{margin:0 0 14px}
 .prof-card{margin-top:24px}
@@ -179,6 +184,7 @@ a{color:var(--sage-ink)}
 .toc-blocks a:hover{border-bottom-color:var(--sage-ink)}
 .toc-blocks li.is-done a{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:var(--sage-ink)}
 .toc-legend{margin:6px 0 0}
+.ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
 .ex-state.done{color:var(--ok)}
 .block{scroll-margin-top:12px}
@@ -427,7 +433,7 @@ const TOPICS = [
   id: 'terveys', fi: 'Terveys ja sairaudet', ru: 'Здоровье и болезни',
   blocks: [
   { id: 'sanasto', fi: 'Sanasto', ru: 'Лексика', exercises: [
-    { id: 'kortit', type: 'cards', title: 'Sanakortit', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
+    { id: 'kortit', type: 'cards', min: 15, title: 'Sanakortit', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
       groups: [
       { name: 'Ruumiinosat', cards: [
         ['pää', 'голова'], ['kaula', 'шея'], ['kurkku', 'горло'], ['olkapää', 'плечо'], ['selkä', 'спина'], ['rinta', 'грудь'],
@@ -462,7 +468,7 @@ const TOPICS = [
         ['mitata + G/P', 'измерять', 'mittasi kuumeen'], ['ottaa lääkettä', 'принимать лекарство'],
         ['hoitaa + G/P', 'лечить', 'hoitaa flunssaa'], ['kirjoittaa resepti', 'выписать рецепт'] ]}
     ]},
-    { id: 'oireet', type: 'input', title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
+    { id: 'oireet', type: 'input', min: 7, title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
       bank: ['flunssa', 'influenssa', 'angiina', 'vatsatauti', 'migreeni', 'korvatulehdus', 'keuhkokuume', 'allergia'],
       items: [
         { box: 'Hänen nenänsä vuotaa, hän aivastelee paljon ja hänen kurkkunsa on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha', 'nuhakuume'] },
@@ -474,7 +480,7 @@ const TOPICS = [
         { box: 'Hänellä on kova yskä ja korkea kuume. Hengittäminen on vaikeaa, ja keuhkoissa on tulehdus.', a: ['keuhkokuume', 'pneumonia'] },
         { box: 'Keväällä hänen silmänsä kutiavat, hän aivastelee ja hänellä on ihottumaa, mutta kuumetta ei ole.', a: ['allergia'] }
       ]},
-    { id: 'sanat', type: 'input', title: 'Täydennä lauseet', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
+    { id: 'sanat', type: 'input', min: 10, title: 'Täydennä lauseet', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
       bank: ['sairastua', 'kärsiä', 'polvi', 'maksa', 'kuume', 'yskiä', 'munuainen', 'selkä', 'parantua', 'kurkkukipu'],
       items: [
         { t: 'Lapsi ___ eilen angiinaan, ja nyt hän on kotona.', a: ['sairastui'] },
@@ -490,7 +496,7 @@ const TOPICS = [
       ]}
   ]},
   { id: 'kielioppi', fi: 'Kielioppi', ru: 'Грамматика', exercises: [
-    { id: 'perfekti', type: 'input', title: 'Perfekti vai imperfekti?', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
+    { id: 'perfekti', type: 'input', min: 10, title: 'Perfekti vai imperfekti?', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
       items: [
         { t: 'Minä ___ sairaana jo kolme päivää, eikä kuume laske.', h: 'olla', a: ['olen ollut'], why: 'действие продолжается до сих пор → перфект' },
         { t: 'Eilen minä ___ lääkärissä.', h: 'käydä', a: ['kävin'], why: 'eilen — законченное время → имперфект' },
@@ -505,7 +511,7 @@ const TOPICS = [
         { t: 'Viime kesänä hän ___ allergiasta koko kesän.', h: 'kärsiä', a: ['kärsi'], why: 'viime kesänä → имперфект' },
         { t: 'Lääkäri ___ minulle reseptin kaksi päivää sitten.', h: 'kirjoittaa', a: ['kirjoitti'], why: 'kaksi päivää sitten → имперфект' }
       ]},
-    { id: 'objekti', type: 'input', title: 'Objektin sijamuodot', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
+    { id: 'objekti', type: 'input', min: 8, title: 'Objektin sijamuodot', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
       items: [
         { t: 'Ota ___ kolme kertaa päivässä!', h: 'lääke', a: ['lääke'], why: 'повелительное наклонение → номинатив' },
         { t: 'En ottanut ___ eilen.', h: 'lääke', a: ['lääkettä'], why: 'отрицание → партитив' },
@@ -517,7 +523,7 @@ const TOPICS = [
         { t: 'Lääkäri ei kirjoittanut ___.', h: 'resepti', a: ['reseptiä'], why: 'отрицание → партитив' },
         { t: 'Mittaa ___ illalla uudestaan!', h: 'verenpaine', a: ['verenpaine'], why: 'повелительное наклонение → номинатив' }
       ]},
-    { id: 'rektio', type: 'input', title: 'Verbien rektiot', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
+    { id: 'rektio', type: 'input', min: 10, title: 'Verbien rektiot', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
       items: [
         { t: 'Minua särkee ___.', h: 'pää', a: ['päätä'], why: 'särkeä + P: что болит — партитив' },
         { t: '___ särkee selkää.', h: 'hän', a: ['häntä'], why: 'särkeä + P: у кого болит — тоже партитив' },
@@ -534,9 +540,9 @@ const TOPICS = [
       ]}
   ]},
   { id: 'yki', fi: 'YKI-testi', ru: 'YKI-тест', exercises: [
-    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
+    { id: 'luetun', type: 'reading', min: 40, title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
       texts: [
-      { kind: 'Tiedote', title: 'Kivikon terveysasema tiedottaa', body: [
+      { kind: 'Tiedote', min: 10, title: 'Kivikon terveysasema tiedottaa', body: [
         'Influenssakausi on alkanut. Jos sinulla on korkea kuume, yskä ja lihaksia särkee, älä tule terveysasemalle ilman ajanvarausta. Soita ensin hoitajalle numeroon 09 310 5555 arkisin kello 8–16. Hoitaja kertoo, tarvitsetko lääkärin.',
         'Useimmat sairastuneet paranevat kotona noin viikossa. Lepää, juo paljon vettä ja ota tarvittaessa särkylääkettä. Jos kuume on yli 39 astetta yli kolme päivää tai hengittäminen on vaikeaa, ota heti yhteyttä päivystykseen.',
         'Influenssarokotuksia annetaan ilman ajanvarausta tiistaisin ja torstaisin kello 12–15. Rokotus on maksuton yli 65-vuotiaille, raskaana oleville ja pienille lapsille.' ],
@@ -545,7 +551,7 @@ const TOPICS = [
         { kind: 'mc', q: 'Milloin pitää ottaa yhteyttä päivystykseen?', options: ['Kun lihaksia särkee.', 'Heti kun sairastuu.', 'Kun korkea kuume on kestänyt yli kolme päivää.'], answer: 2 },
         { kind: 'mc', q: 'Mikä pitää paikkansa rokotuksesta?', options: ['Rokotukseen täytyy varata aika.', 'Rokotukseen voi mennä tiistaina iltapäivällä.', 'Rokotus on maksuton kaikille.'], answer: 1 }
       ]},
-      { kind: 'Blogikirjoitus', title: 'Ajattelin, että flunssa on pieni asia', body: [
+      { kind: 'Blogikirjoitus', min: 30, title: 'Ajattelin, että flunssa on pieni asia', body: [
         'Marraskuun alussa poikani sairastui päiväkodissa flunssaan, ja tietysti se tarttui myös minuun. Ensin nenä vuoti ja kurkku oli kipeä. Ajattelin, että tämä on vain tavallinen nuha, ja menin töihin niin kuin aina. Joimme työkavereiden kanssa kahvia ja istuimme pitkässä palaverissa. Kahden päivän päästä puolet tiimistä oli sairaana.',
         'Viikonloppuna oloni oli vielä huonompi. Minulla oli kuumetta, yskin koko yön, ja päätä särki niin, etten pystynyt lukemaan. Maanantaina kävin lääkärissä. Lääkäri kuunteli keuhkoja ja sanoi, että minulla on alkava keuhkokuume. Hän kirjoitti reseptin ja käski levätä vähintään viikon.',
         'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
@@ -562,15 +568,15 @@ const TOPICS = [
         { kind: 'open', q: 'Mitkä kaksi asiaa Mari oppi? Vastaa lyhyesti omin sanoin.', keys: [['töihin', 'töissä', 'työhön'], ['lev', 'lepä', 'lepo']], model: 'Sairaana ei kannata mennä töihin. On tärkeää levätä kunnolla.' }
       ]}
     ]},
-    { id: 'kirjoittaminen', type: 'writing', title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть: три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
+    { id: 'kirjoittaminen', type: 'writing', min: 55, title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть: три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
       tasks: [
-      { id: 'w1', kind: 'Epämuodollinen viesti', words: [50, 80], title: 'Viesti ystävälle',
+      { id: 'w1', min: 15, kind: 'Epämuodollinen viesti', words: [50, 80], title: 'Viesti ystävälle',
         text: 'Olet sairastunut etkä pääse ystäväsi syntymäpäiväjuhliin lauantaina. Kirjoita viesti ystävällesi.',
         points: ['Kerro, miksi et pääse juhliin.', 'Kerro, miten voit ja mitä lääkäri sanoi.', 'Ehdota uutta tapaamista.'] },
-      { id: 'w2', kind: 'Muodollinen viesti', words: [60, 100], title: 'Palaute terveysasemalle',
+      { id: 'w2', min: 15, kind: 'Muodollinen viesti', words: [60, 100], title: 'Palaute terveysasemalle',
         text: 'Kävit terveysasemalla, mutta jouduit odottamaan lääkäriä kaksi tuntia, eikä kukaan kertonut syytä. Kirjoita palaute terveysaseman nettisivulle.',
         points: ['Kerro, mitä tapahtui.', 'Kerro, miksi olet tyytymätön.', 'Kerro, mitä toivot terveysasemalta tulevaisuudessa.'] },
-      { id: 'w3', kind: 'Mielipideteksti', words: [100, 160], title: 'Pitääkö sairaana mennä töihin?',
+      { id: 'w3', min: 25, kind: 'Mielipideteksti', words: [100, 160], title: 'Pitääkö sairaana mennä töihin?',
         text: 'Paikallislehden nettisivulla keskustellaan: monet suomalaiset menevät töihin, vaikka he ovat sairaita. Kirjoita mielipiteesi.',
         points: ['Kerro oma mielipiteesi.', 'Perustele mielipiteesi ja anna esimerkki.', 'Mitä työpaikat voisivat tehdä asian hyväksi?'] }
     ]}
@@ -1018,7 +1024,7 @@ function exHead(ex, n, r) {
   const sc = r && r.max && ex.type !== 'cards' ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>`
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
   const st = exDone(ex, r) ? '<span class="ex-state done">● выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
-  return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}<button class="fold" type="button" data-fold="e:${ex.id}" aria-label="Свернуть или развернуть задание"></button></div></div>
+  return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${ex.min ? `<span class="ex-time">≈ ${ex.min} мин</span>` : ''}${st}${sc}<button class="fold" type="button" data-fold="e:${ex.id}" aria-label="Свернуть или развернуть задание"></button></div></div>
     ${ex.type !== 'cards' ? `<p class="ex-task">${esc(ex.task)}</p>` : hideHelp('cards') ? '' : `<div class="help-note"><p class="ex-task" style="margin:0">${esc(ex.task)}</p>
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="cards"> Больше не показывать</label></div>`}`;
 }
@@ -1220,11 +1226,11 @@ function renderReading(sec, ex, n) {
   const qstate = { ...((r && r.qstate) || {}) };
   const qs = []; ex.texts.forEach((tx, ti) => tx.questions.forEach(q => qs.push({ q, ti, id: `${ex.id}-q${qs.length}` })));
   sec.innerHTML = exHead(ex, n, r) + ex.texts.map((tx, ti) => `
-    <div class="section-title"><span class="n">Teksti ${ti + 1}</span></div>
+    <div class="section-title"><span class="n">Teksti ${ti + 1}</span>${tx.min ? `<span class="note">примерное время ≈ ${tx.min} мин</span>` : ''}</div>
     <article class="yki-text"><div class="kind">${esc(tx.kind)}</div><h4>${esc(tx.title)}</h4>${tx.body.map(p => `<p>${esc(p)}</p>`).join('')}</article>
     ${readingQuestions(qs.filter(x => x.ti === ti), qs, vals, ex.id, ti)}
     <div class="actions part-actions"><button class="btn main" type="button" data-check="${ti}">Tarkista! · Teksti ${ti + 1}</button>
-      ${checked.has(ti) ? `<span class="saved-note">● проверено и сохранено ${r && r.parts && r.parts[ti] ? fmtDate(r.parts[ti]) : fmtDate(r.at)}</span>` : '<span class="saved-note">○ ещё не проверено</span>'}</div>`).join('');
+      ${checked.has(ti) ? `<span class="saved-note">● ответы сохранены ${r && r.parts && r.parts[ti] ? fmtDate(r.parts[ti]) : fmtDate(r.at)}</span>` : '<span class="saved-note">○ ещё не проверено</span>'}</div>`).join('');
   const readVal = ({ q, id }) => {
     const box = sec.querySelector('#' + id);
     if (q.kind === 'open') return box.querySelector('textarea').value;
@@ -1264,7 +1270,7 @@ function renderReading(sec, ex, n) {
     return { score, max, answers };
   };
   if (checked.size || Object.keys(qstate).length) grade(checked, qstate);
-  qs.forEach(x => { const st = sec.querySelector(`[data-qst="${x.id}"]`); if (st && qstate[x.id]) st.textContent = qstate[x.id] === 'checked' ? '● проверено и сохранено' : '● сохранено'; });
+  qs.forEach(x => { const st = sec.querySelector(`[data-qst="${x.id}"]`); if (st && qstate[x.id]) st.textContent = qstate[x.id] === 'checked' ? '● сохранено · автопроверка по ключевым словам' : '● сохранено без проверки'; });
   // one open question: check it, or only save it
   const saveOne = async (id, how) => {
     const x = qs.find(y => y.id === id); const raw = { ...prev, [id]: readVal(x) };
@@ -1288,7 +1294,9 @@ function renderReading(sec, ex, n) {
 }
 
 /* ---------- YKI writing ---------- */
-const timer = { end: 0, h: null };
+// one exam timer: running (end = when it rings), paused (left = ms remaining) or off
+const timer = { end: 0, left: 0, paused: false, h: null };
+const fmtLeft = ms => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
 function renderWriting(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
@@ -1297,28 +1305,51 @@ function renderWriting(sec, ex, n) {
   let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
   const fb = state.feedback[k] || null;
   sec.innerHTML = exHead(ex, n, null) + `
-    <div class="row" style="margin-bottom:8px"><button class="btn small" type="button" id="timerBtn">Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span></div>
+    <div class="row" style="margin-bottom:8px" id="timerRow"></div>
     ${ex.tasks.map((t, i) => { const v = drafts[t.id] != null ? drafts[t.id] : (prev[t.id] || ''); const f = fb && fb.items && fb.items[t.id];
       const sent = (prev[t.id] || '').trim(); const changed = drafts[t.id] != null && drafts[t.id] !== (prev[t.id] || '');
       return `<div class="wtask">
       <div class="section-title" style="margin-top:0"><span class="n">Tehtävä ${i + 1}</span><b>${esc(t.kind)}</b></div>
-      <p style="margin:0 0 4px;max-width:65ch"><b>${esc(t.title)}.</b> ${esc(t.text)}</p>
+      <p style="margin:0 0 4px;max-width:65ch"><b>${esc(t.title)}${/[.!?]$/.test(t.title) ? '' : '.'}</b> ${esc(t.text)}</p>
       <ul>${t.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
       <textarea id="${ex.id}-${t.id}" rows="7" aria-label="${esc(t.title)}" data-tid="${t.id}" data-min="${t.words[0]}" data-max="${t.words[1]}">${esc(v)}</textarea>
-      <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span></div>
+      <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span>${t.min ? `<span>примерное время ≈ ${t.min} мин</span>` : ''}</div>
       <div class="actions part-actions"><button class="btn main" type="button" data-send="${t.id}">Tallenna · Tehtävä ${i + 1}</button>
         <span class="saved-note" id="${ex.id}-${t.id}-st">${sent ? (changed ? '◐ есть несохранённые изменения' : '● сохранено ' + fmtDate(savedAt[t.id] || r.at)) : '○ ещё не сохранено'}</span></div>
-      ${f && (f.grade || f.comment) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}<div style="white-space:pre-wrap">${esc(f.comment || '')}</div></div>` : ''}
+      ${f && (f.grade || f.comment || (f.marks && f.marks.length)) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}${f.comment ? `<div style="white-space:pre-wrap">${esc(f.comment)}</div>` : ''}
+        ${f.marks && f.marks.length ? `<div class="note" style="margin-top:8px">Ваш отправленный текст с комментариями:</div><div class="essay">${markedHTML(prev[t.id] || '', f.marks)}</div>${marksListHTML(f.marks, false)}` : ''}</div>` : ''}
     </div>`; }).join('')}`;
   const upd = ta => { const c = words(ta.value); const el = sec.querySelector('#' + ta.id + '-c'); el.textContent = c + ' слов'; el.classList.toggle('good', c >= +ta.dataset.min && c <= +ta.dataset.max); };
   sec.querySelectorAll('textarea').forEach(ta => { upd(ta); ta.addEventListener('input', () => {
     upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
     const st = sec.querySelector('#' + ta.id + '-st'); if (st) st.textContent = '◐ есть несохранённые изменения'; }); });
-  const tick = () => { const left = Math.max(0, timer.end - Date.now()); const out = $('#timerOut'); if (!out) return;
-    out.textContent = timer.end ? `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}` : '';
-    if (timer.end && !left) { clearInterval(timer.h); toast('Время вышло!'); } };
-  sec.querySelector('#timerBtn').onclick = () => { timer.end = Date.now() + ex.minutes * 60000; clearInterval(timer.h); timer.h = setInterval(tick, 1000); tick(); };
-  tick(); if (timer.end > Date.now()) { clearInterval(timer.h); timer.h = setInterval(tick, 1000); }
+  const tick = () => {
+    const out = $('#timerOut'); if (!out) return;
+    if (timer.paused) { out.textContent = fmtLeft(timer.left) + ' · пауза'; return; }
+    const left = Math.max(0, timer.end - Date.now());
+    out.textContent = timer.end ? fmtLeft(left) : '';
+    if (timer.end && !left) { clearInterval(timer.h); timer.end = 0; toast('Время вышло!'); drawTimer(); }
+  };
+  const drawTimer = () => {
+    const row = sec.querySelector('#timerRow'); const running = timer.end > Date.now() && !timer.paused;
+    row.innerHTML = !timer.end && !timer.paused
+      ? `<button class="btn small" type="button" data-t="start">Запустить таймер ${ex.minutes} мин</button><span class="timer" id="timerOut"></span>`
+      : `<span class="timer" id="timerOut"></span>
+         <button class="btn small main" type="button" data-t="${running ? 'pause' : 'resume'}">${running ? 'Пауза' : 'Продолжить'}</button>
+         <button class="btn small" type="button" data-t="reset">Сбросить</button>`;
+    row.querySelectorAll('[data-t]').forEach(b => b.onclick = () => {
+      const a = b.dataset.t; clearInterval(timer.h);
+      if (a === 'start') { timer.end = Date.now() + ex.minutes * 60000; timer.paused = false; }
+      if (a === 'pause') { timer.left = Math.max(0, timer.end - Date.now()); timer.paused = true; }
+      if (a === 'resume') { timer.end = Date.now() + timer.left; timer.paused = false; }
+      if (a === 'reset') { timer.end = 0; timer.left = 0; timer.paused = false; }
+      if (timer.end && !timer.paused) timer.h = setInterval(tick, 1000);
+      drawTimer();
+    });
+    tick();
+  };
+  drawTimer();
+  if (timer.end > Date.now() && !timer.paused) { clearInterval(timer.h); timer.h = setInterval(tick, 1000); }
   sec.querySelectorAll('[data-send]').forEach(btn => btn.onclick = async () => {
     const tid = btn.dataset.send; const v = sec.querySelector('#' + ex.id + '-' + tid).value;
     if (!v.trim()) { toast('Сначала напишите текст'); return; }
@@ -1499,8 +1530,53 @@ function renderTeacherChats(list, all, chats) {
   try { localStorage.setItem(LS_KEY + ':notesSeen', new Date().toISOString()); } catch (e) {}
 }
 
+// a text with the teacher's comments: highlighted passages, numbered
+function markedHTML(text, marks) {
+  text = text || ''; const spots = [];
+  (marks || []).forEach((m, i) => {
+    let at = text.indexOf((m.prefix || '') + m.exact + (m.suffix || ''));
+    at = at >= 0 ? at + (m.prefix || '').length : text.indexOf(m.exact);
+    if (at >= 0 && !spots.some(x => at < x.b && at + m.exact.length > x.a)) spots.push({ a: at, b: at + m.exact.length, n: i + 1, m });
+  });
+  spots.sort((x, y) => x.a - y.a);
+  let out = '', pos = 0;
+  spots.forEach(x => { out += esc(text.slice(pos, x.a)) + `<mark class="tmark" data-n="${x.n}" title="${esc(x.m.note)}">${esc(text.slice(x.a, x.b))}</mark>`; pos = x.b; });
+  return out + esc(text.slice(pos));
+}
+function marksListHTML(marks, editable) {
+  if (!marks || !marks.length) return '';
+  return `<ol class="tmarks">${marks.map((m, i) => `<li><span class="tm-q">«${esc(m.exact)}»</span> — ${esc(m.note)}${editable ? ` <button class="btn small" type="button" data-tmdel="${esc(m.id)}">Удалить</button>` : ''}</li>`).join('')}</ol>`;
+}
+// teacher: comments on passages of a student's writing (stored in the feedback doc, items[taskId].marks)
+const tfb = {}; // uid → { fbs, el, st }
+function openTeacherMark(t) {
+  let sh = $('#wsheet');
+  if (!sh) { sh = document.createElement('div'); sh.id = 'wsheet'; sh.className = 'wsheet'; document.body.appendChild(sh); }
+  sh.hidden = false;
+  sh.innerHTML = `<form class="wsheet-in" id="tmform">
+    <div class="row" style="justify-content:space-between"><h3>Комментарий к тексту</h3><button class="btn small" type="button" id="tmclose">Отмена</button></div>
+    <blockquote class="nquote plain"><mark class="tmark">${esc(t.exact)}</mark></blockquote>
+    <label class="note" for="tmtext">Ваш комментарий для ученика</label>
+    <textarea class="field" id="tmtext" rows="3" required placeholder="Например: здесь нужен партитив"></textarea>
+    <button class="btn main" type="submit">Сохранить комментарий</button></form>`;
+  try { window.getSelection().removeAllRanges(); } catch (e) {}
+  $('#tmclose').onclick = () => { sh.hidden = true; };
+  $('#tmform').onsubmit = async e => {
+    e.preventDefault(); const note = $('#tmtext').value.trim(); if (!note) return;
+    const c = tfb[t.uid]; const doc = { ...(c.fbs[t.k] || {}) }; doc.items = { ...(doc.items || {}) };
+    const it = { ...(doc.items[t.tid] || {}) }; it.marks = (it.marks || []).concat([{ id: 'm' + Date.now().toString(36), exact: t.exact, prefix: t.prefix, suffix: t.suffix, note, at: new Date().toISOString() }]);
+    doc.items[t.tid] = it; doc.at = new Date().toISOString();
+    const ok = await Store.saveFeedback(t.uid, t.k, doc);
+    if (!ok) { toast('Не удалось сохранить, попробуйте ещё раз'); return; }
+    c.fbs[t.k] = doc; sh.hidden = true; toast('Комментарий сохранён, ученик увидит его в своём тексте');
+    renderStudent(c.el, c.st);
+  };
+  setTimeout(() => $('#tmtext').focus(), 50);
+}
+
 async function renderStudent(el, st) {
   const [res, fbs] = await Promise.all([Store.studentResults(st.id), Store.feedbackFor(st.id)]);
+  tfb[st.id] = { fbs, el, st };
   if (!Object.keys(res).length) { el.textContent = 'Нет сохранённых заданий.'; return; }
   el.className = 'st-body';
   let html = '';
@@ -1515,7 +1591,9 @@ async function renderStudent(el, st) {
         (r.answers || []).forEach(a => {
           const g = f[a.tid] || {};
           html += `<div style="margin:10px 0 16px"><b>${esc(a.p)}</b> <span class="note">· ${a.words} слов</span>
-            <div class="essay">${esc(a.a || '—')}</div>
+            <div class="essay" data-uid="${st.id}" data-k="${k}" data-tid="${a.tid}">${a.a ? markedHTML(a.a, g.marks) : '—'}</div>
+            <p class="note" style="margin:2px 0 6px">Выделите фразу в тексте, чтобы оставить к ней комментарий.</p>
+            ${marksListHTML(g.marks, true).replace('<ol class="tmarks">', `<ol class="tmarks" data-k="${k}" data-tid="${a.tid}">`)}
             <div class="row" data-fb="${k}" data-tid="${a.tid}">
               <select class="field" style="flex:0 0 auto" aria-label="Уровень">${['', 'alle 3', '3', '4', '5'].map(o => `<option ${g.grade === o ? 'selected' : ''} value="${o}">${o ? 'taso ' + o : 'уровень…'}</option>`).join('')}</select>
               <textarea class="field" rows="2" placeholder="Комментарий для ученика" aria-label="Комментарий">${esc(g.comment || '')}</textarea>
@@ -1534,9 +1612,17 @@ async function renderStudent(el, st) {
   el.innerHTML = html;
   el.querySelectorAll('[data-savefb]').forEach(btn => btn.onclick = async () => {
     const k = btn.dataset.savefb; const items = {};
-    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => { items[row.dataset.tid] = { grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim() }; });
-    const ok = await Store.saveFeedback(st.id, k, { items, at: new Date().toISOString() });
+    const old = (tfb[st.id].fbs[k] || {}).items || {};
+    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => { items[row.dataset.tid] = { ...(old[row.dataset.tid] || {}), grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim() }; });
+    const doc = { ...(tfb[st.id].fbs[k] || {}), items, at: new Date().toISOString() };
+    const ok = await Store.saveFeedback(st.id, k, doc); if (ok) tfb[st.id].fbs[k] = doc;
     toast(ok ? 'Отзыв сохранён, ученик увидит его под своим текстом' : 'Не удалось сохранить отзыв, попробуйте ещё раз');
+  });
+  el.querySelectorAll('.tmarks[data-k] [data-tmdel]').forEach(b => b.onclick = async () => {
+    const ol = b.closest('.tmarks'), k = ol.dataset.k, tid = ol.dataset.tid;
+    const doc = { ...(tfb[st.id].fbs[k] || {}) }; doc.items = { ...(doc.items || {}) };
+    doc.items[tid] = { ...(doc.items[tid] || {}), marks: ((doc.items[tid] || {}).marks || []).filter(m => m.id !== b.dataset.tmdel) };
+    if (await Store.saveFeedback(st.id, k, doc)) { tfb[st.id].fbs[k] = doc; renderStudent(el, st); }
   });
 }
 
@@ -1647,6 +1733,11 @@ function selectionInfo() {
   const word = raw.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
   if (word.length < 2 || raw.length > 400) return null;
   const range = sel.getRangeAt(0);
+  const essay = Store.isOwner && state.view === 'teacher' ? node.closest('.essay[data-tid]') : null;
+  if (essay && essay.contains(range.endContainer)) {
+    const text = essay.textContent, a = offsetIn(essay, range.startContainer, range.startOffset), b = offsetIn(essay, range.endContainer, range.endOffset);
+    if (a >= 0 && b > a) return { word: '', anchor: null, tmark: { uid: essay.dataset.uid, k: essay.dataset.k, tid: essay.dataset.tid, exact: text.slice(a, b), prefix: text.slice(Math.max(0, a - 24), a), suffix: text.slice(b, b + 24) } };
+  }
   let lex = null; try { lex = lookupSelection(range); } catch (e) {}
   // a fixed expression gets highlighted as a whole
   if (lex && lex.expr && (lex.sel[0] !== lex.span[0] || lex.sel[1] !== lex.span[1])) {
@@ -1659,11 +1750,12 @@ document.addEventListener('selectionchange', () => {
   clearTimeout(selState.t);
   selState.t = setTimeout(() => {
     const info = selectionInfo(); const bar = $('#addSel');
-    if (info && (info.word || info.anchor)) {
-      selState.text = info.word; selState.anchor = info.anchor; selState.lex = info.lex;
+    if (info && (info.word || info.anchor || info.tmark)) {
+      selState.text = info.word; selState.anchor = info.anchor; selState.lex = info.lex; selState.tmark = info.tmark || null;
       const shown = info.lex && info.lex.lemma ? info.lex.lemma : info.word;
       const wb = bar.querySelector('[data-sel="dict"]'), cb = bar.querySelector('[data-sel="note"]');
-      wb.hidden = !info.word; cb.hidden = !info.anchor;
+      wb.hidden = !info.word; cb.hidden = !info.anchor && !info.tmark;
+      cb.textContent = info.tmark ? 'Комментарий к тексту' : 'Заметка';
       wb.querySelector('b').textContent = shown.length > 26 ? shown.slice(0, 24) + '…' : shown;
       bar.hidden = false; placeBubble(bar);
     } else if (!$('#addSel:hover')) bar.hidden = true;
@@ -1694,7 +1786,7 @@ window.addEventListener('resize', () => { const b = $('#addSel'); if (b && !b.hi
     const w = selState.text, L = selState.lex; bar.hidden = true; if (!w) return;
     if (L && L.lemma) openWordSheet(L.lemma, L.ru || null, { form: L.form, example: L.example, expr: L.expr }); else openWordSheet(w);
   };
-  bar.querySelector('[data-sel="note"]').onclick = () => { const a = selState.anchor; bar.hidden = true; if (a) openNoteSheet(null, a); };
+  bar.querySelector('[data-sel="note"]').onclick = () => { const a = selState.anchor, t = selState.tmark; bar.hidden = true; if (t) openTeacherMark(t); else if (a) openNoteSheet(null, a); };
   document.body.appendChild(bar);
 })();
 
