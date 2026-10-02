@@ -359,3 +359,8 @@ yö | ночь | yön
 @ tänä talvena | этой зимой | tänä talvena
 @ viime viikolla | на прошлой неделе | viime viikolla
 @ koko yön | всю ночь | koko yön
+# checked against Wiktionary: Category:Finnish multiword terms (tools/find_expressions.js)
+@ heti kun | как только | heti kun
+@ kirjoittaa ylös | записать | kirjoitti\s+(?:\p{L}+\s+)?ylös
+@ niin kuin | как, так же как | niin kuin
+@ nyt kun | теперь, когда | nyt kun
