@@ -8,7 +8,7 @@
 <title>Suomi-muistikirja</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gelasio:ital,wght@0,500;0,700;1,400&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Gelasio:ital,wght@0,500;0,700;1,400&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <style>
 /* Layout: one long notebook page on dotted paper; each task is a paper sheet held by washi tape; vocabulary as tiles; ○ ◐ ✓ mark progress. */
 :root{
@@ -24,23 +24,24 @@
   --rule:#e6dfcc;
   --sage:#b9e094;       /* accent: pastel green */
   --sage-ink:#4e7d2f;   /* accent strong enough for text on beige */
-  --tape:rgba(185,224,148,.72);
+  --tape:rgba(185,224,148,.38);
   --ok:#3f7f2a; --ok-bg:#e7f4da;
   --bad:#b5513e; --bad-bg:#f8e3dc;
   --wait:#9a7b2d; --wait-bg:#f5ecd2;
   --shadow:0 1px 0 rgba(60,50,20,.06),0 6px 18px -10px rgba(60,50,20,.25);
   --f-hand:"Gelasio",Georgia,"Times New Roman",serif;
+  --f-script:"Caveat","Segoe Print","Comic Sans MS",cursive;
   --f-body:"Nunito","Segoe UI",system-ui,-apple-system,sans-serif;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#22261f;--sheet:#2a2f26;--tile:#33392d;--tile-line:#464d3e;--head:#cfe9b3;--kraft:rgba(150,130,95,.55);--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
-  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
+  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.2);
   --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#22261f;--sheet:#2a2f26;--tile:#33392d;--tile-line:#464d3e;--head:#cfe9b3;--kraft:rgba(150,130,95,.55);--ink:#ebe8db;--ink-soft:#a9ad9c;--dot:#3b4135;--rule:#3d4337;
-  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.35);
+  --sage:#b9e094;--sage-ink:#b9e094;--tape:rgba(185,224,148,.2);
   --ok:#a9db7e;--ok-bg:#2f3f25;--bad:#ef9a85;--bad-bg:#46302a;--wait:#e2c472;--wait-bg:#423a22;
   --shadow:0 1px 0 rgba(0,0,0,.2),0 8px 20px -12px rgba(0,0,0,.6);color-scheme:dark}
 
@@ -51,7 +52,7 @@ body{background:var(--paper);background-image:radial-gradient(var(--dot) 1.1px,t
 h1,h2,h3,.hand{font-family:var(--f-hand);font-weight:700;line-height:1.15;text-wrap:balance;color:var(--head)}
 h1{font-size:clamp(2rem,6vw,3rem);margin:0}
 .title-slip{display:inline-block;background:var(--sheet);border:1px solid var(--rule);box-shadow:var(--shadow);padding:14px 28px 16px;transform:rotate(-.5deg)}
-.title-slip mark{background:var(--sage);color:inherit;padding:0 4px}
+.title-slip mark{background:var(--tape);color:inherit;padding:0 4px}
 h2{font-size:1.9rem;margin:0}
 h3{font-size:1.5rem;margin:0}
 button,input,textarea,select{font:inherit;color:inherit}
@@ -75,7 +76,7 @@ a{color:var(--sage-ink)}
 .toc{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:8px}
 .toc-topic{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
 .toc-topic.soon{color:var(--ink-soft)}
-.toc .sig{display:inline-block;width:1.4em;font-family:var(--f-hand);font-size:1.35rem;font-weight:700;color:var(--sage-ink);line-height:1}
+.toc .sig{display:inline-block;width:1.4em;font-size:1.05rem;font-weight:700;color:var(--sage-ink);line-height:1}
 .toc-count{font-size:.85rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .toc-blocks{list-style:none;margin:2px 0 4px;padding:0 0 0 1.6em;display:grid;gap:2px;flex-basis:100%}
 .toc-blocks li{display:flex;flex-wrap:wrap;gap:0 12px;align-items:baseline}
@@ -95,7 +96,7 @@ a{color:var(--sage-ink)}
 .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
 .tab{cursor:pointer;border:1.5px solid var(--ink);background:var(--sheet);border-radius:var(--r);padding:8px 14px;display:flex;gap:10px;align-items:baseline;font-weight:700}
 .block{margin:0 0 12px}
-.block-title{margin:40px 0 34px;font-size:2.1rem}
+.block-title{margin:40px 0 34px;font-family:var(--f-script);font-size:2.6rem}
 .block-title .note{font-family:var(--f-body);font-size:.95rem;font-weight:400}
 .tab small{font-weight:600;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .tab[aria-selected="true"]{background:var(--sage);color:#22301a;border-color:#22301a}
@@ -109,13 +110,13 @@ a{color:var(--sage-ink)}
 .ex-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
 .ex-head .sig{color:var(--head);margin-right:2px}
 .ex-task{color:var(--ink-soft);font-style:italic;margin:2px 0 20px;max-width:65ch}
-.score{font-family:var(--f-hand);font-size:1.6rem;font-weight:700;padding:0 10px;border:2px solid currentColor;border-radius:8px;transform:rotate(-3deg);font-variant-numeric:tabular-nums}
+.score{font-family:var(--f-script);font-size:1.6rem;font-weight:700;padding:0 10px;border:2px solid currentColor;border-radius:8px;transform:rotate(-3deg);font-variant-numeric:tabular-nums}
 .score.ok{color:var(--ok)} .score.mid{color:var(--wait)} .score.low{color:var(--bad)}
 .saved-note{font-size:.85rem;color:var(--ink-soft)}
 
 /* flashcards */
 .vgroup{margin:0 0 18px}
-.vgroup h4{margin:0 0 8px;font-family:var(--f-hand);font-style:italic;font-weight:400;color:var(--ink-soft);font-size:1.05rem}
+.vgroup h4{margin:0 0 6px;font-family:var(--f-script);font-weight:700;color:var(--sage-ink);font-size:1.45rem}
 .vgroup h4 .note{font-family:var(--f-body);font-style:normal;font-size:.82rem}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 16px}
 .card{display:block;width:100%;perspective:900px;height:62px;cursor:pointer;border:0;background:none;padding:0;text-align:left;font:inherit}
@@ -134,16 +135,16 @@ a{color:var(--sage-ink)}
 .card-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
 
 /* bank, items */
-.bank{border:1.5px dashed var(--sage-ink);border-radius:8px;padding:6px 12px;margin-bottom:16px;width:fit-content;max-width:100%}
+.bank{border:1.5px dashed var(--sage-ink);border-radius:8px;padding:4px 12px;margin-bottom:16px;width:fit-content;max-width:100%}
 .bank[open]{width:auto}
-.bank summary{cursor:pointer;font-family:var(--f-hand);font-size:1.35rem;font-weight:700;color:var(--sage-ink);list-style:none}
+.bank summary{cursor:pointer;font-size:.92rem;font-weight:700;color:var(--sage-ink);list-style:none}
 .bank summary::before{content:"› ";display:inline-block;transition:transform .2s}
 .bank[open] summary::before{transform:rotate(90deg)}
 .bank-words{display:flex;flex-wrap:wrap;gap:6px 10px;padding:6px 0 4px}
 .bank-words span{padding:0 8px;background:var(--paper);border-radius:4px}
 ol.items{list-style:none;margin:0;padding:0;counter-reset:it;display:grid;gap:12px}
 ol.items>li{counter-increment:it;display:grid;grid-template-columns:2.2em 1fr;gap:4px;align-items:start}
-ol.items>li::before{content:counter(it)".";font-family:var(--f-hand);font-size:1.35rem;line-height:1.3;color:var(--sage-ink);font-weight:700}
+ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size:1.45rem;line-height:1.3;color:var(--sage-ink);font-weight:700}
 .it-body{min-width:0}
 .blank{display:inline-block;min-width:8.5em;max-width:100%;border:0;border-bottom:2px solid var(--ink-soft);background:transparent;padding:0 4px;margin:0 2px;font-weight:700}
 .blank.wide{width:100%;min-width:0}
@@ -179,7 +180,7 @@ textarea{width:100%;min-height:90px;border:1.5px solid var(--rule);border-radius
   background-image:linear-gradient(transparent calc(1.55em - 1px),var(--rule) 1px);background-size:100% 1.55em;background-attachment:local;background-position:0 10px}
 textarea:focus{outline:none;border-color:var(--sage-ink)}
 .section-title{display:flex;gap:10px;align-items:baseline;margin:22px 0 10px}
-.section-title .n{font-family:var(--f-hand);font-size:1.5rem;color:var(--sage-ink)}
+.section-title .n{font-family:var(--f-script);font-size:1.7rem;font-weight:700;color:var(--sage-ink)}
 
 /* writing */
 .wtask{border-top:1px dashed var(--rule);padding-top:16px;margin-top:16px}
@@ -188,7 +189,7 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .wmeta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--ink-soft);margin-top:4px}
 .count{font-variant-numeric:tabular-nums}
 .count.good{color:var(--ok)}
-.timer{font-family:var(--f-hand);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.timer{font-family:var(--f-script);font-size:1.5rem;font-variant-numeric:tabular-nums}
 .teacher-fb{margin-top:10px;border:1.5px solid var(--sage-ink);border-radius:8px;padding:10px 12px;background:var(--ok-bg)}
 .teacher-fb b{font-family:var(--f-hand);font-size:1.3rem}
 
@@ -224,7 +225,7 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
     <div>
       <h1 class="title-slip"><mark>Suomi</mark>-muistikirja</h1>
     </div>
-    <div class="who" id="who"><span class="chip"><span class="dot"></span>подключение…</span></div>
+    <div class="who" id="who"></div>
   </header>
 
   <nav class="index" aria-label="Темы">
@@ -590,7 +591,7 @@ function blockScore(topic, block, res) {
   });
   return { s, m, done, started, total: block.exercises.length };
 }
-const sigOf = sc => sc.done === sc.total ? '✓' : sc.started ? '◐' : '○';
+const sigOf = sc => sc.done === sc.total ? '●' : sc.started ? '◐' : '○';
 
 /* =========================================================
    HEADER, REGISTRATION
@@ -600,8 +601,6 @@ function renderWho() {
   const cloud = Store.online();
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
-    <span class="chip ${cloud ? 'cloud' : ''}" title="${cloud ? 'Результаты сохраняются на сайте' : 'Результаты сохраняются только в этом браузере'}">
-      <span class="dot"></span>${cloud ? 'сохраняется на сайте' : 'сохраняется в браузере'}</span>
     ${name ? `<span class="chip">✎ ${esc(name)}</span>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
@@ -701,18 +700,18 @@ function renderRegister() {
 
 function renderTopics() {
   const el = $('#topics');
-  el.innerHTML = `<span class="index-label">Index</span><ul class="toc">${TOPICS.map(t => {
+  el.innerHTML = `<ul class="toc">${TOPICS.map(t => {
     if (t.soon) return `<li class="toc-topic soon"><span class="sig">○</span>${esc(t.fi)} <span class="note">· ${esc(t.ru)} (скоро)</span></li>`;
     const scs = t.blocks.map(bl => blockScore(t, bl, state.results));
     const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
-    const sig = done === total ? '✓' : scs.some(x => x.started) ? '◐' : '○';
+    const sig = done === total ? '●' : scs.some(x => x.started) ? '◐' : '○';
     return `<li class="toc-topic"><button class="topic-btn" type="button" data-topic="${t.id}" aria-current="${t.id === state.topic}"><span class="sig">${sig}</span>${esc(t.fi)} <span class="note">· ${esc(t.ru)}</span></button>
       <span class="toc-count">${done}/${total} заданий</span>
       <ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
         return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}"><span class="sig">${sigOf(sc)}</span>${i + 1}. ${esc(bl.ru)}</a>
           <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m} баллов` : ''}${sc.done === sc.total ? ' · закончено' : ''}</span></li>`; }).join('')}</ul></li>`;
   }).join('')}</ul>
-  <p class="toc-legend note">○ не начато · ◐ в процессе · ✓ закончено</p>`;
+  <p class="toc-legend note">○ не начато · ◐ в процессе · ● закончено</p>`;
   el.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { state.topic = b.dataset.topic; state.view = 'learn'; saveTab(); renderAll(); });
   el.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => {
     e.preventDefault(); const [tid, bid] = a.dataset.jump.split(':');
@@ -747,7 +746,7 @@ function renderLearn() {
 function exHead(ex, n, r) {
   const sc = r && r.max && ex.type !== 'cards' ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>`
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
-  const st = exDone(ex, r) ? '<span class="ex-state done">✓ выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
+  const st = exDone(ex, r) ? '<span class="ex-state done">● выполнено</span>' : r ? '<span class="ex-state">◐ начато</span>' : '<span class="ex-state">○ не начато</span>';
   return `<div class="ex-head"><h3><span class="sig">Tehtävä ${n} ·</span> ${esc(ex.title)}</h3><div class="row">${st}${sc}</div></div>
     <p class="ex-task">${esc(ex.task)}</p>`;
 }
