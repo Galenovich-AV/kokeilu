@@ -248,54 +248,54 @@ const TOPICS = [
   id: 'terveys', fi: 'Terveys ja sairaudet', ru: 'Здоровье и болезни',
   blocks: [
   { id: 'sanasto', fi: 'Sanasto', ru: 'Лексика', exercises: [
-    { id: 'kortit', type: 'cards', title: 'Карточки', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
+    { id: 'kortit', type: 'cards', title: 'Sanakortit', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
       groups: [
-      { name: 'Части тела', cards: [
+      { name: 'Ruumiinosat', cards: [
         ['pää', 'голова'], ['kaula', 'шея'], ['kurkku', 'горло'], ['olkapää', 'плечо'], ['selkä', 'спина'], ['rinta', 'грудь'],
         ['vatsa', 'живот'], ['käsi', 'рука (кисть)', 'käden, kättä, käsiä'], ['sormi', 'палец', 'sormen, sormea'], ['jalka', 'нога'],
         ['polvi', 'колено', 'polven, polvea'], ['silmä', 'глаз'], ['korva', 'ухо'], ['nenä', 'нос'],
         ['hammas', 'зуб', 'hampaan, hammasta'], ['lihas', 'мышца', 'lihaksen, lihasta'] ]},
-      { name: 'Внутренние органы', cards: [
+      { name: 'Sisäelimet', cards: [
         ['sydän', 'сердце', 'sydämen, sydäntä'], ['keuhkot', 'лёгкие', 'mon.: keuhkojen, keuhkoja'], ['maksa', 'печень'],
         ['munuainen', 'почка', 'munuaisen, munuaista'], ['aivot', 'мозг', 'mon.: aivojen, aivoja'], ['mahalaukku', 'желудок'],
         ['suolisto', 'кишечник'], ['nielurisat', 'миндалины', 'mon.'] ]},
-      { name: 'Болезни', cards: [
+      { name: 'Sairaudet', cards: [
         ['flunssa', 'простуда'], ['nuha', 'насморк'], ['influenssa', 'грипп'], ['angiina', 'ангина'],
         ['keuhkokuume', 'воспаление лёгких', 'keuhkokuumeen, keuhkokuumetta'], ['korvatulehdus', 'воспаление уха, отит'],
         ['vatsatauti', 'кишечная инфекция'], ['migreeni', 'мигрень'], ['allergia', 'аллергия'],
         ['tauti', 'болезнь (заразная)'], ['tulehdus', 'воспаление', 'tulehduksen, tulehdusta'] ]},
-      { name: 'Симптомы', cards: [
+      { name: 'Oireet', cards: [
         ['oire', 'симптом', 'oireen, oiretta'], ['kuume', 'температура, жар', 'kuumeen, kuumetta'], ['yskä', 'кашель'],
         ['päänsärky', 'головная боль'], ['kurkkukipu', 'боль в горле'], ['vatsakipu', 'боль в животе'],
         ['pahoinvointi', 'тошнота'], ['ripuli', 'понос, диарея'], ['huimaus', 'головокружение'], ['väsymys', 'усталость'],
         ['ihottuma', 'сыпь'], ['kipeä', 'больной (о части тела)', 'kurkku on kipeä'], ['vuotaa', 'течь', 'nenä vuotaa'],
         ['kutista', 'чесаться', 'silmät kutiavat'] ]},
-      { name: 'Глаголы с управлением', cards: [
+      { name: 'Verbit ja rektiot', cards: [
         ['särkeä + P', 'ныть, болеть', 'minua särkee päätä'], ['sattua + mihin', 'болеть (резко), ушибиться', 'jalkaan sattuu'],
         ['tarttua + mihin', 'заразить, передаться', 'flunssa tarttui minuun'], ['sairastua + mihin', 'заболеть чем', 'sairastuin flunssaan'],
-        ['parantua + mistä', 'выздороветь', 'paranin flunssasta'], ['kärsiä + mistä', 'страдать от', 'kärsin migreenistä'],
+        ['parantua + mistä', 'выздороветь', 'parannun, parannuin; parannuin flunssasta'], ['kärsiä + mistä', 'страдать от', 'kärsin migreenistä'],
         ['yskiä', 'кашлять', 'yskin, yski'], ['aivastaa', 'чихать', 'aivastan, aivasti'], ['oksentaa', 'рвать (тошнить)', 'oksennan, oksensi'],
         ['levätä', 'отдыхать', 'lepään, lepäsi'], ['voida hyvin / huonosti', 'чувствовать себя хорошо / плохо', 'voin huonosti'] ]},
-      { name: 'У врача', cards: [
+      { name: 'Lääkärissä', cards: [
         ['lääkäri', 'врач'], ['lääke', 'лекарство', 'lääkkeen, lääkettä'], ['särkylääke', 'обезболивающее'], ['resepti', 'рецепт'],
         ['verenpaine', 'давление', 'verenpaineen, verenpainetta'], ['käydä lääkärissä', 'сходить к врачу'],
         ['tutkia + P', 'обследовать', 'lääkäri tutki vatsaa'], ['kuunnella + P', 'слушать', 'kuunteli keuhkoja'],
         ['mitata + G/P', 'измерять', 'mittasi kuumeen'], ['ottaa lääkettä', 'принимать лекарство'],
         ['hoitaa + G/P', 'лечить', 'hoitaa flunssaa'], ['kirjoittaa resepti', 'выписать рецепт'] ]}
     ]},
-    { id: 'oireet', type: 'input', title: 'Болезнь по симптомам', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
+    { id: 'oireet', type: 'input', title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
       bank: ['flunssa', 'influenssa', 'angiina', 'vatsatauti', 'migreeni', 'korvatulehdus', 'keuhkokuume', 'allergia'],
       items: [
-        { box: 'Hänen nenänsä vuotaa, hän aivastelee paljon ja hänen kurkkunsa on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha'] },
+        { box: 'Hänen nenänsä vuotaa, hän aivastelee paljon ja hänen kurkkunsa on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha', 'nuhakuume'] },
         { box: 'Hänellä on korkea kuume, häntä särkee lihaksia ja hän on hyvin väsynyt. Tauti tulee talvella epidemiana.', a: ['influenssa'] },
-        { box: 'Hänen kurkkunsa on todella kipeä, nieleminen sattuu ja nielurisat ovat tulehtuneet. Hänellä on kuumetta.', a: ['angiina'] },
-        { box: 'Hänellä on ripuli, hän oksentaa ja vatsaan sattuu. Monet päiväkodin lapset ovat sairastuneet samaan tautiin.', a: ['vatsatauti', 'mahatauti', 'vatsaflunssa', 'ruokamyrkytys', 'noro', 'norovirus'] },
+        { box: 'Hänen kurkkunsa on todella kipeä, nieleminen sattuu ja nielurisat ovat tulehtuneet. Hänellä on kuumetta.', a: ['angiina', 'nielutulehdus'] },
+        { box: 'Hänellä on ripuli, hän oksentaa ja vatsaan sattuu. Monet päiväkodin lapset ovat sairastuneet samaan tautiin.', a: ['vatsatauti', 'mahatauti', 'vatsaflunssa', 'ruokamyrkytys', 'myrkytys', 'noro', 'norovirus'] },
         { box: 'Häntä särkee kovasti päätä toiselta puolelta, valo häiritsee ja hänellä on pahoinvointia.', a: ['migreeni'] },
-        { box: 'Lapsen korvaan sattuu, hän itkee ja hänellä on kuumetta.', a: ['korvatulehdus'] },
-        { box: 'Hänellä on kova yskä ja korkea kuume. Hengittäminen on vaikeaa, ja keuhkoissa on tulehdus.', a: ['keuhkokuume'] },
+        { box: 'Lapsen korvaan sattuu, hän itkee ja hänellä on kuumetta.', a: ['korvatulehdus', 'otiitti'] },
+        { box: 'Hänellä on kova yskä ja korkea kuume. Hengittäminen on vaikeaa, ja keuhkoissa on tulehdus.', a: ['keuhkokuume', 'pneumonia'] },
         { box: 'Keväällä hänen silmänsä kutiavat, hän aivastelee ja hänellä on ihottumaa, mutta kuumetta ei ole.', a: ['allergia'] }
       ]},
-    { id: 'sanat', type: 'input', title: 'Вставьте слово', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
+    { id: 'sanat', type: 'input', title: 'Täydennä lauseet', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
       bank: ['sairastua', 'kärsiä', 'polvi', 'maksa', 'kuume', 'yskiä', 'munuainen', 'selkä', 'parantua', 'kurkkukipu'],
       items: [
         { t: 'Lapsi ___ eilen angiinaan, ja nyt hän on kotona.', a: ['sairastui'] },
@@ -307,11 +307,11 @@ const TOPICS = [
         { t: 'Pikkuveljeni ___ koko yön, eikä kukaan nukkunut.', a: ['yski'] },
         { t: 'Ihmisellä on kaksi ___.', a: ['munuaista'] },
         { t: '___ särkee, koska istuin koko päivän tietokoneella.', a: ['selkää'] },
-        { t: 'Toivottavasti sinä ___ pian flunssasta!', a: ['paranet'] }
+        { t: 'Toivottavasti sinä ___ pian flunssasta!', a: ['parannut', 'paranet'] }
       ]}
   ]},
   { id: 'kielioppi', fi: 'Kielioppi', ru: 'Грамматика', exercises: [
-    { id: 'perfekti', type: 'input', title: 'Перфект или имперфект', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
+    { id: 'perfekti', type: 'input', title: 'Perfekti vai imperfekti?', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
       items: [
         { t: 'Minä ___ sairaana jo kolme päivää, eikä kuume laske.', h: 'olla', a: ['olen ollut'], why: 'действие продолжается до сих пор → перфект' },
         { t: 'Eilen minä ___ lääkärissä.', h: 'käydä', a: ['kävin'], why: 'eilen — законченное время → имперфект' },
@@ -326,7 +326,7 @@ const TOPICS = [
         { t: 'Viime kesänä hän ___ allergiasta koko kesän.', h: 'kärsiä', a: ['kärsi'], why: 'viime kesänä → имперфект' },
         { t: 'Lääkäri ___ minulle reseptin kaksi päivää sitten.', h: 'kirjoittaa', a: ['kirjoitti'], why: 'kaksi päivää sitten → имперфект' }
       ]},
-    { id: 'objekti', type: 'input', title: 'Падеж объекта', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
+    { id: 'objekti', type: 'input', title: 'Objektin sijamuodot', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
       items: [
         { t: 'Ota ___ kolme kertaa päivässä!', h: 'lääke', a: ['lääke'], why: 'повелительное наклонение → номинатив' },
         { t: 'En ottanut ___ eilen.', h: 'lääke', a: ['lääkettä'], why: 'отрицание → партитив' },
@@ -338,7 +338,7 @@ const TOPICS = [
         { t: 'Lääkäri ei kirjoittanut ___.', h: 'resepti', a: ['reseptiä'], why: 'отрицание → партитив' },
         { t: 'Mittaa ___ illalla uudestaan!', h: 'verenpaine', a: ['verenpaine'], why: 'повелительное наклонение → номинатив' }
       ]},
-    { id: 'rektio', type: 'input', title: 'Глагольное управление', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
+    { id: 'rektio', type: 'input', title: 'Verbien rektiot', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
       items: [
         { t: 'Minua särkee ___.', h: 'pää', a: ['päätä'], why: 'särkeä + P: что болит — партитив' },
         { t: '___ särkee selkää.', h: 'hän', a: ['häntä'], why: 'särkeä + P: у кого болит — тоже партитив' },
@@ -347,43 +347,46 @@ const TOPICS = [
         { t: 'Flunssa tarttui ___ bussissa.', h: 'minä', a: ['minuun'], why: 'tarttua + mihin: kehen? → minuun' },
         { t: 'Pysy kotona, ettei tauti tartu ___!', h: 'lapset', a: ['lapsiin'], why: 'tarttua + mihin, мн. ч. иллатив' },
         { t: 'Hän sairastui ___.', h: 'influenssa', a: ['influenssaan'], why: 'sairastua + mihin' },
-        { t: 'Paranin ___ nopeasti.', h: 'flunssa', a: ['flunssasta'], why: 'parantua + mistä' },
+        { t: 'Parannuin ___ nopeasti.', h: 'flunssa', a: ['flunssasta'], why: 'parantua + mistä' },
         { t: 'Kärsin ___ joka kevät.', h: 'allergia', a: ['allergiasta'], why: 'kärsiä + mistä' },
         { t: '___ särkee jalkoja pitkän kävelyn jälkeen.', h: 'me', a: ['meitä'], why: 'särkeä + P' },
         { t: 'Kun nielen, ___ sattuu.', h: 'kurkku', a: ['kurkkuun'], why: 'sattua + mihin' },
         { t: 'Pitkän päivän jälkeen ___ särkee silmiä.', h: 'minä', a: ['minua'], why: 'särkeä + P' }
       ]}
   ]},
-  { id: 'yki', fi: 'YKI-harjoitus', ru: 'YKI-тест', exercises: [
-    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного (keskitaso). Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
+  { id: 'yki', fi: 'YKI-testi', ru: 'YKI-тест', exercises: [
+    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте короткие тексты и ответьте на вопросы. На открытые вопросы отвечайте коротко по-фински.',
       texts: [
-      { kind: 'Tiedote', title: 'Kivikon terveysasema tiedottaa', body: [
-        'Influenssakausi on alkanut. Jos sinulla on korkea kuume, yskä ja lihaksia särkee, älä tule terveysasemalle ilman ajanvarausta. Soita ensin hoitajalle numeroon 09 310 5555 arkisin kello 8–16. Hoitaja kertoo, tarvitsetko lääkärin.',
-        'Useimmat sairastuneet paranevat kotona noin viikossa. Lepää, juo paljon vettä ja ota tarvittaessa särkylääkettä. Jos kuume on yli 39 astetta yli kolme päivää tai hengittäminen on vaikeaa, ota heti yhteyttä päivystykseen.',
-        'Influenssarokotuksia annetaan ilman ajanvarausta tiistaisin ja torstaisin kello 12–15. Rokotus on maksuton yli 65-vuotiaille, raskaana oleville ja pienille lapsille.' ],
+      { kind: 'Tekstiviesti', title: 'Viesti Liisalle', body: [
+        'Hei Liisa! Olen sairas tänään. Minulla on kuumetta ja kurkku on kipeä. En tule suomen kurssille illalla. Voitko kertoa opettajalle? Menen huomenna lääkäriin. Terveisin Anna' ],
         questions: [
-        { kind: 'mc', q: 'Mitä sinun pitää tehdä ensin, jos sinulla on influenssan oireet?', options: ['Mennä suoraan terveysasemalle.', 'Soittaa hoitajalle.', 'Mennä päivystykseen.'], answer: 1 },
-        { kind: 'mc', q: 'Milloin pitää ottaa yhteyttä päivystykseen?', options: ['Kun lihaksia särkee.', 'Heti kun sairastuu.', 'Kun korkea kuume on kestänyt yli kolme päivää.'], answer: 2 },
-        { kind: 'mc', q: 'Mikä pitää paikkansa rokotuksesta?', options: ['Rokotukseen täytyy varata aika.', 'Rokotukseen voi mennä tiistaina iltapäivällä.', 'Rokotus on maksuton kaikille.'], answer: 1 }
+        { kind: 'mc', q: 'Miksi Anna ei tule kurssille?', options: ['Hän on töissä.', 'Hän on sairas.', 'Hän on lääkärissä.'], answer: 1 },
+        { kind: 'mc', q: 'Mitä Liisan pitää tehdä?', options: ['Soittaa lääkärille.', 'Kertoa opettajalle.', 'Ostaa lääkettä.'], answer: 1 },
+        { kind: 'tf', q: 'Anna menee lääkäriin tänään.', answer: false }
       ]},
-      { kind: 'Blogikirjoitus', title: 'Ajattelin, että flunssa on pieni asia', body: [
-        'Marraskuun alussa poikani toi päiväkodista flunssan, ja tietysti se tarttui myös minuun. Ensin nenä vuoti ja kurkku oli kipeä. Ajattelin, että tämä on vain tavallinen nuha, ja menin töihin niin kuin aina. Joimme työkavereiden kanssa kahvia ja istuimme pitkässä palaverissa. Kahden päivän päästä puolet tiimistä oli sairaana.',
-        'Viikonloppuna oloni oli vielä huonompi. Minulla oli kuumetta, yskin koko yön, ja päätä särki niin, etten pystynyt lukemaan. Maanantaina kävin lääkärissä. Lääkäri kuunteli keuhkoja ja sanoi, että minulla on alkava keuhkokuume. Hän kirjoitti reseptin ja käski levätä vähintään viikon.',
-        'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
-        '– Mari, 34' ],
+      { kind: 'Ilmoitus', title: 'Kivikon terveysasema', body: [
+        'Terveysasema on auki maanantaista perjantaihin kello 8–16. Lauantaina ja sunnuntaina terveysasema on kiinni.',
+        'Ajanvaraus puhelimella numerosta 09 310 5555 kello 8–12.',
+        'Jos olet viikonloppuna hyvin sairas, soita päivystykseen: 116 117.' ],
         questions: [
-        { kind: 'mc', q: 'Mistä Mari sai flunssan?', options: ['Työkavereilta.', 'Pojaltaan.', 'Lääkäriltä.'], answer: 1 },
-        { kind: 'mc', q: 'Miksi Mari meni töihin?', options: ['Hän ajatteli, että sairaus ei ole vakava.', 'Hänellä oli tärkeä palaveri.', 'Lääkäri sanoi, että se on hyvä idea.'], answer: 0 },
-        { kind: 'mc', q: 'Mitä lääkäri teki?', options: ['Mittasi verenpaineen.', 'Kuunteli keuhkoja ja kirjoitti reseptin.', 'Lähetti Marin sairaalaan.'], answer: 1 },
-        { kind: 'tf', q: 'Marin työkaverit sairastuivat myös.', answer: true },
-        { kind: 'tf', q: 'Mari parani nopeasti eikä ollut enää väsynyt.', answer: false },
-        { kind: 'tf', q: 'Viikonloppuna Mari pystyi lukemaan.', answer: false },
-        { kind: 'tf', q: 'Jos poika on sairas, Mari jää nyt kotiin.', answer: true },
-        { kind: 'open', q: 'Mitä oireita Marilla oli viikonloppuna? Mainitse kolme.', keys: [['kuume'], ['ysk'], ['pää', 'särk']], model: 'kuume, yskä, päänsärky' },
-        { kind: 'open', q: 'Mitkä kaksi asiaa Mari oppi? Vastaa lyhyesti omin sanoin.', keys: [['töihin', 'töissä', 'työhön'], ['lev', 'lepä', 'lepo']], model: 'Sairaana ei kannata mennä töihin. On tärkeää levätä kunnolla.' }
+        { kind: 'mc', q: 'Milloin voit varata ajan puhelimella?', options: ['Maanantaista perjantaihin kello 8–12.', 'Joka päivä kello 8–16.', 'Lauantaina.'], answer: 0 },
+        { kind: 'tf', q: 'Terveysasema on auki lauantaina.', answer: false },
+        { kind: 'open', q: 'Mihin numeroon soitat, jos olet sunnuntaina hyvin sairas?', keys: [['116 117', '116117']], model: '116 117 (päivystys)' }
+      ]},
+      { kind: 'Kertomus', title: 'Mikko sairastui', body: [
+        'Mikko on 35-vuotias. Hän on yleensä terve, mutta viime viikolla hän sairastui flunssaan. Ensin hänen nenänsä vuoti, sitten tuli yskä ja kuumetta.',
+        'Mikko oli kotona kolme päivää. Hän joi paljon teetä, lepäsi ja nukkui paljon. Hänen vaimonsa osti apteekista särkylääkettä.',
+        'Torstaina Mikko voi jo paremmin, ja perjantaina hän meni taas töihin.' ],
+        questions: [
+        { kind: 'mc', q: 'Mitä oireita Mikolla oli ensin?', options: ['Vatsa oli kipeä.', 'Nenä vuoti.', 'Päätä särki.'], answer: 1 },
+        { kind: 'mc', q: 'Kuinka kauan Mikko oli kotona?', options: ['Yhden päivän.', 'Kolme päivää.', 'Viikon.'], answer: 1 },
+        { kind: 'mc', q: 'Mitä Mikon vaimo teki?', options: ['Soitti lääkärille.', 'Osti lääkettä.', 'Keitti teetä.'], answer: 1 },
+        { kind: 'tf', q: 'Mikko on usein sairas.', answer: false },
+        { kind: 'tf', q: 'Perjantaina Mikko meni töihin.', answer: true },
+        { kind: 'open', q: 'Mitä Mikko teki kotona? Kirjoita kaksi asiaa.', keys: [['tee', 'joi'], ['lepä'], ['nukku', 'nukkui']], need: 2, model: 'Hän joi teetä, lepäsi ja nukkui paljon.' }
       ]}
     ]},
-    { id: 'kirjoittaminen', type: 'writing', title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть (keskitaso): три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
+    { id: 'kirjoittaminen', type: 'writing', title: 'Kirjoittaminen', minutes: 55, task: 'Письменная часть: три задания, как на экзамене. На экзамене всего около 55 минут. Тексты проверяет преподаватель.',
       tasks: [
       { id: 'w1', kind: 'Epämuodollinen viesti', words: [50, 80], title: 'Viesti ystävälle',
         text: 'Olet sairastunut etkä pääse ystäväsi syntymäpäiväjuhliin lauantaina. Kirjoita viesti ystävällesi.',
@@ -701,15 +704,15 @@ function renderRegister() {
 function renderTopics() {
   const el = $('#topics');
   el.innerHTML = `<ul class="toc">${TOPICS.map(t => {
-    if (t.soon) return `<li class="toc-topic soon"><span class="sig">○</span>${esc(t.fi)} <span class="note">· ${esc(t.ru)} (скоро)</span></li>`;
+    if (t.soon) return `<li class="toc-topic soon"><span class="sig">○</span>${esc(t.fi)} <span class="note">(tulossa)</span></li>`;
     const scs = t.blocks.map(bl => blockScore(t, bl, state.results));
     const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
     const sig = done === total ? '●' : scs.some(x => x.started) ? '◐' : '○';
-    return `<li class="toc-topic"><button class="topic-btn" type="button" data-topic="${t.id}" aria-current="${t.id === state.topic}"><span class="sig">${sig}</span>${esc(t.fi)} <span class="note">· ${esc(t.ru)}</span></button>
-      <span class="toc-count">${done}/${total} заданий</span>
+    return `<li class="toc-topic"><button class="topic-btn" type="button" data-topic="${t.id}" aria-current="${t.id === state.topic}"><span class="sig">${sig}</span>${esc(t.fi)}</button>
+      <span class="toc-count">${done}/${total} tehtävää</span>
       <ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
-        return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}"><span class="sig">${sigOf(sc)}</span>${i + 1}. ${esc(bl.ru)}</a>
-          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m} баллов` : ''}${sc.done === sc.total ? ' · закончено' : ''}</span></li>`; }).join('')}</ul></li>`;
+        return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}"><span class="sig">${sigOf(sc)}</span>${i + 1}. ${esc(bl.fi)}</a>
+          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · закончено' : ''}</span></li>`; }).join('')}</ul></li>`;
   }).join('')}</ul>
   <p class="toc-legend note">○ не начато · ◐ в процессе · ● закончено</p>`;
   el.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { state.topic = b.dataset.topic; state.view = 'learn'; saveTab(); renderAll(); });
@@ -729,9 +732,8 @@ function renderLearn() {
   const main = $('#main');
   main.innerHTML = `
     <h2 style="margin:6px 0 4px">${esc(t.fi)}</h2>
-    <p class="note" style="margin:0 0 20px">${esc(t.ru)}</p>
     ${t.blocks.map((bl, i) => `<section class="block" id="block-${bl.id}">
-      <h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.ru)}</span> <span class="note">${esc(bl.fi)}</span></h2>
+      <h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
   t.blocks.forEach(bl => {
     const list = main.querySelector(`[data-exlist="${bl.id}"]`);
@@ -754,7 +756,7 @@ function savedLine(r) { return r ? `<span class="saved-note">сохранено 
 
 async function submit(ex, doc) {
   const t = topicObj(), b = t.blocks.find(bl => bl.exercises.includes(ex));
-  const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.ru, ex: ex.id, exTitle: ex.title, type: ex.type, at: new Date().toISOString(), ...doc };
+  const full = { topic: t.id, topicName: t.fi, block: b.id, blockName: b.fi, ex: ex.id, exTitle: ex.title, type: ex.type, at: new Date().toISOString(), ...doc };
   state.results[key(t.id, ex.id)] = full;
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
@@ -871,11 +873,12 @@ function renderReading(sec, ex, n) {
       const id = `${ex.id}-q${i++}`; const box = sec.querySelector('#' + id); const fb = box.querySelector('.fb');
       if (q.kind === 'open') {
         const v = box.querySelector('textarea').value; raw[id] = v;
-        const nv = norm(v); const hit = q.keys.filter(alts => alts.some(a => nv.includes(a))).length;
-        score += hit; max += q.keys.length;
-        fb.className = 'fb ' + (hit === q.keys.length ? 'ok' : 'wait');
-        fb.innerHTML = `${hit}/${q.keys.length} по ключевым словам · пример ответа: <i>${esc(q.model)}</i> <span class="why">· преподаватель проверит ответ</span>`;
-        answers.push({ p: q.q, a: v, ok: hit === q.keys.length, c: q.model, open: true });
+        const nv = norm(v); const need = q.need || q.keys.length;
+        const hit = Math.min(need, q.keys.filter(alts => alts.some(a => nv.includes(norm(a)))).length);
+        score += hit; max += need;
+        fb.className = 'fb ' + (hit === need ? 'ok' : 'wait');
+        fb.innerHTML = `${hit}/${need} по ключевым словам · пример ответа: <i>${esc(q.model)}</i> <span class="why">· преподаватель проверит ответ</span>`;
+        answers.push({ p: q.q, a: v, ok: hit === need, c: q.model, open: true });
         return;
       }
       max++;
@@ -983,7 +986,7 @@ async function renderStudent(el, st) {
   let html = '';
   TOPICS.forEach(t => t.blocks.forEach(b => {
     const sc = blockScore(t, b, res); if (!sc.started) return;
-    html += `<div class="section-title"><span class="n">${esc(b.ru)}</span><span class="note">${esc(t.fi)} · ${sc.done}/${sc.total} заданий${sc.m ? ` · ${sc.s}/${sc.m}` : ''}</span></div>`;
+    html += `<div class="section-title"><span class="n">${esc(b.fi)}</span><span class="note">${esc(t.fi)} · ${sc.done}/${sc.total} заданий${sc.m ? ` · ${sc.s}/${sc.m}` : ''}</span></div>`;
     b.exercises.forEach(ex => {
       const k = key(t.id, ex.id); const r = res[k]; if (!r) return;
       html += `<div class="exr"><h5>${esc(ex.title)} ${r.max ? `<span class="${'mark-' + (scoreClass(r.score, r.max) === 'ok' ? 'ok' : scoreClass(r.score, r.max) === 'mid' ? 'wait' : 'bad')}">${r.score}/${r.max}</span>` : ''} <span class="note">${fmtDate(r.at)}</span></h5>`;
