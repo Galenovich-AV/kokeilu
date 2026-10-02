@@ -1030,11 +1030,11 @@ async function submit(ex, doc) {
   const blockDone = () => { const sc = blockScore(t, b, state.results); return sc.total && sc.done === sc.total; };
   const wasDone = blockDone();
   state.results[key(t.id, ex.id)] = full;
-  // fireworks: big when the part is finished and every time a task in a finished part is done again, small for a task done 100 %
+  // fireworks only when a whole part (Sanasto / Kielioppi / YKI-testi) gets finished;
+  // when the part is gone through again, they come back on its last task
   const nowDone = blockDone();
-  if (nowDone && ex.type !== 'cards') { setTimeout(() => { toast(wasDone ? 'Раздел «' + b.fi + '» снова пройден! Hienoa!' : 'Раздел «' + b.fi + '» закончен! Hienoa!'); fireworks(true); }, 400); }
-  else if (nowDone && !wasDone) { setTimeout(() => { toast('Раздел «' + b.fi + '» закончен! Hienoa!'); fireworks(true); }, 400); }
-  else if (ex.type !== 'cards' && doc.max && doc.score === doc.max) setTimeout(() => fireworks(false), 200);
+  const lastOfBlock = b.exercises[b.exercises.length - 1] === ex;
+  if (nowDone && (!wasDone || lastOfBlock)) setTimeout(() => { toast((wasDone ? 'Раздел «' + b.fi + '» снова пройден!' : 'Раздел «' + b.fi + '» закончен!') + ' Hienoa!'); fireworks(true); }, 400);
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
   toast(cloud ? 'Результат сохранён на сайте' : Store.mode === 'supa' && Store.uid ? 'Нет связи с сайтом. Ответ сохранён в браузере и отправится, когда появится интернет' : Store.mode === 'supa' ? 'Сохранено в браузере. Зарегистрируйтесь, чтобы результат увидел преподаватель' : 'Результат сохранён в этом браузере');
