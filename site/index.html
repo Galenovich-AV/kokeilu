@@ -91,6 +91,7 @@
 .avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:rgba(40,45,35,.55);object-fit:cover;flex:0 0 auto;overflow:hidden}
 .prof-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
 .prof-av .avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 6px var(--sage)}
+.prof-av img.avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 9px var(--sage)}
 .prof-id{min-width:0;flex:1 1 260px}
 .prof-id label.btn{display:inline-flex;align-items:center}
 .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -1439,7 +1440,8 @@ function renderDict() {
       <p class="note">${words.length ? words.length + ' ' + (words.length % 10 === 1 && words.length % 100 !== 11 ? 'слово' : [2,3,4].includes(words.length % 10) && ![12,13,14].includes(words.length % 100) ? 'слова' : 'слов') : 'Пока пусто'} · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
     <section class="ex">
       <div class="ex-head"><h3>Мои слова</h3></div>
-      <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ В словарь» рядом с ним. Или впишите слово здесь.</p>
+      ${hideHelp('dict') ? '' : `<div class="help-note"><p class="ex-task" style="margin:0">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ В словарь» рядом с ним. Или впишите слово здесь.</p>
+        <label class="note row" style="gap:6px;margin-top:6px"><input type="checkbox" data-hidehelp="dict"> Больше не показывать</label></div>`}
       <form class="row" id="dictAdd" style="margin-bottom:16px">
         <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
         <input class="field" id="dt" placeholder="перевод" autocomplete="off">
@@ -1555,6 +1557,12 @@ function nextReview() {
   return ds[0] || null;
 }
 const hideTrainHelp = () => { try { return localStorage.getItem(LS_KEY + ':hideTrainHelp') === '1'; } catch (e) { return false; } };
+const hideHelp = id => { try { return localStorage.getItem(LS_KEY + ':hideHelp:' + id) === '1'; } catch (e) { return false; } };
+document.addEventListener('change', e => {
+  const c = e.target.closest('[data-hidehelp]'); if (!c || !c.checked) return;
+  try { localStorage.setItem(LS_KEY + ':hideHelp:' + c.dataset.hidehelp, '1'); } catch (err) {}
+  const box = c.closest('.help-note'); if (box) box.remove();
+});
 function nextModeBtn(mode) {
   const i = TRAIN_MODES.findIndex(m => m[0] === mode); const nx = TRAIN_MODES[(i + 1) % TRAIN_MODES.length];
   return `<button class="btn" type="button" data-nextmode="${nx[0]}">Следующее задание: ${nx[1]} →</button>`;
@@ -1774,7 +1782,7 @@ function renderProfile() {
             ${d.img ? '<button class="btn small" type="button" id="avDel">Убрать фото</button>' : ''}
             <button class="btn small" type="button" id="nameEdit">Изменить имя</button>
           </div>
-          ${d.img ? '' : `<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
+          ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
         </div>
       </div>
@@ -1786,12 +1794,11 @@ function renderProfile() {
       </div>
     </section>
     <section class="ex">
-      <div class="ex-head"><h3>Правильность по разделам</h3></div>
+      <div class="ex-head"><h3>Статистика по разделам</h3></div>
       ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
     </section>
     <section class="ex">
       <div class="ex-head"><h3>Мои задания</h3></div>
-      <p class="ex-task">Когда выполнено и с каким результатом. «Открыть» переносит прямо к заданию, чтобы посмотреть ответы.</p>
       ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
     </section>`;
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
