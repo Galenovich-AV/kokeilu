@@ -203,8 +203,13 @@ a{color:var(--sage-ink)}
 /* before it starts there is only the start button, without the bar's own frame around it */
 #timerRow.idle{background:none;border:0;box-shadow:none;padding:0}
 #timerRow.idle .btn{background:#ffe7b8}
-/* 'part finished': same round shape and size as the fold button next to it, filled */
-.block-done{width:32px;height:32px;flex:0 0 auto;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--sage);border:1.5px solid var(--sage-ink);color:var(--on-accent);font-size:1rem;font-weight:800;line-height:1}
+/* 'part finished': part of the title itself, same handwriting and colour */
+.block-done{font:inherit;color:inherit}
+.btn.unsaved{background:#d99a3a;border-color:#d99a3a;color:#fff}
+.versions{margin:6px 0 4px;font-size:.92rem}
+.versions summary{cursor:pointer;color:var(--sage-ink);font-weight:700}
+.vlist{margin:6px 0;padding-left:1.4em;display:grid;gap:8px}
+.vtext{white-space:pre-wrap;font-size:.85rem;color:var(--ink-soft);border-left:2px solid var(--rule);padding-left:8px;margin-top:2px}
 .ex-time{font-size:.85rem;font-weight:700;color:var(--sage-ink);background:var(--tape);border-radius:999px;padding:1px 10px}
 .ex-state{font-size:.85rem;color:var(--ink-soft);font-weight:600}
 .ex-state.done{color:var(--ok)}
@@ -1024,8 +1029,7 @@ function renderLearn() {
     ${hideHelp('tip') ? '' : `<div class="help-note tip-note"><p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ В словарь» рядом с ним, чтобы добавить его в свой словарь.</p>
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
-      <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
-      <span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" aria-label="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}>✓</span>
+      <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}<span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" aria-label="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}> ✓</span></span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
   main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
@@ -1323,10 +1327,14 @@ const fmtLeft = ms => `${String(Math.floor(ms / 60000)).padStart(2, '0')}:${Stri
 function renderWriting(sec, ex, n) {
   const k = key(state.topic, ex.id);
   const r = state.results[k];
-  const prev = (r && r.raw) || {};
-  const savedAt = (r && r.savedAt) || {};
+  // kept up to date on save without redrawing, so the text field keeps its own Ctrl+Z history
+  const prev = { ...((r && r.raw) || {}) };
+  const savedAt = { ...((r && r.savedAt) || {}) };
+  const versions = JSON.parse(JSON.stringify((r && r.versions) || {})); // { taskId: last 5 saved versions [{ text, at }] }
   let drafts = {}; try { drafts = JSON.parse(localStorage.getItem(LS_KEY + ':draft:' + k)) || {}; } catch (e) {}
   const fb = state.feedback[k] || null;
+  const versionsHTML = tid => { const list = (versions[tid] || []).slice().reverse(); return list.length ? `<summary>Сохранённые версии (${list.length})</summary><ol class="vlist">${list.map((v, i) =>
+    `<li><span class="note">${fmtDate(v.at)} · ${words(v.text)} слов</span> <button class="btn small" type="button" data-vrestore="${tid}:${list.length - 1 - i}">Вернуть</button><div class="vtext">${esc(v.text.length > 160 ? v.text.slice(0, 158) + '…' : v.text)}</div></li>`).join('')}</ol>` : ''; };
   sec.innerHTML = exHead(ex, n, null) + `
     <div class="row" style="margin-bottom:8px" id="timerRow"></div>
     ${ex.tasks.map((t, i) => { const v = drafts[t.id] != null ? drafts[t.id] : (prev[t.id] || ''); const f = fb && fb.items && fb.items[t.id];
@@ -1339,15 +1347,26 @@ function renderWriting(sec, ex, n) {
       <ul>${t.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
       <textarea id="${ex.id}-${t.id}" rows="7" aria-label="${esc(t.title)}" data-tid="${t.id}" data-min="${t.words[0]}" data-max="${t.words[1]}">${esc(v)}</textarea>
       <div class="wmeta"><span class="count" id="${ex.id}-${t.id}-c"></span><span>рекомендуемый объём ${t.words[0]}–${t.words[1]} слов</span>${t.min ? `<span>примерное время ≈ ${t.min} мин</span>` : ''}</div>
-      <div class="actions part-actions"><button class="btn main" type="button" data-send="${t.id}">Tallenna · Tehtävä ${i + 1}</button>
+      <div class="actions part-actions"><button class="btn main ${changed ? 'unsaved' : ''}" type="button" data-send="${t.id}">Tallenna · Tehtävä ${i + 1}</button>
         <span class="saved-note" id="${ex.id}-${t.id}-st">${sent ? (changed ? '◐ есть несохранённые изменения' : '● сохранено ' + fmtDate(savedAt[t.id] || r.at)) : '○ ещё не сохранено'}</span></div>
+      <details class="versions" id="${ex.id}-${t.id}-vers" ${(versions[t.id] || []).length ? '' : 'hidden'}>${versionsHTML(t.id)}</details>
       ${f && (f.grade || f.comment || (f.marks && f.marks.length)) ? `<div class="teacher-fb"><b>Отзыв преподавателя</b>${f.grade ? ` · уровень <b>${esc(f.grade)}</b>` : ''}${f.comment ? `<div style="white-space:pre-wrap">${esc(f.comment)}</div>` : ''}
         ${f.marks && f.marks.length ? `<div class="note" style="margin-top:8px">Ваш отправленный текст с комментариями:</div><div class="essay">${markedHTML(prev[t.id] || '', f.marks)}</div>${marksListHTML(f.marks, false)}` : ''}</div>` : ''}
     </div>`; }).join('')}`;
   const upd = ta => { const c = words(ta.value); const el = sec.querySelector('#' + ta.id + '-c'); el.textContent = c + ' слов'; el.classList.toggle('good', c >= +ta.dataset.min && c <= +ta.dataset.max); };
   sec.querySelectorAll('textarea').forEach(ta => { upd(ta); ta.addEventListener('input', () => {
     upd(ta); drafts[ta.dataset.tid] = ta.value; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
-    const st = sec.querySelector('#' + ta.id + '-st'); if (st) st.textContent = '◐ есть несохранённые изменения'; }); });
+    const dirty = ta.value !== (prev[ta.dataset.tid] || '');
+    const st = sec.querySelector('#' + ta.id + '-st'); if (st) st.textContent = dirty ? '◐ есть несохранённые изменения' : (prev[ta.dataset.tid] ? '● сохранено ' + fmtDate(savedAt[ta.dataset.tid]) : '○ ещё не сохранено');
+    const sb = sec.querySelector(`[data-send="${ta.dataset.tid}"]`); if (sb) sb.classList.toggle('unsaved', dirty); }); });
+  // bring back a saved version; insertText keeps it undoable with Ctrl+Z
+  sec.addEventListener('click', e => {
+    const b = e.target.closest('[data-vrestore]'); if (!b) return;
+    const [tid, i] = b.dataset.vrestore.split(':'); const v = (versions[tid] || [])[+i]; if (!v) return;
+    const ta = sec.querySelector('#' + ex.id + '-' + tid); ta.focus(); ta.select();
+    if (!(document.execCommand && document.execCommand('insertText', false, v.text))) { ta.value = v.text; ta.dispatchEvent(new Event('input')); }
+    toast('Версия возвращена. Нажмите Tallenna, чтобы сохранить её');
+  });
   const tick = () => {
     const out = $('#timerOut'); if (!out) return;
     if (timer.paused) { out.textContent = fmtLeft(timer.left) + ' · пауза'; return; }
@@ -1379,11 +1398,20 @@ function renderWriting(sec, ex, n) {
   sec.querySelectorAll('[data-send]').forEach(btn => btn.onclick = async () => {
     const tid = btn.dataset.send; const v = sec.querySelector('#' + ex.id + '-' + tid).value;
     if (!v.trim()) { toast('Сначала напишите текст'); return; }
-    const raw = { ...prev, [tid]: v }; const sa = { ...savedAt, [tid]: new Date().toISOString() };
-    const answers = ex.tasks.filter(t => (raw[t.id] || '').trim()).map(t => ({ p: t.kind + ': ' + t.title, a: raw[t.id], ok: null, words: words(raw[t.id]), tid: t.id }));
-    await submit(ex, { score: 0, max: 0, answers, raw, savedAt: sa, pending: true });
+    const now = new Date().toISOString();
+    prev[tid] = v; savedAt[tid] = now;
+    const last = (versions[tid] || []).slice(-1)[0];
+    if (!last || last.text !== v) versions[tid] = (versions[tid] || []).concat([{ text: v, at: now }]).slice(-5);
+    const answers = ex.tasks.filter(t => (prev[t.id] || '').trim()).map(t => ({ p: t.kind + ': ' + t.title, a: prev[t.id], ok: null, words: words(prev[t.id]), tid: t.id }));
+    await submit(ex, { score: 0, max: 0, answers, raw: { ...prev }, savedAt: { ...savedAt }, versions, pending: true });
     delete drafts[tid]; try { localStorage.setItem(LS_KEY + ':draft:' + k, JSON.stringify(drafts)); } catch (e) {}
-    renderWriting(sec, ex, n); refreshTabs();
+    // update in place instead of redrawing, so Ctrl+Z in the field still works
+    btn.classList.remove('unsaved');
+    const st = sec.querySelector('#' + ex.id + '-' + tid + '-st'); if (st) st.textContent = '● сохранено ' + fmtDate(now);
+    const vd = sec.querySelector('#' + ex.id + '-' + tid + '-vers'); if (vd) { const open = vd.open; vd.innerHTML = versionsHTML(tid); vd.hidden = false; vd.open = open; }
+    const es = sec.querySelector('.ex-state'); const rr = state.results[k];
+    if (es) { es.className = 'ex-state' + (exDone(ex, rr) ? ' done' : ''); es.textContent = exDone(ex, rr) ? '● выполнено' : '◐ начато'; }
+    refreshTabs();
   });
 }
 
