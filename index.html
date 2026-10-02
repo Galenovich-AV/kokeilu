@@ -117,7 +117,7 @@ a{color:var(--sage-ink)}
 .vgroup h4{margin:0 0 6px;font-family:var(--f-script);font-weight:700;color:var(--sage-ink);font-size:1.45rem}
 .vgroup h4 .note{font-family:var(--f-body);font-style:normal;font-size:.82rem}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 16px}
-.card{display:block;width:100%;perspective:900px;height:62px;cursor:pointer;border:0;background:none;padding:0;text-align:left;font:inherit}
+.card{display:block;width:100%;perspective:900px;height:78px;cursor:pointer;border:0;background:none;padding:0;text-align:left;font:inherit}
 .card-in{display:block;position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
 .card.flipped .card-in{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:7px;display:flex;flex-direction:column;justify-content:center;padding:6px 16px;
@@ -229,11 +229,21 @@ textarea:focus{outline:none;border-color:var(--sage-ink)}
 .wsheet-in .field{flex:none;width:100%}
 .wsheet-in .btn.main{margin-top:8px;justify-self:start}
 .dict td{vertical-align:middle}
-.addw{position:absolute;top:50%;right:10px;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:1.5px solid #1f2c17;color:#1f2c17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;line-height:1}
+.back-tools{display:flex;align-items:center;gap:6px;margin-top:6px}
+.knowbtn{font-size:.78rem;font-weight:800;padding:3px 10px;border-radius:999px;background:#1f2c17;color:var(--sage);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.knowbtn:hover{background:#33461f}
+.knowbtn .short{display:none}
+@media (max-width:560px){.knowbtn .long{display:none}.knowbtn .short{display:inline}}
+.card.leaving{transition:opacity .25s,transform .25s;opacity:0;transform:scale(.92)}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(30,35,25,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-in{background:var(--sheet);border-radius:14px;border:1.5px solid var(--sage-ink);padding:20px 22px;max-width:440px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.modal-in p{margin:.4em 0}
+.addw{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1.5px solid #1f2c17;color:#1f2c17;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;line-height:1}
 .addw:hover{background:rgba(255,255,255,.5)}
 .dict-act{white-space:nowrap;text-align:right}
-.addsel{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:24;box-shadow:0 6px 20px rgba(40,50,30,.3);max-width:calc(100% - 32px);white-space:nowrap}
-.addsel:hover{transform:translateX(-50%)}
+@media (max-width:560px){.dict thead{display:none}.dict tr{display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;border-bottom:1px solid var(--rule);padding:6px 0}.dict td{border:0;padding:2px 4px}.dict-act{flex-basis:100%;text-align:left;white-space:normal}}
+.addsel{position:fixed;top:0;left:0;right:0;z-index:24;border-radius:0;border:0;border-bottom:2px solid var(--sage-ink);padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;font-size:1.05rem;text-align:center;box-shadow:0 4px 18px rgba(40,50,30,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.addsel:hover{transform:none}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-weight:600;font-size:.92rem;z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center}
 @media (max-width:520px){.ex{padding:30px 16px 18px}.cards{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.title-slip{padding:12px 18px}}
 @media (prefers-reduced-motion:reduce){.card-in{transition:none}.btn:hover{transform:none}}
@@ -769,7 +779,7 @@ function renderLearn() {
   main.innerHTML = `
     <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
       <div class="row"><button class="btn" type="button" data-allfold="1">Свернуть всё</button><button class="btn" type="button" data-allfold="0">Развернуть всё</button></div></div>
-    <p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ Sanakirjaan» внизу, чтобы добавить его в свой словарь.</p>
+    <p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ Добавить в словарь» вверху экрана, чтобы добавить его в свой словарь.</p>
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
@@ -809,39 +819,77 @@ async function submit(ex, doc) {
 
 /* ---------- cards ---------- */
 function renderCards(sec, ex, n) {
+  sec.dataset.n = n;
   const k = key(state.topic, ex.id);
   const r = state.results[k];
   const known = new Set((r && r.known) || []);
   const all = ex.groups.flatMap(g => g.cards);
-  const anyFlipped = () => all.some(c => state.flips[c[0]]);
-  sec.innerHTML = exHead(ex, n, r) + ex.groups.map(gr => `
-    <div class="vgroup"><h4>${esc(gr.name)} <span class="note">· ${gr.cards.filter(c => known.has(c[0])).length}/${gr.cards.length}</span></h4>
-    <div class="cards">${gr.cards.map(c => {
+  sec.innerHTML = exHead(ex, n, r) + ex.groups.map(gr => {
+    const left = gr.cards.filter(c => !known.has(c[0]));
+    return `<div class="vgroup"><h4>${esc(gr.name)} <span class="note">· выучено ${gr.cards.length - left.length}/${gr.cards.length}</span></h4>
+    ${left.length ? `<div class="cards">${left.map(c => {
       const id = c[0];
-      return `<button class="card ${state.flips[id] ? 'flipped' : ''} ${known.has(id) ? 'known' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
+      return `<button class="card ${state.flips[id] ? 'flipped' : ''}" type="button" data-card="${esc(id)}" aria-label="${esc(c[0])}">
         <span class="card-in">
-          <span class="face front" title="${esc(c[2] || "")}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
-          <span class="face back"><span class="w">${esc(c[1])}</span><span class="g">${esc(c[0])}</span><span class="addw" role="button" tabindex="0" title="В мой словарь" data-addw="${esc(c[0].split(' + ')[0])}" data-tr="${esc(c[1])}">+</span></span>
-        </span></button>`; }).join('')}</div></div>`).join('') + `
+          <span class="face front" title="${esc(c[2] || '')}"><span class="w">${esc(c[0])}</span>${c[2] ? `<span class="g">${esc(c[2])}</span>` : ''}</span>
+          <span class="face back"><span class="w">${esc(c[1])}</span>
+            <span class="back-tools">
+              <span class="knowbtn" role="button" tabindex="0" data-knowcard="${esc(id)}" data-ex="${ex.id}" aria-label="Я знаю это слово">✓ <span class="long">Я знаю это слово</span><span class="short">Знаю</span></span>
+              <span class="addw" role="button" tabindex="0" title="В мой словарь" data-addw="${esc(c[0].split(' + ')[0])}" data-tr="${esc(c[1])}">+</span>
+            </span></span>
+        </span></button>`; }).join('')}</div>` : '<p class="note">● Все слова этой группы выучены.</p>'}</div>`; }).join('') + `
     <div class="card-tools">
-      <button class="btn small main" type="button" data-known ${anyFlipped() ? '' : 'disabled'}>✓ Знаю открытые</button>
       <button class="btn small" type="button" data-flipall>Перевернуть все</button>
-      <button class="btn small" type="button" data-reset>Начать заново</button>
+      ${known.size ? `<button class="btn small" type="button" data-reset>Вернуть все карточки (${known.size})</button>` : ''}
       <span class="note" style="margin-left:auto">Выучено: <b>${known.size}/${all.length}</b></span>
     </div>`;
-  const knownBtn = sec.querySelector('[data-known]');
   sec.querySelectorAll('[data-card]').forEach(b => b.onclick = () => {
     const id = b.dataset.card; state.flips[id] = !state.flips[id]; b.classList.toggle('flipped', state.flips[id]);
-    knownBtn.disabled = !anyFlipped();
   });
-  sec.querySelector('[data-flipall]').onclick = () => { const to = all.some(c => !state.flips[c[0]]); all.forEach(c => state.flips[c[0]] = to); renderCards(sec, ex, n); };
-  const persist = async () => {
-    await submit(ex, { score: known.size, max: all.length, known: [...known], answers: [{ p: 'Выучено карточек', a: known.size + ' из ' + all.length, ok: null }] });
-    state.flips = {}; renderCards(sec, ex, n); refreshTabs();
-  };
-  knownBtn.onclick = () => { all.forEach(c => { if (state.flips[c[0]]) known.add(c[0]); }); persist(); };
-  sec.querySelector('[data-reset]').onclick = () => { known.clear(); persist(); };
+  sec.querySelector('[data-flipall]').onclick = () => { const to = all.some(c => !known.has(c[0]) && !state.flips[c[0]]); all.forEach(c => state.flips[c[0]] = to); renderCards(sec, ex, n); };
+  const rs = sec.querySelector('[data-reset]');
+  if (rs) rs.onclick = async () => { await saveKnown(ex, []); state.flips = {}; renderCards(sec, ex, n); refreshTabs(); };
 }
+async function saveKnown(ex, list) {
+  const total = ex.groups.reduce((a, g) => a + g.cards.length, 0);
+  await submit(ex, { score: list.length, max: total, known: list, answers: [{ p: 'Выучено карточек', a: list.length + ' из ' + total, ok: null }] });
+}
+// "I know this word": confirm once (unless turned off), then the card disappears
+const SKIP_KNOW = LS_KEY + ':skipKnowConfirm';
+function confirmKnow(word, go) {
+  let skip = false; try { skip = localStorage.getItem(SKIP_KNOW) === '1'; } catch (e) {}
+  if (skip) { go(); return; }
+  let m = $('#knowModal');
+  if (!m) { m = document.createElement('div'); m.id = 'knowModal'; m.className = 'modal'; document.body.appendChild(m); }
+  m.hidden = false;
+  m.innerHTML = `<div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="kmT">
+    <h3 id="kmT">Убрать карточку «${esc(word)}»?</h3>
+    <p>Карточка исчезнет из списка и будет считаться выученной. Вернуть все карточки можно кнопкой «Вернуть все карточки» под словами.</p>
+    <label class="row" style="gap:8px;margin:10px 0 4px"><input type="checkbox" id="kmSkip"> Больше не показывать это окно</label>
+    <div class="row" style="margin-top:12px"><button class="btn main" type="button" id="kmOk">Убрать карточку</button><button class="btn" type="button" id="kmNo">Отмена</button></div>
+  </div>`;
+  const close = () => { m.hidden = true; };
+  $('#kmNo').onclick = close;
+  m.onclick = e => { if (e.target === m) close(); };
+  $('#kmOk').onclick = () => { if ($('#kmSkip').checked) { try { localStorage.setItem(SKIP_KNOW, '1'); } catch (e) {} } close(); go(); };
+  $('#kmOk').focus();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-knowcard]'); if (!b) return;
+  e.stopPropagation(); e.preventDefault();
+  const word = b.dataset.knowcard, exId = b.dataset.ex;
+  const ex = topicObj().blocks.flatMap(bl => bl.exercises).find(x => x.id === exId);
+  const sec = document.getElementById('ex-' + exId);
+  confirmKnow(word, async () => {
+    const card = b.closest('.card'); if (card) card.classList.add('leaving');
+    const r = state.results[key(state.topic, exId)];
+    const list = [...new Set([...((r && r.known) || []), word])];
+    delete state.flips[word];
+    await new Promise(res => setTimeout(res, 250));
+    await saveKnown(ex, list);
+    renderCards(sec, ex, +sec.dataset.n); refreshTabs();
+  });
+}, true);
 
 /* ---------- input (fill-in) ---------- */
 function renderInput(sec, ex, n) {
@@ -1116,14 +1164,14 @@ document.addEventListener('selectionchange', () => {
   clearTimeout(selState.t);
   selState.t = setTimeout(() => {
     const w = selectedWord(); const btn = $('#addSel');
-    if (w) { selState.text = w; btn.querySelector('b').textContent = w.length > 24 ? w.slice(0, 22) + '…' : w; btn.hidden = false; }
+    if (w) { selState.text = w; btn.querySelector('b').textContent = w.length > 40 ? w.slice(0, 38) + '…' : w; btn.hidden = false; }
     else if (!$('#addSel:hover')) btn.hidden = true;
   }, 250);
 });
 (function mountSelButton() {
   const btn = document.createElement('button');
   btn.id = 'addSel'; btn.type = 'button'; btn.className = 'btn main addsel'; btn.hidden = true;
-  btn.innerHTML = '+ Sanakirjaan: <b></b>';
+  btn.innerHTML = '+ Добавить в словарь: <b></b>';
   btn.addEventListener('pointerdown', e => e.preventDefault()); // keep the selection while tapping
   btn.onclick = () => { const w = selState.text; btn.hidden = true; if (w) openWordSheet(w); };
   document.body.appendChild(btn);
@@ -1162,7 +1210,7 @@ function renderDict() {
   main.innerHTML = `
     <section class="ex">
       <div class="ex-head"><h3>Oma sanakirja</h3><span class="note">${words.length} слов</span></div>
-      <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ Sanakirjaan» внизу экрана. Или впишите слово здесь.</p>
+      <p class="ex-task">Добавляйте слова прямо из заданий: выделите слово и нажмите «+ Добавить в словарь» вверху экрана. Или впишите слово здесь.</p>
       <form class="row" id="dictAdd" style="margin-bottom:16px">
         <input class="field" id="dw" placeholder="sana" autocomplete="off" spellcheck="false" required>
         <input class="field" id="dt" placeholder="перевод" autocomplete="off">
@@ -1171,15 +1219,18 @@ function renderDict() {
       ${words.length ? `<input class="field" id="dq" placeholder="Поиск…" value="${esc(q)}" style="width:100%;margin-bottom:10px" autocomplete="off">` : ''}
       ${words.length ? `<div class="scroll"><table class="res-table dict"><thead><tr><th>Sana</th><th>Перевод</th><th></th></tr></thead><tbody>
         ${shown.map(w => `<tr><td><b>${esc(w.w)}</b></td><td>${esc(w.t) || '<span class="note">—</span>'}</td>
-          <td class="dict-act"><button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button></td></tr>`).join('')}
-      </tbody></table></div>` : '<p class="note">Пока пусто. Выделите любое слово в заданиях и нажмите «+ Sanakirjaan».</p>'}
+          <td class="dict-act">${state.dictDel === w.w
+            ? `<span class="note">Точно удалить?</span> <button class="btn small main" type="button" data-delyes="${esc(w.w)}">Да</button> <button class="btn small" type="button" data-delno>Нет</button>`
+            : `<button class="btn small" type="button" data-edit="${esc(w.w)}">Изменить</button> <button class="btn small" type="button" data-del="${esc(w.w)}">Удалить</button>`}</td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="note">Пока пусто. Выделите любое слово в заданиях и нажмите «+ Добавить в словарь» вверху экрана.</p>'}
     </section>`;
   $('#dictAdd').onsubmit = async e => { e.preventDefault(); await addWord($('#dw').value, $('#dt').value); renderDict(); };
   const dq = $('#dq'); if (dq) dq.oninput = () => { state.dictQ = dq.value; const pos = dq.selectionStart; renderDict(); const n = $('#dq'); n.focus(); n.setSelectionRange(pos, pos); };
   main.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { const w = dictWords().find(x => x.w === b.dataset.edit); openWordSheet(w.w, w.t); });
-  main.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
-    if (b.dataset.sure) { await saveDict(dictWords().filter(x => x.w !== b.dataset.del)); renderDict(); return; }
-    b.dataset.sure = 1; b.textContent = 'Точно удалить?';
+  main.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { state.dictDel = b.dataset.del; renderDict(); });
+  main.querySelectorAll('[data-delno]').forEach(b => b.onclick = () => { state.dictDel = null; renderDict(); });
+  main.querySelectorAll('[data-delyes]').forEach(b => b.onclick = async () => {
+    state.dictDel = null; await saveDict(dictWords().filter(x => x.w !== b.dataset.delyes)); toast('Слово удалено'); renderDict();
   });
 }
 
