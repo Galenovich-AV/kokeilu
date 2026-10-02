@@ -1526,6 +1526,10 @@ function nextReview() {
   const ds = dictWords().filter(w => !isLearned(w) && !isDue(w) && w.due).map(w => w.due).sort();
   return ds[0] || null;
 }
+function nextModeBtn(mode) {
+  const i = TRAIN_MODES.findIndex(m => m[0] === mode); const nx = TRAIN_MODES[(i + 1) % TRAIN_MODES.length];
+  return `<button class="btn" type="button" data-nextmode="${nx[0]}">Следующее задание: ${nx[1]} →</button>`;
+}
 function renderTrain() {
   const sec = $('#trainSec'); if (!sec) return;
   const tr = state.train || (state.train = { mode: 'match', src: null, chosen: false, round: null });
@@ -1551,13 +1555,13 @@ function renderTrain() {
           <div class="match">
           <div class="mcol">${B.left.map(i => `<button type="button" class="mbtn ${B.done.includes(i) ? 'done' : ''} ${B.sel === i ? 'sel' : ''} ${B.bad && B.bad[0] === i ? 'bad' : ''}" data-ml="${bi}:${i}" ${B.done.includes(i) ? 'disabled' : ''}>${esc(B.pick[i].fi)}${B.pick[i].learned ? ' <span class="oldw" title="Уже выученное слово">●</span>' : ''}</button>`).join('')}</div>
           <div class="mcol">${B.right.map(i => `<button type="button" class="mbtn ${B.done.includes(i) ? 'done' : ''} ${B.bad && B.bad[1] === i ? 'bad' : ''}" data-mr="${bi}:${i}" ${B.done.includes(i) ? 'disabled' : ''}>${esc(B.pick[i].ru)}</button>`).join('')}</div></div></div>`).join('')
-          + (finished ? `<p class="tr-res">Valmista! Ошибок: <b>${R.miss}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<button class="btn main" type="button" data-again>Новый раунд</button>`
+          + (finished ? `<p class="tr-res">Valmista! Ошибок: <b>${R.miss}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<div class="row"><button class="btn main" type="button" data-again>Новый раунд</button>${nextModeBtn(tr.mode)}</div>`
             : '<p class="note">Нажмите на финское слово, потом на его перевод. ● отмечены уже выученные слова для повторения.</p>');
       }
     } else {
       const it = R.items[R.i];
       if (!it) {
-        body = `<p class="tr-res">Valmista! Правильно: <b>${R.score} из ${R.items.length}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<button class="btn main" type="button" data-again>Новый раунд</button>`;
+        body = `<p class="tr-res">Valmista! Правильно: <b>${R.score} из ${R.items.length}</b></p>${R.moved && R.moved.length ? `<p class="note">${R.moved.map(esc).join('<br>')}</p>` : ''}<div class="row"><button class="btn main" type="button" data-again>Новый раунд</button>${nextModeBtn(tr.mode)}</div>`;
       } else {
         const prompt = tr.mode === 'write'
           ? `<div class="tr-q">${esc(it.ru)}</div>`
@@ -1582,6 +1586,7 @@ function renderTrain() {
   sec.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { tr.mode = b.dataset.mode; tr.round = null; renderTrain(); });
   $('#trSrc').onchange = e => { tr.src = e.target.value; tr.chosen = true; tr.round = null; renderTrain(); };
   const again = sec.querySelector('[data-again]'); if (again) again.onclick = () => { tr.round = null; renderTrain(); };
+  const nm = sec.querySelector('[data-nextmode]'); if (nm) nm.onclick = () => { tr.mode = nm.dataset.nextmode; tr.round = null; renderTrain(); sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   if (!tr.round) return;
   const R = tr.round;
   if (tr.mode === 'match') {
