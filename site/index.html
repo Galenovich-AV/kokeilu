@@ -1521,7 +1521,7 @@ function renderInput(sec, ex, n) {
       const fb = sec.querySelector('#' + ex.id + '-fb-' + i);
       fb.className = 'fb ' + (ok ? 'ok' : 'bad');
       fb.innerHTML = ok ? '✓ верно' + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '')
-        : `✗ правильно: ${spoil(`<b>${esc(it.a.join(' / '))}</b>`)}` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
+        : `✗ правильно: ${spoil(`<b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : ''))}`;
       answers.push({ p: it.box || (it.t + (it.h ? ' (' + it.h + ')' : '')), a: v, ok, c: it.a.join(' / ') });
     });
     if (save) { await submit(ex, { score, max: ex.items.length, answers, raw }); renderInput(sec, ex, n); refreshTabs(); }
@@ -1530,7 +1530,7 @@ function renderInput(sec, ex, n) {
   sec.querySelector('[data-check]').onclick = () => check(true);
   sec.querySelector('[data-show]').onclick = () => ex.items.forEach((it, i) => {
     const fb = sec.querySelector('#' + ex.id + '-fb-' + i);
-    fb.className = 'fb wait'; fb.innerHTML = `ответ: <b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : '');
+    fb.className = 'fb wait'; fb.innerHTML = `ответ: ${spoil(`<b>${esc(it.a.join(' / '))}</b>` + (it.why ? ` <span class="why">· ${esc(it.why)}</span>` : ''))}`;
   });
   sec.querySelector('[data-clear]').onclick = () => {
     sec.querySelectorAll('.blank').forEach(i => { i.value = ''; i.classList.remove('ok', 'bad'); });
@@ -1758,7 +1758,7 @@ document.documentElement.classList.add('hide-answers');
 document.addEventListener('click', e => { const sp = e.target.closest('.spoiler'); if (sp) sp.classList.toggle('open'); });
 document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('spoiler')) { e.preventDefault(); e.target.classList.toggle('open'); } });
 let lastBtnAt = 0, blurHintShown = false;
-document.addEventListener('click', e => { if (e.target.closest('[data-check],[data-qcheck],button[type=submit]')) lastBtnAt = Date.now(); }, true);
+document.addEventListener('click', e => { if (e.target.closest('[data-check],[data-qcheck],[data-show],button[type=submit]')) lastBtnAt = Date.now(); }, true);
 document.addEventListener('submit', () => { lastBtnAt = Date.now(); }, true);
 function blurHint() {
   if (blurHintShown || Date.now() - lastBtnAt > 1500 || hideHelp('blur')) return;
