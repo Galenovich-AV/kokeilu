@@ -459,7 +459,7 @@ const TOPICS = [
   id: 'terveys', fi: 'Terveys ja sairaudet', ru: 'Здоровье и болезни',
   blocks: [
   { id: 'sanasto', fi: 'Sanasto', ru: 'Лексика', exercises: [
-    { id: 'kortit', type: 'cards', min: 15, title: 'Sanakortit', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
+    { id: 'kortit', type: 'cards', title: 'Sanakortit', task: 'Нажмите на карточку, чтобы увидеть перевод. Отмечайте слова, которые уже знаете: прогресс сохраняется.',
       groups: [
       { name: 'Ruumiinosat', cards: [
         ['pää', 'голова'], ['kaula', 'шея'], ['kurkku', 'горло'], ['olkapää', 'плечо'], ['selkä', 'спина'], ['rinta', 'грудь'],
@@ -494,7 +494,7 @@ const TOPICS = [
         ['mitata + G/P', 'измерять', 'mittasi kuumeen'], ['ottaa lääkettä', 'принимать лекарство'],
         ['hoitaa + G/P', 'лечить', 'hoitaa flunssaa'], ['kirjoittaa resepti', 'выписать рецепт'] ]}
     ]},
-    { id: 'oireet', type: 'input', min: 7, title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
+    { id: 'oireet', type: 'input', title: 'Mikä sairaus?', task: 'Прочитайте симптомы и напишите, что это за болезнь (по-фински, в начальной форме).',
       bank: ['flunssa', 'influenssa', 'angiina', 'vatsatauti', 'migreeni', 'korvatulehdus', 'keuhkokuume', 'allergia'],
       items: [
         { box: 'Hänen nenänsä vuotaa, hän aivastelee paljon ja hänen kurkkunsa on vähän kipeä. Kovaa kuumetta ei ole.', a: ['flunssa', 'nuha', 'nuhakuume'] },
@@ -506,7 +506,7 @@ const TOPICS = [
         { box: 'Hänellä on kova yskä ja korkea kuume. Hengittäminen on vaikeaa, ja keuhkoissa on tulehdus.', a: ['keuhkokuume', 'pneumonia'] },
         { box: 'Keväällä hänen silmänsä kutiavat, hän aivastelee ja hänellä on ihottumaa, mutta kuumetta ei ole.', a: ['allergia'] }
       ]},
-    { id: 'sanat', type: 'input', min: 10, title: 'Täydennä lauseet', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
+    { id: 'sanat', type: 'input', title: 'Täydennä lauseet', task: 'Выберите подходящее по смыслу слово из списка и поставьте его в правильную форму.',
       bank: ['sairastua', 'kärsiä', 'polvi', 'maksa', 'kuume', 'yskiä', 'munuainen', 'selkä', 'parantua', 'kurkkukipu'],
       items: [
         { t: 'Lapsi ___ eilen angiinaan, ja nyt hän on kotona.', a: ['sairastui'] },
@@ -522,7 +522,7 @@ const TOPICS = [
       ]}
   ]},
   { id: 'kielioppi', fi: 'Kielioppi', ru: 'Грамматика', exercises: [
-    { id: 'perfekti', type: 'input', min: 10, title: 'Perfekti vai imperfekti?', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
+    { id: 'perfekti', type: 'input', title: 'Perfekti vai imperfekti?', task: 'Поставьте глагол в скобках в имперфект (kävin) или перфект (olen käynyt). Смотрите на слова-подсказки: eilen, viime viikolla — или jo, tänään, yhä.',
       items: [
         { t: 'Minä ___ sairaana jo kolme päivää, eikä kuume laske.', h: 'olla', a: ['olen ollut'], why: 'действие продолжается до сих пор → перфект' },
         { t: 'Eilen minä ___ lääkärissä.', h: 'käydä', a: ['kävin'], why: 'eilen — законченное время → имперфект' },
@@ -537,7 +537,7 @@ const TOPICS = [
         { t: 'Viime kesänä hän ___ allergiasta koko kesän.', h: 'kärsiä', a: ['kärsi'], why: 'viime kesänä → имперфект' },
         { t: 'Lääkäri ___ minulle reseptin kaksi päivää sitten.', h: 'kirjoittaa', a: ['kirjoitti'], why: 'kaksi päivää sitten → имперфект' }
       ]},
-    { id: 'objekti', type: 'input', min: 8, title: 'Objektin sijamuodot', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
+    { id: 'objekti', type: 'input', title: 'Objektin sijamuodot', task: 'Поставьте слово в скобках в правильный падеж объекта: номинатив, генетив или партитив.',
       items: [
         { t: 'Ota ___ kolme kertaa päivässä!', h: 'lääke', a: ['lääke'], why: 'повелительное наклонение → номинатив' },
         { t: 'En ottanut ___ eilen.', h: 'lääke', a: ['lääkettä'], why: 'отрицание → партитив' },
@@ -549,7 +549,7 @@ const TOPICS = [
         { t: 'Lääkäri ei kirjoittanut ___.', h: 'resepti', a: ['reseptiä'], why: 'отрицание → партитив' },
         { t: 'Mittaa ___ illalla uudestaan!', h: 'verenpaine', a: ['verenpaine'], why: 'повелительное наклонение → номинатив' }
       ]},
-    { id: 'rektio', type: 'input', min: 10, title: 'Verbien rektiot', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
+    { id: 'rektio', type: 'input', title: 'Verbien rektiot', task: 'Поставьте слово в скобках в нужную форму. särkeä + партитив (кого? что?), sattua + mihin, tarttua + mihin, sairastua + mihin, parantua / kärsiä + mistä.',
       items: [
         { t: 'Minua särkee ___.', h: 'pää', a: ['päätä'], why: 'särkeä + P: что болит — партитив' },
         { t: '___ särkee selkää.', h: 'hän', a: ['häntä'], why: 'särkeä + P: у кого болит — тоже партитив' },
@@ -566,9 +566,9 @@ const TOPICS = [
       ]}
   ]},
   { id: 'yki', fi: 'YKI-testi', ru: 'YKI-тест', exercises: [
-    { id: 'luetun', type: 'reading', min: 40, title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
+    { id: 'luetun', type: 'reading', title: 'Luetun ymmärtäminen', task: 'Понимание прочитанного. Прочитайте тексты и ответьте на вопросы. Время на экзамене: примерно 60 минут на всю часть.',
       texts: [
-      { kind: 'Tiedote', min: 10, title: 'Kivikon terveysasema tiedottaa', body: [
+      { kind: 'Tiedote', title: 'Kivikon terveysasema tiedottaa', body: [
         'Influenssakausi on alkanut. Jos sinulla on korkea kuume, yskä ja lihaksia särkee, älä tule terveysasemalle ilman ajanvarausta. Soita ensin hoitajalle numeroon 09 310 5555 arkisin kello 8–16. Hoitaja kertoo, tarvitsetko lääkärin.',
         'Useimmat sairastuneet paranevat kotona noin viikossa. Lepää, juo paljon vettä ja ota tarvittaessa särkylääkettä. Jos kuume on yli 39 astetta yli kolme päivää tai hengittäminen on vaikeaa, ota heti yhteyttä päivystykseen.',
         'Influenssarokotuksia annetaan ilman ajanvarausta tiistaisin ja torstaisin kello 12–15. Rokotus on maksuton yli 65-vuotiaille, raskaana oleville ja pienille lapsille.' ],
@@ -577,7 +577,7 @@ const TOPICS = [
         { kind: 'mc', q: 'Milloin pitää ottaa yhteyttä päivystykseen?', options: ['Kun lihaksia särkee.', 'Heti kun sairastuu.', 'Kun korkea kuume on kestänyt yli kolme päivää.'], answer: 2 },
         { kind: 'mc', q: 'Mikä pitää paikkansa rokotuksesta?', options: ['Rokotukseen täytyy varata aika.', 'Rokotukseen voi mennä tiistaina iltapäivällä.', 'Rokotus on maksuton kaikille.'], answer: 1 }
       ]},
-      { kind: 'Blogikirjoitus', min: 30, title: 'Ajattelin, että flunssa on pieni asia', body: [
+      { kind: 'Blogikirjoitus', title: 'Ajattelin, että flunssa on pieni asia', body: [
         'Marraskuun alussa poikani sairastui päiväkodissa flunssaan, ja tietysti se tarttui myös minuun. Ensin nenä vuoti ja kurkku oli kipeä. Ajattelin, että tämä on vain tavallinen nuha, ja menin töihin niin kuin aina. Joimme työkavereiden kanssa kahvia ja istuimme pitkässä palaverissa. Kahden päivän päästä puolet tiimistä oli sairaana.',
         'Viikonloppuna oloni oli vielä huonompi. Minulla oli kuumetta, yskin koko yön, ja päätä särki niin, etten pystynyt lukemaan. Maanantaina kävin lääkärissä. Lääkäri kuunteli keuhkoja ja sanoi, että minulla on alkava keuhkokuume. Hän kirjoitti reseptin ja käski levätä vähintään viikon.',
         'Paranin lopulta, mutta väsymys jatkui vielä pitkään. Olen oppinut tästä kaksi asiaa. Ensinnäkin sairaana ei kannata mennä töihin: siitä ei ole hyötyä kenellekään. Toiseksi on tärkeää levätä kunnolla, vaikka tuntuisi, että töitä on liikaa. Nyt kun poikani yskii, jään kotiin hänen kanssaan enkä yritä olla sankari.',
