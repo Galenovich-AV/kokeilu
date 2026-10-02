@@ -712,7 +712,7 @@ function renderTopics() {
       <span class="toc-count">${done}/${total} tehtävää</span>
       <ul class="toc-blocks">${t.blocks.map((bl, i) => { const sc = scs[i];
         return `<li class="${sc.done === sc.total ? 'is-done' : ''}"><a href="#block-${bl.id}" data-jump="${t.id}:${bl.id}"><span class="sig">${sigOf(sc)}</span>${i + 1}. ${esc(bl.fi)}</a>
-          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · закончено' : ''}</span></li>`; }).join('')}</ul></li>`;
+          <span class="toc-count">${sc.done}/${sc.total}${sc.m ? ` · ${sc.s}/${sc.m}` + " pistettä" : ''}${sc.done === sc.total ? ' · valmis' : ''}</span></li>`; }).join('')}</ul></li>`;
   }).join('')}</ul>
   <p class="toc-legend note">○ не начато · ◐ в процессе · ● закончено</p>`;
   el.querySelectorAll('[data-topic]').forEach(b => b.onclick = () => { state.topic = b.dataset.topic; state.view = 'learn'; saveTab(); renderAll(); });
