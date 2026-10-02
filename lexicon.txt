@@ -620,7 +620,7 @@ myydä | продавать | myin
 myöhään | поздно | myöhään
 märkä | мокрый | märkä
 naapuri | сосед | naapuri naapuria naapurin naapuriin naapurille naapurista naapurisi naapureita
-neliö | квадрат; разг. кв. метр | neliö neliötä
+neliö | квадрат; квадратный метр | neliö neliötä
 neliömetri | квадратный метр | neliömetri neliömetrin neliömetriä
 neljäs | четвёртый | neljännessä
 nenäliina | носовой платок | nenäliina
@@ -750,7 +750,7 @@ sisään | внутрь | sisään
 sit (sitten) | потом (разг.) | sit
 sohva | диван | sohva sohvan
 soittaa | звонить; играть (музыку) | soitan soitin soitit soitti soittanut
-solu / soluasunto | квартира с общей кухней | solu solun soluasunto solukämppä
+solu / soluasunto | коммуналка | solu solun soluasunto solukämppä
 sopia | договориться | sopia sopi sovin sovimme sopineet
 sopimus | договор | sopimus
 suksi | лыжа | suksia
