@@ -1417,7 +1417,7 @@ function teacherUnread() {
 async function renderTeacherChatView() {
   const main = $('#main');
   main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Чат с учениками</span></h1>
-    <p class="note">Комментарии и вопросы учеников к заданиям · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
+    <p class="note">Заметки и вопросы учеников к заданиям · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
     <section class="ex" id="notesSec"><div class="ex-head"><h3>Переписка</h3></div><p class="note">Загрузка…</p></section>`;
   const T = await loadTeacherChats();
   if (state.view !== 'tchat') return;
@@ -1447,7 +1447,7 @@ function renderTeacherChats(list, all, chats) {
       <blockquote class="nquote plain"><mark class="hl hl-${n.style || 'fill'}" style="${hlVars(n)}">${esc(n.exact)}</mark></blockquote>
       <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof }, m.from === 't')).join('')}</div>
       <form class="row reply-form"><textarea class="field" rows="1" placeholder="Ответить…" required></textarea><button class="btn small main" type="submit">Ответить</button></form>
-    </div>`).join('') : '<p class="note">Пока никто не отправил комментарий. Ученики выделяют текст в заданиях и нажимают «Заметка».</p>'}`;
+    </div>`).join('') : '<p class="note">Пока никто не отправил заметку. Ученики выделяют текст в заданиях и нажимают «Заметка».</p>'}`;
   sec.querySelectorAll('.thread-card').forEach(card => card.querySelector('form').onsubmit = async e => {
     e.preventDefault(); const ta = card.querySelector('textarea'); const text = ta.value.trim(); if (!text) return;
     const uid = card.dataset.uid, nid = card.dataset.nid;
@@ -1653,7 +1653,7 @@ function wrapRange(sec, [a, b], n) {
     if (t.parentElement.closest('.hl, button, textarea, input, select')) continue;
     const mid = t.splitText(from); mid.splitText(to - from);
     const m = document.createElement('mark'); m.className = 'hl hl-' + (n.style || 'fill'); m.dataset.note = n.id; m.style.cssText = hlVars(n);
-    m.title = n.note ? n.note : 'Комментарий'; m.tabIndex = 0;
+    m.title = n.note ? n.note : 'Заметка'; m.tabIndex = 0;
     mid.parentNode.insertBefore(m, mid); m.appendChild(mid);
   }
 }
@@ -1758,7 +1758,7 @@ function renderChats() {
     const la = a.msgs.length ? a.msgs[a.msgs.length - 1].at : a.n.at, lb = b.msgs.length ? b.msgs[b.msgs.length - 1].at : b.n.at; return la < lb ? 1 : -1; });
   const t = myChat().teacher;
   main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Чат с преподавателем</span></h1>
-    <p class="note">Здесь ваши отправленные комментарии и ответы на них · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
+    <p class="note">Здесь ваши отправленные заметки и ответы на них · вернуться к заданиям можно кнопкой <button class="hl-pill" type="button" data-back>← к заданиям</button> вверху</p></div>
     <section class="ex"><div class="ex-head"><h3>Переписка</h3></div>
     ${list.length ? list.map(({ n, msgs }) => { const last = msgs[msgs.length - 1] || { text: n.note, from: 's' }; const u = unreadOf(n);
       return `<button class="chat-row" type="button" data-open="${esc(n.id)}">
@@ -1824,7 +1824,7 @@ function openNoteSheet(id, anchor) {
     clearHighlight(n.id);
     const cloud = await saveNotes(items);
     applyHighlights(); close();
-    toast(act === 'send' ? (cloud ? 'Комментарий отправлен преподавателю. Ответ появится в «Чате»' : 'Комментарий сохранён и отправится, когда появится интернет') : 'Комментарий сохранён');
+    toast(act === 'send' ? (cloud ? 'Заметка отправлена преподавателю. Ответ появится в «Чате»' : 'Заметка сохранена и отправится, когда появится интернет') : 'Комментарий сохранён');
     renderWho();
   };
   const del = $('#ndel'); if (del) del.onclick = async () => {

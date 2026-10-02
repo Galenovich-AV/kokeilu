@@ -1,3 +1,9 @@
 [build]
   publish = "site"
   command = "python3 build.py"
+
+# always check for a fresh page, so phones don't keep showing an old version
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"
