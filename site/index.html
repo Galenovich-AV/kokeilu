@@ -998,7 +998,8 @@ function renderLearn() {
   main.innerHTML = `
     <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
       <div class="row"><button class="btn" type="button" data-allfold="1">Свернуть всё</button><button class="btn" type="button" data-allfold="0">Развернуть всё</button></div></div>
-    <p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ В словарь» рядом с ним, чтобы добавить его в свой словарь.</p>
+    ${hideHelp('tip') ? '' : `<div class="help-note tip-note"><p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ В словарь» рядом с ним, чтобы добавить его в свой словарь.</p>
+      <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
     ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}</span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
