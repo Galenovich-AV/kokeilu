@@ -73,8 +73,6 @@
   background:var(--sage);border:2px solid var(--sage-ink);color:var(--on-accent);box-shadow:0 6px 16px rgba(40,50,30,.22);display:flex;align-items:center;justify-content:center;padding:0}
 .totop::before{content:"";width:12px;height:12px;border-left:3px solid currentColor;border-top:3px solid currentColor;transform:translateY(3px) rotate(45deg)}
 .totop:hover{filter:brightness(.96)}
-.floatknown{white-space:nowrap;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:23;box-shadow:0 6px 18px rgba(40,50,30,.3);border-color:var(--sage-ink)}
-.floatknown:hover{transform:translateX(-50%)}
 .fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
 .wstat{font-size:.78rem;color:var(--ink-soft);font-weight:600}
 .board{margin:0 0 18px}
@@ -1068,18 +1066,10 @@ function renderCards(sec, ex, n) {
       <span class="note" style="margin-left:auto">Выучено: <b>${known.size}/${all.length}</b></span>
     </div>`;
   const kf = sec.querySelector('[data-knownflipped]');
-  let fk = $('#floatKnown');
-  if (!fk) { fk = document.createElement('button'); fk.id = 'floatKnown'; fk.type = 'button'; fk.className = 'btn main floatknown'; fk.hidden = true; document.body.appendChild(fk); }
-  const syncKnownBtns = () => {
-    const nFlip = all.filter(c => !known.has(c[0]) && state.flips[c[0]]).length;
-    kf.disabled = !nFlip; fk.hidden = !nFlip || state.view !== 'learn'; fk.textContent = `✓ Знаю перевёрнутые (${nFlip})`;
-  };
-  fk.onclick = () => kf.click();
   sec.querySelectorAll('[data-card]').forEach(b => b.onclick = () => {
     const id = b.dataset.card; state.flips[id] = !state.flips[id]; b.classList.toggle('flipped', state.flips[id]);
-    syncKnownBtns();
+    kf.disabled = !all.some(c => !known.has(c[0]) && state.flips[c[0]]);
   });
-  syncKnownBtns();
   kf.onclick = () => {
     const pick = all.filter(c => !known.has(c[0]) && state.flips[c[0]]).map(c => c[0]); if (!pick.length) return;
     confirmKnow(pick.length === 1 ? pick[0] : null, async () => {
@@ -2285,7 +2275,6 @@ function renderProfile() {
    ========================================================= */
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
-  { const fk = document.getElementById('floatKnown'); if (fk && state.view !== 'learn') fk.hidden = true; }
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
