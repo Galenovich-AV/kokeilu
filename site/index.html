@@ -2757,14 +2757,14 @@ function renderTrain() {
       } else {
         const prompt = tr.mode === 'write'
           ? `<div class="tr-q">${esc(it.ru)}</div>`
-          : `<div class="tr-q">${[...it.fi].map((ch, i) => i === it.gap ? `<span class="gap">${R.answered ? (R.last && !R.last.ok ? spoil(esc(ch)) : esc(ch)) : '_'}</span>` : esc(ch)).join('')}</div><div class="note">${esc(it.ru)}</div>`;
+          : `<div class="tr-q">${[...it.fi].map((ch, i) => i === it.gap ? `<span class="gap">${R.answered ? esc(ch) : '_'}</span>` : esc(ch)).join('')}</div><div class="note">${esc(it.ru)}</div>`;
         const L = R.last;
         body = `<div class="note">${R.i + 1} / ${R.items.length}</div>${prompt}
           <form class="row" id="trForm" style="margin-top:10px">
             <input class="field ${tr.mode === 'letter' ? 'one' : ''}" id="trIn" autocomplete="off" autocapitalize="off" spellcheck="false" ${tr.mode === 'letter' ? 'maxlength="1"' : ''} ${R.answered ? 'disabled' : ''} placeholder="${tr.mode === 'letter' ? '?' : 'suomeksi'}" value="${esc(L && R.answered ? L.given : '')}">
             ${R.answered ? '<button class="btn main" type="button" data-next>Дальше →</button>' : '<button class="btn main" type="submit">Tarkista!</button>'}
           </form>
-          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: ' + spoil('<b>' + esc(L.right) + '</b>') + (it.dict ? ' <span class="why">· слово вернулось к изучению</span>' : '')}</p>` : ''}`;
+          ${R.answered ? `<p class="fb ${L.ok ? 'ok' : 'bad'}">${L.ok ? '✓ oikein' : '✗ правильно: <b>' + esc(L.right) + '</b>' + (it.dict ? ' <span class="why">· слово вернулось к изучению</span>' : '')}</p>` : ''}`;
       }
     }
   }
