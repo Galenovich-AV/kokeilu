@@ -425,8 +425,8 @@ home | плесень | home homeen hometta
 homevaurio | повреждение плесенью | homevaurio
 huolehtia | заботиться | huolehtia huolehdin huolehti huolehtii
 huolellisesti | тщательно | huolellisesti
-huoltomies | техник, дворник | huoltomies huoltomiestä huoltomiehen huoltomiehelle
-huoltoyhtiö | обслуживающая компания | huoltoyhtiö huoltoyhtiölle huoltoyhtiöön huoltoon
+huoltomies | мастер по ремонту | huoltomies huoltomiestä huoltomiehen huoltomiehelle
+huoltoyhtiö | управляющая компания | huoltoyhtiö huoltoyhtiölle huoltoyhtiöön huoltoon
 huomata | заметить | huomaat huomasit
 huomenna | завтра | huomenna
 huomenta | доброе утро | huomenta
@@ -1140,3 +1140,8 @@ kolmas | третий | kolmannen
 @ mitä vähemmän..., sitä harvemmin | чем меньше..., тем реже | mitä vähemmän
 @ joka kerta | каждый раз | joka kerta
 @ ottaa tosissaan | воспринимать всерьёз | otetaanko\s+\p{L}+\s+tosissaan
+rakennus | здание | rakennus
+suihku | душ | suihkut
+työntekijä | работник | työntekijöitä
+opiskelija | студент | opiskelijoita opiskelija
+HOAS | HOAS (фонд студенческого жилья) | hoas:lta
