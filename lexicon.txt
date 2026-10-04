@@ -1146,3 +1146,23 @@ suihku | душ | suihkut
 työntekijä | работник | työntekijöitä
 opiskelija | студент | opiskelijoita opiskelija
 HOAS | HOAS (фонд студенческого жилья) | hoas:lta
+hiekka | песок | hiekka hiekkaa
+tuoda | привозить | tuodaan
+juoda | пить | juodaan
+tarvita | нуждаться | tarvitaan
+lisää | ещё, дополнительно | lisää
+jäteastia | мусорный контейнер | jäteastioita
+päästä | попасть | pääse
+kellari | подвал | kellariin
+herättää | будить | herätä
+seitsemältä | в семь часов | seitsemältä
+kutsua | приглашать | kutsuttiin
+valita | выбирать | valittiin
+tavata | встречать | tavata
+asema | станция, вокзал | asemalle
+hakea | забирать, заезжать за | hakea
+pestä | стирать | pesee
+pyykki | бельё | pyykit
+kerhohuone | клубная комната | kerhohuoneessa
+asukaskokous | собрание жильцов | asukaskokouksen
+jälkeen | после | jälkeen
