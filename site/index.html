@@ -176,7 +176,12 @@ h1{font-size:clamp(2rem,6vw,3rem);margin:0}
 .doodle-sep{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 30px}
 .doodle-sep::before,.doodle-sep::after{content:"";flex:1 1 0;max-width:220px;border-top:1.5px dashed var(--sage)}
 .doodle-sep svg{width:60px;height:60px;flex:0 0 auto}
-.doodle-sep svg:nth-of-type(odd){transform:rotate(-5deg)} .doodle-sep svg:nth-of-type(even){transform:rotate(4deg)}
+.doodle-sep svg{transform:rotate(-3deg)}
+.doodle-sep.berries svg:first-child{transform:rotate(-9deg) translateY(2px)}
+.doodle-sep.berries svg:last-child{transform:rotate(7deg)}
+.doodle-sep svg{width:64px;height:64px}
+.town-strip{margin:4px auto 26px;max-width:640px}
+.town-strip svg{display:block;width:100%;height:auto}
 @media (max-width:520px){.doodle-sep svg{width:46px;height:46px}.title-flag svg{width:42px;height:42px}}
 .home-mode .index{display:none}
 .home-hero{margin:18px 0 26px}
@@ -1430,6 +1435,7 @@ function renderRegister() {
 // "Kappaleet": collapsed by default; open it to see the topics, open a topic to see its parts
 const TOC_KEY = LS_KEY + ':toc';
 let toc = { open: false, topics: [] }; try { toc = { ...toc, ...JSON.parse(localStorage.getItem(TOC_KEY)) }; } catch (e) {}
+toc.open = false;  // the list of topics always starts folded
 const saveToc = () => { try { localStorage.setItem(TOC_KEY, JSON.stringify(toc)); } catch (e) {} };
 function renderTopics() {
   const el = $('#topics');
@@ -2076,10 +2082,14 @@ async function renderTeacher() {
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
     d.innerHTML = `<summary>${esc(st.name || 'Без имени')} <button class="tlabel ${tLabel(st.id) ? '' : 'empty'}" type="button" data-tlabel title="Ваша пометка — ученик её не видит">${tLabel(st.id) ? esc(tLabel(st.id)) : '+ пометка'}</button>${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
-      ${st.canDelete ? `<div class="row st-tools"><button class="btn mini danger" type="button" data-delst>Удалить ученика</button></div>` : ''}<div class="st-body note">Загрузка…</div>`;
+      <div class="row st-tools"><button class="btn mini" type="button" data-tpreview>Как видит ученик: «Мои задания»</button>${st.canDelete ? `<button class="btn mini danger" type="button" data-delst>Удалить ученика</button>` : ''}</div><div class="st-body note">Загрузка…</div>`;
     wrap.appendChild(d);
     d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
     d.querySelector('[data-tlabel]').onclick = e => { e.preventDefault(); e.stopPropagation(); editTLabel(st); };
+    d.querySelector('[data-tpreview]').onclick = async () => {
+      const [res, fbs] = await Promise.all([Store.studentResults(st.id), Store.feedbackFor(st.id)]);
+      state.view = 'tpreview'; state.tpreview = { res, fbs, name: st.name || '' }; renderAll(); window.scrollTo(0, 0);
+    };
     const del = d.querySelector('[data-delst]');
     if (del) del.onclick = () => confirmDeleteStudent(st, d);
   });
@@ -3086,10 +3096,16 @@ function renderProfile() {
       <div class="ex-head"><h3>Статистика по разделам</h3></div>
       ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
     </section>
+    ${(() => { const ws = myWritings(); if (!ws.length) return ''; const done = ws.filter(w => w.f);
+      return `<section class="ex"><div class="ex-head"><h3>Отзывы преподавателя</h3>${newFeedback() ? `<span class="newb">новых: ${newFeedback()}</span>` : ''}</div>
+        <p style="margin-top:0">Проверено письменных работ: <b>${done.length} из ${ws.length}</b>.</p>
+        ${done.length ? `<ul class="hist">${done.map(w => `<li><b>${esc(w.task.title)}</b> <span class="note">${esc(w.t.fi)}${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span></li>`).join('')}</ul>` : ''}
+        <div class="row" style="margin-top:10px"><button class="btn small main" type="button" data-hview2="mytasks">Открыть отзывы и комментарии</button></div></section>`; })()}
     <section class="ex">
       <div class="ex-head"><h3>Мои задания</h3></div>
       ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
     </section>`;
+  main.querySelectorAll('[data-hview2]').forEach(b => b.onclick = () => { state.view = b.dataset.hview2; renderAll(); window.scrollTo(0, 0); });
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
   main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
   $('#avFile').onchange = e => { const f = e.target.files[0]; if (f) setAvatarFile(f); };
@@ -3146,11 +3162,11 @@ function renderContact() {
 }
 /* ---------- MY TASKS: the student's written work with the teacher's feedback ---------- */
 const FB_SEEN = LS_KEY + ':fbSeen';
-function myWritings() {
+function myWritings(results = state.results, feedback = state.feedback) {
   const out = [];
   TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach(ex => {
     if (ex.type !== 'writing') return;
-    const k = key(t.id, ex.id), r = state.results[k], fb = state.feedback[k];
+    const k = key(t.id, ex.id), r = results[k], fb = feedback[k];
     const raw = (r && r.raw) || {};
     ex.tasks.forEach((task, i) => {
       const text = (raw[task.id] || '').trim(); if (!text) return;
@@ -3165,12 +3181,13 @@ function newFeedback() {
   let seen = ''; try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
   return myWritings().filter(w => w.f && (!seen || w.fbAt > seen)).length;
 }
-function renderMyTasks() {
-  const main = $('#main'); const list = myWritings();
-  let seen = ''; try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
+function renderMyTasks(preview) {
+  const main = $('#main'); const list = preview ? myWritings(preview.res, preview.fbs) : myWritings();
+  let seen = ''; if (!preview) try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
   const checked = list.filter(w => w.f).length;
   main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Мои задания</span></h1>
-    <p class="note">Ваши письменные работы и отзывы преподавателя: уровень, общий комментарий и пометки прямо в тексте.</p></div>
+    ${preview ? `<div class="warn" style="margin-top:8px">Предпросмотр: так страницу «Мои задания» видит ученик <b>${esc(preview.name)}</b>. <button class="btn small" type="button" data-tpback>← к ответам учеников</button></div>`
+      : `<p class="note">Ваши письменные работы и отзывы преподавателя: уровень, общий комментарий и пометки прямо в тексте.</p>`}</div>
     ${!list.length ? `<section class="ex"><p style="margin:0">Вы ещё не сохранили ни одного письменного задания.</p><p class="note">Письменные задания — в разделе YKI-testi каждой темы. Нажмите «Tallenna», и работа появится здесь, а когда преподаватель её проверит — и отзыв.</p></section>` : ''}
     ${list.length ? `<p class="note">Проверено ${checked} из ${list.length}.</p>` : ''}
     ${list.map(w => `<section class="ex mytask">
@@ -3183,6 +3200,7 @@ function renderMyTasks() {
       ${w.f && w.f.marks && w.f.marks.length ? marksListHTML(w.f.marks, false) : ''}
       <div class="row" style="margin-top:10px"><button class="btn small" type="button" data-goto="${w.t.id}:${w.ex.id}">Открыть задание</button></div>
     </section>`).join('')}`;
+  if (preview) { main.querySelectorAll('[data-goto]').forEach(b => b.remove()); const bk = main.querySelector('[data-tpback]'); if (bk) bk.onclick = () => { state.view = 'teacher'; renderAll(); window.scrollTo(0, 0); }; return; }
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
   try { localStorage.setItem(FB_SEEN, new Date().toISOString()); } catch (e) {}
 }
@@ -3201,7 +3219,7 @@ function renderHome() {
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
     </section>
 
-    <div class="doodle-sep" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 55c5-2.5 9 2.5 14 0s9 2.5 14 0 9 2.5 14 0 8 1.5 8 1.5" stroke="#7aa6d8"/> <path d="M12 44c2 7 12 10 24 9 11-1 19-6 21-17-4 3-8 4-12 4-6 0-11 1-16 2-6 1-11 0-17 2z" fill="#fff"/> <path d="M24 43c4-8 13-12 22-10 4 1 7 1 10-1-2 6-8 9-14 10-6 1-12 2-18 1z" fill="#eaf1f9"/> <path d="M30 41c4-3 9-4 14-4M33 44c4-2 8-3 12-3" stroke="#7aa6d8" stroke-width="1.4"/> <path d="M16 43c-6-6-7-13-3-19 3-5 4-9 1-12-2-2-5-1-6 1" stroke="#0b3d7a" stroke-width="6"/> <path d="M16 43c-6-6-7-13-3-19 3-5 4-9 1-12-2-2-5-1-6 1" stroke="#fff" stroke-width="2.6"/> <path d="M8.6 13.2l-5.2 3.4 5.6.6z" fill="#f2a33a"/> <circle cx="11.2" cy="12.6" r=".9" fill="#0b3d7a" stroke="none"/> </svg></div>
+    <div class="doodle-sep" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"> <path d="M27.6 27.3L27.3 26.3L27.0 25.4L26.5 24.5L26.5 23.6L26.9 22.8L27.2 21.8L26.6 20.7L26.3 19.7L26.6 18.4L26.0 17.7L26.0 16.4L26.4 15.5L25.7 14.8L25.1 13.9L24.4 13.1L23.4 12.7L22.2 12.1L21.3 11.5L20.7 10.8L20.1 10.0L20.4 8.8L21.3 8.3L22.2 9.0L22.8 9.9L23.3 10.6L24.5 11.5L25.6 11.7L26.5 11.4L27.6 11.1L28.8 11.7L29.9 11.1L30.6 10.5L31.3 9.4L31.3 8.3L31.7 6.6L32.5 5.5L33.2 4.7L34.4 4.9L35.5 4.1L36.5 4.5L37.4 5.3L38.3 5.8L39.5 7.2L38.8 8.2L38.4 9.2L38.0 10.0L38.2 11.1L37.5 12.3L37.7 13.4L38.0 14.2L38.9 14.6L40.0 15.7L40.6 16.6L40.9 17.8L40.1 19.0L39.3 20.2L38.9 21.1L39.4 22.4L39.8 23.3L40.1 24.3L40.6 25.2L41.3 27.4L40.4 28.2L40.4 29.8L40.7 30.9L40.1 31.7L40.6 32.7L41.3 33.4L41.0 34.3L41.3 35.1L42.2 35.8L42.2 37.0L41.5 38.2L42.0 39.9L43.3 41.0L43.9 41.8L44.5 42.8L44.4 43.8L44.0 45.0L43.2 46.3L42.4 47.4L41.8 48.3L41.1 49.4L40.3 50.6L39.3 52.0L38.1 53.2L37.5 54.0L36.8 54.9L36.0 56.1L34.7 56.1L33.5 56.5L33.2 55.6L32.9 56.4L31.9 56.4L31.5 57.3L30.6 57.6L29.4 58.1L28.4 58.7L27.3 58.9L26.3 59.2L25.3 59.8L25.3 58.9L24.7 57.8L24.3 58.7L23.7 57.9L23.9 56.9L22.4 56.3L21.5 55.9L21.2 54.8L21.1 53.7L21.4 52.6L21.5 51.3L21.6 50.4L21.3 49.1L20.9 48.1L21.1 46.8L20.7 45.8L20.5 44.7L20.7 43.7L21.3 42.9L21.6 42.0L22.3 41.5L23.3 40.9L23.3 39.9L23.8 39.1L24.9 38.1L26.0 36.9L26.9 35.7L27.8 34.3L28.2 33.4L28.9 32.5L30.0 32.5L30.4 31.6L30.2 30.3L30.3 29.1L29.1 28.1L28.6 27.1L27.6 27.3Z" fill="#dfeaf7"/> <g fill="#9fc0e6" stroke="none"><ellipse cx="33" cy="46" rx="2.6" ry="1.4" transform="rotate(-30 33 46)"/><ellipse cx="38" cy="50" rx="2" ry="1.1"/><ellipse cx="30" cy="51" rx="1.6" ry="1"/><ellipse cx="36" cy="42" rx="1.5" ry=".9"/><ellipse cx="27" cy="22" rx="1.6" ry="1"/></g> <circle cx="29.5" cy="57.1" r="1.6" fill="#c8102e" stroke="#fff" stroke-width=".8"/> </svg></div>
     <section class="ex"><div class="home-about">
       <div lang="fi"><h3>Tervetuloa!</h3>
         <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
@@ -3216,13 +3234,13 @@ function renderHome() {
       <li><span><b>Omille opiskelijoilleni</b> · для моих учеников: проверка письменных заданий с комментариями и чат со мной</span></li>
     </ul></section>
 
-    <div class="doodle-sep" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M14 24h30v20c0 6-5 10-11 10h-8c-6 0-11-4-11-10z" fill="#fff"/> <path d="M44 28h4c4 0 6 3 6 6s-2 6-6 6h-4"/> <path d="M14 30h30" stroke="#0b3d7a" stroke-width="3"/> <path d="M24 18c-2-3 2-5 0-8M32 18c-2-3 2-5 0-8" stroke="#7aa6d8"/> <path d="M10 56h40" /> </svg><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M6 36c0 9 12 16 26 16s26-7 26-16" fill="#f3d9a6"/> <ellipse cx="32" cy="34" rx="26" ry="12" fill="#f3d9a6"/> <ellipse cx="32" cy="34" rx="20" ry="8" fill="#3b4f9c"/> <g fill="#5e74c4" stroke="none"><circle cx="24" cy="32" r="2"/><circle cx="31" cy="30" r="2"/><circle cx="38" cy="33" r="2"/><circle cx="28" cy="37" r="2"/><circle cx="42" cy="36" r="1.8"/><circle cx="35" cy="38" r="1.8"/></g> <path d="M44 22l6-8M50 14c2 0 3 2 2 3" stroke="#5c8a3a"/><circle cx="46" cy="18" r="2.2" fill="#3b4f9c"/><circle cx="51" cy="20" r="2.2" fill="#3b4f9c"/> </svg></div>
+    <div class="town-strip" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 360 74" fill="none" stroke="#0b3d7a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 62h356" /> <path d="M220 62c14 0 24 0 40 0h98v8H220z" fill="#bcd6f0" stroke="none"/> <path d="M232 67c6-2 10 2 16 0M262 66c6-2 10 2 16 0M292 67c6-2 10 2 16 0M322 66c6-2 10 2 16 0" stroke="#7aa6d8" stroke-width="1.3"/> <g fill="#2f6b3a" stroke="#1f4a28" stroke-width="1.3"> <path d="M14 62l9-30 9 30z"/><path d="M17 50l6-20 6 20z"/> <path d="M120 62l7-24 7 24z"/><path d="M196 62l8-28 8 28z"/><path d="M199 50l5-18 5 18z"/> </g> <path d="M23 62v4M127 62v3M204 62v4" stroke="#5a3a20"/> <g> <path d="M38 62V40h34v22z" fill="#b8322a"/><path d="M34 41l21-14 21 14z" fill="#3a3a3a"/> <path d="M38 40v22M72 40v22" stroke="#fff" stroke-width="2.4"/><path d="M38 40v22M72 40v22" stroke="#0b3d7a" stroke-width=".8" opacity=".35"/> <rect x="44" y="46" width="8" height="8" fill="#fff"/><path d="M48 46v8M44 50h8" stroke="#b8322a" stroke-width="1"/> <rect x="58" y="48" width="8" height="14" fill="#fff"/> </g> <g> <path d="M84 62V46h26v16z" fill="#b8322a"/><path d="M81 47l16-11 16 11z" fill="#3a3a3a"/> <path d="M84 46v16M110 46v16" stroke="#fff" stroke-width="2.4"/> <rect x="89" y="50" width="7" height="7" fill="#fff"/><path d="M92.5 50v7M89 53.5h7" stroke="#b8322a" stroke-width="1"/> <path d="M103 40v-6h4v8" fill="#3a3a3a"/> </g> <g> <path d="M146 62V48h30v14z" fill="#f1e2c6"/><path d="M142 49l19-12 19 12z" fill="#6b4a2b"/> <rect x="151" y="52" width="7" height="6" fill="#fff"/><rect x="165" y="51" width="7" height="11" fill="#b8322a"/> </g> <g> <path d="M182 62v-26" stroke="#1f1f1f" stroke-width="3"/><path d="M182 62v-26" stroke="#fff" stroke-width="1.6"/> <path d="M182 40l-6 6M182 46l7 5M182 52l-5 4" stroke="#1f1f1f" stroke-width="1"/> <ellipse cx="182" cy="32" rx="9" ry="8" fill="#a9d18a" stroke="#4f7a32" stroke-width="1.3"/> </g> <g> <path d="M222 62V48h22v14z" fill="#8a5a36"/><path d="M219 49l14-9 14 9z" fill="#3a3a3a"/> <rect x="226" y="52" width="6" height="10" fill="#5b3a22"/><rect x="236" y="52" width="5" height="4" fill="#f6dc7a"/> <path d="M240 43v-6h3v5" fill="#3a3a3a"/> <path d="M241.5 35c-2-3 2-4 0-7M244 34c-2-3 2-4 0-6" stroke="#9fb7d6" stroke-width="1.2"/> <path d="M246 60h22M252 60v6M262 60v6" stroke="#6b4a2b" stroke-width="1.6"/> </g> <path d="M292 62c4 4 18 4 22 0" fill="#b8322a" stroke="#6b2a20" stroke-width="1.3"/> <circle cx="318" cy="22" r="8" fill="#ffd36a" stroke="#e5a52a" stroke-width="1.3"/> <path d="M290 26c5-3 8 0 11-2M300 20c4-2 6 0 8-1" stroke="#9fb7d6" stroke-width="1.2"/> </svg></div>
     <section class="ex home-teacher"><div class="ex-head"><h3>Sivuston tekijästä</h3></div>
       <p style="margin-top:0">Hei! Olen <b>Anna</b>. Olen opettanut suomea yli viisi vuotta. Työskentelen myös kaunokirjallisuuden kääntäjänä, ja suomalainen kulttuuri on minulle sydämen asia.</p>
       ${CONTACTS.length ? `<div class="row" style="margin-top:10px">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>` : ''}
     </section>
 
-    <div class="doodle-sep" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M8 30L32 12l24 18" /><path d="M12 28v28h40V28" fill="#e9d2b2"/> <path d="M16 34h32M16 40h32M16 46h32" stroke="#c49a6c" stroke-width="1.5"/> <path d="M26 56V44h10v12" fill="#fff"/> <path d="M44 18v-8h5v12" fill="#fff"/><path d="M47 8c-2-3 2-4 0-6" stroke="#7aa6d8"/> </svg></div>
+    <div class="doodle-sep berries" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M32 18c-10-3-20 3-19 13 1 11 11 21 19 26 8-5 18-15 19-26 1-10-9-16-19-13z" fill="#e0453a"/> <path d="M32 19c-3-4-9-5-12-3 3 1 5 3 6 5-4 0-7 2-8 4 4-1 8 0 10 1 2-1 6-2 10-1-1-2-4-4-8-4 1-2 3-4 6-5-3-2-9-1-12 3" fill="#5f9a3c" stroke="#3f6b26" stroke-width="1.5"/> <path d="M32 18v-7" stroke="#3f6b26"/> <g fill="#f7d774" stroke="none"><ellipse cx="24" cy="32" rx=".9" ry="1.3"/><ellipse cx="32" cy="30" rx=".9" ry="1.3"/><ellipse cx="40" cy="32" rx=".9" ry="1.3"/><ellipse cx="27" cy="40" rx=".9" ry="1.3"/><ellipse cx="36" cy="39" rx=".9" ry="1.3"/><ellipse cx="32" cy="47" rx=".9" ry="1.3"/><ellipse cx="22" cy="38" rx=".8" ry="1.2"/><ellipse cx="42" cy="38" rx=".8" ry="1.2"/></g> </svg><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M32 27c-6-6-14-6-18-3 5 0 8 2 10 5M32 27c6-6 14-6 18-3-5 0-8 2-10 5M32 27c-2-5 0-10 0-14" fill="#7fae52" stroke="#3f6b26" stroke-width="1.6"/> <g fill="#f2a43a" stroke="#c1741c" stroke-width="1.3"><circle cx="32" cy="30" r="4.2"/><circle cx="26" cy="32" r="4.2"/><circle cx="38" cy="32" r="4.2"/><circle cx="22" cy="38" r="4.2"/><circle cx="29" cy="37" r="4.2"/><circle cx="35" cy="37" r="4.2"/><circle cx="42" cy="38" r="4.2"/><circle cx="25" cy="44" r="4.2"/><circle cx="32" cy="43" r="4.2"/><circle cx="39" cy="44" r="4.2"/><circle cx="29" cy="49" r="4.2"/><circle cx="35" cy="49" r="4.2"/></g><circle cx="30.7" cy="28.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="24.7" cy="30.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="36.7" cy="30.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="20.7" cy="36.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="27.7" cy="35.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="33.7" cy="35.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="40.7" cy="36.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="23.7" cy="42.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="30.7" cy="41.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="37.7" cy="42.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="27.7" cy="47.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/><circle cx="33.7" cy="47.6" r="1" fill="#fff6d6" stroke="none" opacity=".8"/> </svg></div>
     <section class="ex"><div class="ex-head"><h3>Sivukartta</h3></div>
       <ul class="sitemap">
         ${live.map(t => `<li><b>${esc(t.fi)}</b>
@@ -3247,7 +3265,7 @@ function renderAll() {
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   document.documentElement.classList.toggle('home-mode', state.view === 'home');
-  document.documentElement.classList.toggle('mytasks-mode', state.view === 'mytasks');
+  document.documentElement.classList.toggle('mytasks-mode', state.view === 'mytasks' || state.view === 'tpreview');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
   if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics();
@@ -3255,6 +3273,7 @@ function renderAll() {
   renderRegister(); renderContact();
   if (state.view === 'home') { /* drawn above, before the login form */ }
   else if (state.view === 'mytasks') renderMyTasks();
+  else if (state.view === 'tpreview' && Store.isOwner && state.tpreview) renderMyTasks(state.tpreview);
   else if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
 
