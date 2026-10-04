@@ -129,6 +129,11 @@
 .tmark::after{content:attr(data-n);font-size:.68em;font-weight:800;vertical-align:super;color:#b06a12;margin-left:1px}
 .tmarks{margin:6px 0 10px;padding-left:1.4em;font-size:.92rem}
 .tmarks li{margin:3px 0}
+.tmark{cursor:pointer}
+.tmpop{cursor:default;border-color:#d99a3a}.tmpop::after{border-color:#d99a3a}
+.tmark.draft{background:#fff1d6;outline:1.5px dashed #d99a3a;outline-offset:1px}
+.draft-tag{font-size:.75rem;font-weight:700;color:#b8732a;border:1px dashed #d99a3a;border-radius:999px;padding:0 6px}
+.grade-badge{display:inline-block;font-family:var(--f-script);font-size:1.5rem;font-weight:700;color:var(--head);border:2px solid var(--sage-ink);border-radius:10px;padding:0 10px;transform:rotate(-3deg);background:var(--sheet)}
 .tm-q{font-style:italic;color:var(--ink-soft)}
 .qfold{margin:4px 0 14px}
 .help-note{margin:0 0 14px}
@@ -2220,13 +2225,35 @@ function markedHTML(text, marks) {
   });
   spots.sort((x, y) => x.a - y.a);
   let out = '', pos = 0;
-  spots.forEach(x => { out += esc(text.slice(pos, x.a)) + `<mark class="tmark" data-n="${x.n}" title="${esc(x.m.note)}">${esc(text.slice(x.a, x.b))}</mark>`; pos = x.b; });
+  spots.forEach(x => { out += esc(text.slice(pos, x.a)) + `<mark class="tmark${x.m.draft ? ' draft' : ''}" data-n="${x.n}" data-tnote="${esc(x.m.note)}" tabindex="0">${esc(text.slice(x.a, x.b))}</mark>`; pos = x.b; });
   return out + esc(text.slice(pos));
 }
 function marksListHTML(marks, editable) {
   if (!marks || !marks.length) return '';
-  return `<ol class="tmarks">${marks.map((m, i) => `<li><span class="tm-q">«${esc(m.exact)}»</span> — ${esc(m.note)}${editable ? ` <button class="btn small" type="button" data-tmdel="${esc(m.id)}">Удалить</button>` : ''}</li>`).join('')}</ol>`;
+  return `<ol class="tmarks">${marks.map((m, i) => `<li><span class="tm-q">«${esc(m.exact)}»</span> — ${esc(m.note)}${m.draft ? ' <span class="draft-tag">не отправлено</span>' : ''}${editable ? ` <button class="btn small" type="button" data-tmdel="${esc(m.id)}">Удалить</button>` : ''}</li>`).join('')}</ol>`;
 }
+// teacher's unsent feedback: comments, level and remarks wait in the teacher's own results until "Отправить ученику"
+const TDRAFT_KEY = '_tdrafts';
+const tdrafts = () => (state.results[TDRAFT_KEY] || {}).d || {};
+const tdraft = (uid, k, tid) => ((tdrafts()[uid] || {})[k] || {})[tid] || {};
+let tdraftTimer = null;
+function saveTdrafts(now) {
+  clearTimeout(tdraftTimer);
+  const go = () => Store.saveResult(TDRAFT_KEY, state.results[TDRAFT_KEY]);
+  if (now) return go(); tdraftTimer = setTimeout(go, 700);
+}
+function setTdraft(uid, k, tid, patch, now) {
+  const d = JSON.parse(JSON.stringify(tdrafts()));
+  d[uid] = d[uid] || {}; d[uid][k] = d[uid][k] || {}; d[uid][k][tid] = { ...(d[uid][k][tid] || {}), ...patch };
+  state.results[TDRAFT_KEY] = { d, at: new Date().toISOString() };
+  return saveTdrafts(now);
+}
+function clearTdraft(uid, k) {
+  const d = JSON.parse(JSON.stringify(tdrafts())); if (d[uid]) delete d[uid][k];
+  state.results[TDRAFT_KEY] = { d, at: new Date().toISOString() };
+  return saveTdrafts(true);
+}
+const draftCount = (uid, k) => Object.values((tdrafts()[uid] || {})[k] || {}).reduce((n, x) => n + ((x.marks || []).length), 0);
 // teacher: comments on passages of a student's writing (stored in the feedback doc, items[taskId].marks)
 const tfb = {}; // uid → { fbs, el, st }
 function openTeacherMark(t) {
@@ -2238,17 +2265,16 @@ function openTeacherMark(t) {
     <blockquote class="nquote plain"><mark class="tmark">${esc(t.exact)}</mark></blockquote>
     <label class="note" for="tmtext">Ваш комментарий для ученика</label>
     <textarea class="field" id="tmtext" rows="3" required placeholder="Например: здесь нужен партитив"></textarea>
-    <button class="btn main" type="submit">Сохранить комментарий</button></form>`;
+    <button class="btn main" type="submit">Добавить комментарий</button>
+    <p class="note" style="margin:0">Ученик пока его не увидит: отправьте все комментарии и уровень вместе кнопкой «Отправить ученику».</p></form>`;
   try { window.getSelection().removeAllRanges(); } catch (e) {}
   $('#tmclose').onclick = () => { sh.hidden = true; };
   $('#tmform').onsubmit = async e => {
     e.preventDefault(); const note = $('#tmtext').value.trim(); if (!note) return;
-    const c = tfb[t.uid]; const doc = { ...(c.fbs[t.k] || {}) }; doc.items = { ...(doc.items || {}) };
-    const it = { ...(doc.items[t.tid] || {}) }; it.marks = (it.marks || []).concat([{ id: 'm' + Date.now().toString(36), exact: t.exact, prefix: t.prefix, suffix: t.suffix, note, at: new Date().toISOString() }]);
-    doc.items[t.tid] = it; doc.at = new Date().toISOString();
-    const ok = await Store.saveFeedback(t.uid, t.k, doc);
-    if (!ok) { toast('Не удалось сохранить, попробуйте ещё раз'); return; }
-    c.fbs[t.k] = doc; sh.hidden = true; toast('Комментарий сохранён, ученик увидит его в своём тексте');
+    const c = tfb[t.uid];
+    const marks = (tdraft(t.uid, t.k, t.tid).marks || []).concat([{ id: 'm' + Date.now().toString(36), exact: t.exact, prefix: t.prefix, suffix: t.suffix, note, at: new Date().toISOString() }]);
+    await setTdraft(t.uid, t.k, t.tid, { marks }, true);
+    sh.hidden = true; toast('Комментарий добавлен. Ученик увидит все комментарии, когда вы нажмёте «Отправить ученику»');
     renderStudent(c.el, c.st);
   };
   setTimeout(() => $('#tmtext').focus(), 50);
@@ -2269,17 +2295,21 @@ async function renderStudent(el, st) {
       if (ex.type === 'writing') {
         const f = (fbs[k] && fbs[k].items) || {};
         (r.answers || []).forEach(a => {
-          const g = f[a.tid] || {};
+          const g = f[a.tid] || {}; const dr = tdraft(st.id, k, a.tid);
+          const allMarks = (g.marks || []).concat((dr.marks || []).map(m => ({ ...m, draft: true })));
+          const grade = dr.grade != null ? dr.grade : (g.grade || ''), comment = dr.comment != null ? dr.comment : (g.comment || '');
           html += `<div style="margin:10px 0 16px"><b>${esc(a.p)}</b> <span class="note">· ${a.words} слов</span>
-            <div class="essay" data-uid="${st.id}" data-k="${k}" data-tid="${a.tid}">${a.a ? markedHTML(a.a, g.marks) : '—'}</div>
+            <div class="essay" data-uid="${st.id}" data-k="${k}" data-tid="${a.tid}">${a.a ? markedHTML(a.a, allMarks) : '—'}</div>
             <p class="note" style="margin:2px 0 6px">Выделите фразу в тексте, чтобы оставить к ней комментарий.</p>
-            ${marksListHTML(g.marks, true).replace('<ol class="tmarks">', `<ol class="tmarks" data-k="${k}" data-tid="${a.tid}">`)}
+            ${marksListHTML(allMarks, true).replace('<ol class="tmarks">', `<ol class="tmarks" data-k="${k}" data-tid="${a.tid}">`)}
             <div class="row" data-fb="${k}" data-tid="${a.tid}">
-              <select class="field" style="flex:0 0 auto" aria-label="Уровень">${['', 'alle 3', '3', '4', '5'].map(o => `<option ${g.grade === o ? 'selected' : ''} value="${o}">${o ? 'taso ' + o : 'уровень…'}</option>`).join('')}</select>
-              <textarea class="field" rows="2" placeholder="Комментарий для ученика" aria-label="Комментарий">${esc(g.comment || '')}</textarea>
+              <select class="field" style="flex:0 0 auto" aria-label="Уровень">${['', 'alle 3', '3', '4', '5'].map(o => `<option ${grade === o ? 'selected' : ''} value="${o}">${o ? 'taso ' + o : 'уровень…'}</option>`).join('')}</select>
+              <textarea class="field" rows="2" placeholder="Общий комментарий для ученика" aria-label="Комментарий">${esc(comment)}</textarea>
             </div></div>`;
         });
-        html += `<button class="btn small main" type="button" data-savefb="${k}">Сохранить отзыв</button>`;
+        const dirty = draftCount(st.id, k) || Object.values((tdrafts()[st.id] || {})[k] || {}).some(x => x.grade != null || x.comment != null);
+        html += `<div class="row"><button class="btn main ${dirty ? 'unsaved' : ''}" type="button" data-savefb="${k}">Отправить ученику</button>
+          <span class="note" data-fbstate="${k}">${dirty ? '◐ есть неотправленные изменения' + (draftCount(st.id, k) ? ` · комментариев к тексту: ${draftCount(st.id, k)}` : '') : (fbs[k] ? '● отправлено ' + fmtDate(fbs[k].at) : '○ ещё не отправлено')}</span></div>`;
       } else if (ex.type !== 'cards') {
         html += `<div class="scroll"><table class="res-table"><thead><tr><th>#</th><th>Задание</th><th>Ответ</th><th>Правильно</th></tr></thead><tbody>${(r.answers || []).map((a, i) =>
           `<tr><td>${i + 1}</td><td>${esc(a.p)}</td><td class="${a.open ? 'mark-wait' : a.ok ? 'mark-ok' : 'mark-bad'}">${esc(a.a || '—')}</td><td>${a.ok && !a.open ? '✓' : esc(a.c || '')}</td></tr>`).join('')}</tbody></table></div>`;
@@ -2290,16 +2320,31 @@ async function renderStudent(el, st) {
     });
   }));
   el.innerHTML = html;
+  // level and general comment are kept as a draft while typing
+  el.querySelectorAll('[data-fb]').forEach(row => {
+    const k = row.dataset.fb, tid = row.dataset.tid;
+    const mark = () => { const b = el.querySelector(`[data-savefb="${k}"]`); if (b) b.classList.add('unsaved'); const n = el.querySelector(`[data-fbstate="${k}"]`); if (n) n.textContent = '◐ есть неотправленные изменения'; };
+    row.querySelector('select').onchange = e => { setTdraft(st.id, k, tid, { grade: e.target.value }); mark(); };
+    row.querySelector('textarea').oninput = e => { setTdraft(st.id, k, tid, { comment: e.target.value }); mark(); };
+  });
   el.querySelectorAll('[data-savefb]').forEach(btn => btn.onclick = async () => {
     const k = btn.dataset.savefb; const items = {};
     const old = (tfb[st.id].fbs[k] || {}).items || {};
-    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => { items[row.dataset.tid] = { ...(old[row.dataset.tid] || {}), grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim() }; });
+    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => {
+      const tid = row.dataset.tid, o = old[tid] || {}, dr = tdraft(st.id, k, tid);
+      items[tid] = { ...o, grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim(),
+        marks: (o.marks || []).concat((dr.marks || []).map(({ draft, ...m }) => m)) };
+    });
     const doc = { ...(tfb[st.id].fbs[k] || {}), items, at: new Date().toISOString() };
-    const ok = await Store.saveFeedback(st.id, k, doc); if (ok) tfb[st.id].fbs[k] = doc;
-    toast(ok ? 'Отзыв сохранён, ученик увидит его под своим текстом' : 'Не удалось сохранить отзыв, попробуйте ещё раз');
+    const ok = await Store.saveFeedback(st.id, k, doc);
+    if (!ok) { toast('Не удалось отправить, попробуйте ещё раз'); return; }
+    tfb[st.id].fbs[k] = doc; await clearTdraft(st.id, k);
+    toast('Отправлено: ученик увидит уровень и комментарии в «Мои задания»'); renderStudent(el, st);
   });
   el.querySelectorAll('.tmarks[data-k] [data-tmdel]').forEach(b => b.onclick = async () => {
     const ol = b.closest('.tmarks'), k = ol.dataset.k, tid = ol.dataset.tid;
+    const dr = tdraft(st.id, k, tid);
+    if ((dr.marks || []).some(m => m.id === b.dataset.tmdel)) { await setTdraft(st.id, k, tid, { marks: dr.marks.filter(m => m.id !== b.dataset.tmdel) }, true); renderStudent(el, st); return; }
     const doc = { ...(tfb[st.id].fbs[k] || {}) }; doc.items = { ...(doc.items || {}) };
     doc.items[tid] = { ...(doc.items[tid] || {}), marks: ((doc.items[tid] || {}).marks || []).filter(m => m.id !== b.dataset.tmdel) };
     if (await Store.saveFeedback(st.id, k, doc)) { tfb[st.id].fbs[k] = doc; renderStudent(el, st); }
@@ -2568,7 +2613,23 @@ document.addEventListener('click', e => {
   const m = e.target.closest('.hl[data-note]'); if (!m) return;
   e.preventDefault(); showNotePop(m);
 });
-window.addEventListener('resize', () => { const p = $('#notePop'); if (p) p.hidden = true; });
+window.addEventListener('resize', () => { const p = $('#notePop'); if (p) p.hidden = true; const q = $('#tmPop'); if (q) q.hidden = true; });
+// teacher's comment in a text: tap the highlighted passage and the comment appears above it
+document.addEventListener('click', e => {
+  const pop = $('#tmPop');
+  const m = e.target.closest('mark.tmark[data-tnote]');
+  if (pop && !pop.hidden && (!m || pop.dataset.for === m.dataset.n + m.textContent)) { pop.hidden = true; if (!m) return; return; }
+  if (!m) return;
+  let p = pop; if (!p) { p = document.createElement('div'); p.id = 'tmPop'; p.className = 'notepop tmpop'; p.setAttribute('role', 'tooltip'); document.body.appendChild(p); }
+  p.innerHTML = `<span class="np-meta">Комментарий преподавателя · ${esc(m.dataset.n)}</span><span class="np-text">${esc(m.dataset.tnote)}</span>`;
+  p.dataset.for = m.dataset.n + m.textContent; p.hidden = false;
+  const rect = m.getBoundingClientRect(), bw = p.offsetWidth, bh = p.offsetHeight;
+  const left = Math.max(8, Math.min(rect.left + rect.width / 2 - bw / 2, document.documentElement.clientWidth - bw - 8));
+  let top = rect.top - bh - 12; const below = top < 8; if (below) top = rect.bottom + 12;
+  p.classList.toggle('below', below);
+  p.style.left = (left + scrollX) + 'px'; p.style.top = (top + scrollY) + 'px';
+  p.style.setProperty('--tail', (rect.left + rect.width / 2 - left) + 'px');
+});
 // a thread = the student's messages (kept in her note) + the teacher's replies (kept in feedback "_chat")
 function threadOf(n, chat) {
   const mine = (n.msgs && n.msgs.length ? n.msgs : (n.sent ? [{ text: n.note, at: n.sentAt }] : [])).map(m => ({ ...m, from: 's' }));
@@ -3203,6 +3264,7 @@ function renderMyTasks(preview) {
       <div class="ex-head"><h3><span class="sig">${esc(w.t.fi)} ·</span> ${esc(w.task.title)}</h3>
         <div class="row">${w.f ? `<span class="ex-state done">● проверено${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span>${!seen || w.fbAt > seen ? ' <span class="newb">новый отзыв</span>' : ''}` : '<span class="ex-state">○ ждёт проверки</span>'}</div></div>
       <p class="note" style="margin-top:0">${esc(w.task.kind)} · сохранено ${fmtDate(w.savedAt)}</p>
+      ${w.f && w.f.grade ? `<p style="margin:4px 0 8px">Уровень: <span class="grade-badge">taso ${esc(w.f.grade)}</span></p>` : ''}
       ${w.f && w.f.comment ? `<div class="teacher-fb"><b>Комментарий преподавателя</b><div style="white-space:pre-wrap">${esc(w.f.comment)}</div></div>` : ''}
       <div class="note" style="margin-top:10px">${w.f && w.f.marks && w.f.marks.length ? 'Ваш текст с пометками преподавателя (пояснения — под текстом):' : 'Ваш текст:'}</div>
       <div class="essay">${w.f && w.f.marks && w.f.marks.length ? markedHTML(w.text, w.f.marks) : esc(w.text)}</div>
