@@ -4,7 +4,7 @@ root = pathlib.Path(__file__).parent
 subprocess.run([sys.executable, str(root / 'gen_lexicon.py')], check=True)
 page = (root / 'index.html').read_text(encoding='utf-8')
 head = ('<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="robots" content="noindex,nofollow">\n</head>\n<body>\n')
+        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="description" content="Suomen kielen harjoituksia: sanasto, kielioppi ja YKI-testin tehtävät. Упражнения по финскому языку: лексика, грамматика, подготовка к YKI.">\n</head>\n<body>\n')
 page = page.replace('<script>', '<script src="config.js"></script>\n<script>', 1)
 out = root / 'site'
 out.mkdir(exist_ok=True)
