@@ -3221,7 +3221,7 @@ function renderAll() {
 state.results = lsRead().results || {};
 state.doneBlocks = doneBlockIds();
 state.profile = lsRead().profile || null;
-if (!state.profile) state.view = 'home';  // new visitors start on the start page
+state.view = 'home';  // every visit starts on the start page
 if (!topicObj().blocks.some(b => b.id === state.block)) state.block = topicObj().blocks[0].id;
 renderAll();
 
