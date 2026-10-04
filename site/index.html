@@ -3174,6 +3174,13 @@ function renderHome() {
   const live = TOPICS.filter(t => !t.soon), soon = TOPICS.filter(t => t.soon);
   main.innerHTML = `
     <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span></h1></div>
+    <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
+      ${name ? `<p>Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет.</p>
+        <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
+        : `<p class="note" style="margin-top:0">Задания открыты для всех. Чтобы результаты сохранялись, а преподаватель видел ваши ответы и мог их прокомментировать, зарегистрируйтесь или войдите.</p><div id="homeAuth"></div>
+        <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
+    </section>
+
     <section class="ex"><div class="home-about">
       <div lang="fi"><h3>Tervetuloa!</h3>
         <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
@@ -3196,12 +3203,7 @@ function renderHome() {
         ${name ? `<li><a data-hview="profile"><b>Profiili</b></a> <span class="note">· статистика, история заданий</span></li>` : ''}
       </ul></section>
 
-    <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
-      ${name ? `<p>Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет.</p>
-        <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
-        : `<p class="note" style="margin-top:0">Задания открыты для всех. Чтобы результаты сохранялись, а преподаватель видел ваши ответы и мог их прокомментировать, зарегистрируйтесь или войдите.</p><div id="homeAuth"></div>
-        <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
-    </section>`;
+`;
   main.querySelectorAll('[data-hjump]').forEach(a => a.onclick = () => {
     const [tid, bid] = a.dataset.hjump.split(':'); state.topic = tid; state.view = 'learn'; saveTab(); renderAll();
     setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) { blk.classList.remove('collapsed'); blk.scrollIntoView({ block: 'start' }); }
