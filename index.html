@@ -2898,12 +2898,12 @@ function renderTrain() {
     ${hideTrainHelp() ? '' : `<div class="help-note"><p class="ex-task" style="margin:0">Слово из «Моего словаря» становится выученным в три шага: правильно сделайте с ним все три упражнения, потом ещё раз через 3 дня и ещё раз через неделю.</p>
       <label class="note row" style="gap:6px;margin-top:6px"><input type="checkbox" id="trHelpOff"> Больше не показывать</label></div>`}
     <div class="row" style="margin-bottom:10px">${TRAIN_MODES.map(([id, fi, ru]) => `<button type="button" class="btn small ${tr.mode === id ? 'main' : ''}" data-mode="${id}" title="${ru}">${fi}</button>`).join('')}</div>
-    <div class="row" style="margin-bottom:14px"><label class="note" for="trSrc">Слова:</label>
-      <select class="field" id="trSrc" style="flex:0 1 auto">${srcOpts.map(([v, l]) => `<option value="${v}" ${tr.src === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+    <div class="row tr-src" style="margin-bottom:14px" role="group" aria-label="Слова для тренировки"><span class="note">Слова:</span>
+      ${srcOpts.map(([v, l]) => `<button class="btn small ${tr.src === v ? 'main' : ''}" type="button" data-trsrc="${v}" aria-pressed="${tr.src === v}">${esc(l)}</button>`).join('')}</div>
     <div class="tr-area">${body}</div>`;
   const ho = $('#trHelpOff'); if (ho) ho.onchange = () => { try { localStorage.setItem(LS_KEY + ':hideTrainHelp', '1'); } catch (e) {} renderTrain(); };
   sec.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { tr.mode = b.dataset.mode; tr.round = null; renderTrain(); });
-  $('#trSrc').onchange = e => { tr.src = e.target.value; tr.chosen = true; tr.round = null; renderTrain(); };
+  document.querySelectorAll('[data-trsrc]').forEach(btn => btn.onclick = () => { tr.src = btn.dataset.trsrc; tr.chosen = true; tr.round = null; renderTrain(); });
   const again = sec.querySelector('[data-again]'); if (again) again.onclick = () => { tr.round = null; renderTrain(); };
   const nm = sec.querySelector('[data-nextmode]'); if (nm) nm.onclick = () => { tr.mode = nm.dataset.nextmode; tr.round = null; renderTrain(); sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   if (!tr.round) return;
