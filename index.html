@@ -379,6 +379,11 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
+.ex.fb-alert{background:var(--sage);border-color:var(--sage-ink);color:var(--on-accent)}
+.ex.fb-alert::before{display:none}
+.ex.fb-alert h3{color:var(--on-accent)}
+.ex.fb-alert .hist li{border-color:rgba(0,0,0,.12)}
+.ex.fb-alert .btn{background:var(--sheet);border-color:var(--on-accent);color:var(--on-accent)}
 #mytasksBtn{position:relative}
 .ping{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:#e0322b;border:2px solid var(--paper);animation:ping 1.3s ease-in-out infinite}
 @keyframes ping{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.45}}
@@ -1314,7 +1319,7 @@ function renderWho() {
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
-    ${name ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}${state.view !== 'mytasks' && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
+    ${name ? `<button class="btn small ${state.view === 'mytasks' || newFeedback() ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}${state.view !== 'mytasks' && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
@@ -3159,11 +3164,12 @@ function renderProfile() {
         <div class="stat"><span class="stat-n">${dw.filter(isLearned).length}<small>/${dw.length}</small></span><span class="note">слов выучено в словаре</span></div>
       </div>
     </section>
-    ${(() => { const ws = myWritings(); if (!ws.length) return ''; const done = ws.filter(w => w.f);
-      return `<section class="ex"><div class="ex-head"><h3>Отзывы преподавателя</h3>${newFeedback() ? `<span class="newb">новых: ${newFeedback()}</span>` : ''}</div>
-        <p style="margin-top:0">Проверено письменных работ: <b>${done.length} из ${ws.length}</b>.</p>
-        ${done.length ? `<ul class="hist">${done.map(w => `<li><b>${esc(w.task.title)}</b> <span class="note">${esc(w.t.fi)}${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span></li>`).join('')}</ul>` : ''}
-        <div class="row" style="margin-top:10px"><button class="btn small main" type="button" data-hview2="mytasks">Открыть отзывы и комментарии</button></div></section>`; })()}
+    ${(() => { const nf = newFeedback(); if (!nf) return '';
+      let seen = ''; try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
+      const fresh = myWritings().filter(w => w.f && (!seen || w.fbAt > seen));
+      return `<section class="ex fb-alert"><div class="ex-head"><h3>Новые отзывы преподавателя: ${nf}</h3></div>
+        <ul class="hist">${fresh.map(w => `<li><b>${esc(w.task.title)}</b> <span>${esc(w.t.fi)}${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span></li>`).join('')}</ul>
+        <div class="row" style="margin-top:10px"><button class="btn small" type="button" data-hview2="mytasks">Открыть отзывы и комментарии</button></div></section>`; })()}
     <section class="ex">
       <div class="ex-head"><h3>Статистика по разделам</h3></div>
       ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
