@@ -3372,6 +3372,22 @@ async function loadMine() {
 }
 Store.ready = Store.init();
 Store.ready.then(loadMine).then(() => Store.flushPending()).then(async () => { if (Store.isOwner) { await loadTeacherChats(); renderWho(); } });
+// the teacher's feedback arrives without reloading: checked when the student comes back to the tab and every 2 minutes
+let fbRefreshing = false;
+async function refreshFeedback() {
+  if (fbRefreshing || !Store.online() || !Store.uid) return;
+  fbRefreshing = true;
+  try {
+    const fb = await Store.feedbackFor(Store.uid);
+    if (fb && JSON.stringify(fb) !== JSON.stringify(state.feedback)) {
+      const before = newFeedback(); state.feedback = fb; renderWho();
+      if (newFeedback() > before) toast('Преподаватель проверил вашу работу — смотрите «Мои задания»');
+      if (state.view === 'profile' || state.view === 'home') renderAll();
+    }
+  } catch (e) {} finally { fbRefreshing = false; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFeedback(); });
+setInterval(() => { if (!document.hidden) refreshFeedback(); }, 120000);
 window.addEventListener('online', () => Store.flushPending());
 </script>
 
