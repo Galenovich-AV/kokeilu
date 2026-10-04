@@ -183,6 +183,7 @@ h1{font-size:clamp(2rem,6vw,3rem);margin:0}
 .doodle-sep.landmarks svg:nth-child(2){width:64px;height:64px;transform:rotate(-3deg)}
 @media (max-width:520px){.doodle-sep.landmarks svg{width:64px;height:58px}.doodle-sep.landmarks svg:nth-child(2){width:48px;height:48px}}
 .home-mode .ex::before{display:none}
+.ex h3.greet{font-weight:400}.ex h3.greet b{font-weight:800}
 .town-strip svg{display:block;width:100%;height:auto}
 @media (max-width:520px){.doodle-sep svg{width:46px;height:46px}.title-flag svg{width:42px;height:42px}}
 .home-mode .index{display:none}
@@ -2244,6 +2245,11 @@ function clearTdraft(uid, k) {
   state.results[TDRAFT_KEY] = { d, at: new Date().toISOString() };
   return saveTdrafts(true);
 }
+function clearTdraftTask(uid, k, tid) {
+  const d = JSON.parse(JSON.stringify(tdrafts())); if (d[uid] && d[uid][k]) delete d[uid][k][tid];
+  state.results[TDRAFT_KEY] = { d, at: new Date().toISOString() };
+  return saveTdrafts(true);
+}
 const draftCount = (uid, k) => Object.values((tdrafts()[uid] || {})[k] || {}).reduce((n, x) => n + ((x.marks || []).length), 0);
 // teacher: comments on passages of a student's writing (stored in the feedback doc, items[taskId].marks)
 const tfb = {}; // uid → { fbs, el, st }
@@ -2296,11 +2302,12 @@ async function renderStudent(el, st) {
             <div class="row" data-fb="${k}" data-tid="${a.tid}">
               <select class="field" style="flex:0 0 auto" aria-label="Уровень">${['', 'alle 3', '3', '4', '5'].map(o => `<option ${grade === o ? 'selected' : ''} value="${o}">${o ? 'taso ' + o : 'уровень…'}</option>`).join('')}</select>
               <textarea class="field" rows="2" placeholder="Общий комментарий для ученика" aria-label="Комментарий">${esc(comment)}</textarea>
-            </div></div>`;
+            </div>
+            ${(() => { const nd = (dr.marks || []).length, dirty = nd || dr.grade != null || dr.comment != null, sentAt = g.sentAt || (g.grade || g.comment || (g.marks || []).length ? (fbs[k] || {}).at : '');
+              return `<div class="row" style="margin-top:8px"><button class="btn main ${dirty ? 'unsaved' : ''}" type="button" data-savefb="${k}" data-tid="${a.tid}">Отправить ученику</button>
+              <span class="note" data-fbstate="${k}:${a.tid}">${dirty ? '◐ есть неотправленные изменения' + (nd ? ` · комментариев к тексту: ${nd}` : '') : sentAt ? '● отправлено ' + fmtDate(sentAt) : '○ ещё не отправлено'}</span></div>`; })()}
+            </div>`;
         });
-        const dirty = draftCount(st.id, k) || Object.values((tdrafts()[st.id] || {})[k] || {}).some(x => x.grade != null || x.comment != null);
-        html += `<div class="row"><button class="btn main ${dirty ? 'unsaved' : ''}" type="button" data-savefb="${k}">Отправить ученику</button>
-          <span class="note" data-fbstate="${k}">${dirty ? '◐ есть неотправленные изменения' + (draftCount(st.id, k) ? ` · комментариев к тексту: ${draftCount(st.id, k)}` : '') : (fbs[k] ? '● отправлено ' + fmtDate(fbs[k].at) : '○ ещё не отправлено')}</span></div>`;
       } else if (ex.type !== 'cards') {
         html += `<div class="scroll"><table class="res-table"><thead><tr><th>#</th><th>Задание</th><th>Ответ</th><th>Правильно</th></tr></thead><tbody>${(r.answers || []).map((a, i) =>
           `<tr><td>${i + 1}</td><td>${esc(a.p)}</td><td class="${a.open ? 'mark-wait' : a.ok ? 'mark-ok' : 'mark-bad'}">${esc(a.a || '—')}</td><td>${a.ok && !a.open ? '✓' : esc(a.c || '')}</td></tr>`).join('')}</tbody></table></div>`;
@@ -2314,22 +2321,21 @@ async function renderStudent(el, st) {
   // level and general comment are kept as a draft while typing
   el.querySelectorAll('[data-fb]').forEach(row => {
     const k = row.dataset.fb, tid = row.dataset.tid;
-    const mark = () => { const b = el.querySelector(`[data-savefb="${k}"]`); if (b) b.classList.add('unsaved'); const n = el.querySelector(`[data-fbstate="${k}"]`); if (n) n.textContent = '◐ есть неотправленные изменения'; };
+    const mark = () => { const b = el.querySelector(`[data-savefb="${k}"][data-tid="${tid}"]`); if (b) b.classList.add('unsaved'); const n = el.querySelector(`[data-fbstate="${k}:${tid}"]`); if (n) n.textContent = '◐ есть неотправленные изменения'; };
     row.querySelector('select').onchange = e => { setTdraft(st.id, k, tid, { grade: e.target.value }); mark(); };
     row.querySelector('textarea').oninput = e => { setTdraft(st.id, k, tid, { comment: e.target.value }); mark(); };
   });
+  // each written task is sent to the student on its own
   el.querySelectorAll('[data-savefb]').forEach(btn => btn.onclick = async () => {
-    const k = btn.dataset.savefb; const items = {};
-    const old = (tfb[st.id].fbs[k] || {}).items || {};
-    el.querySelectorAll(`[data-fb="${k}"]`).forEach(row => {
-      const tid = row.dataset.tid, o = old[tid] || {}, dr = tdraft(st.id, k, tid);
-      items[tid] = { ...o, grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim(),
-        marks: (o.marks || []).concat((dr.marks || []).map(({ draft, ...m }) => m)) };
-    });
-    const doc = { ...(tfb[st.id].fbs[k] || {}), items, at: new Date().toISOString() };
+    const k = btn.dataset.savefb, tid = btn.dataset.tid;
+    const items = { ...((tfb[st.id].fbs[k] || {}).items || {}) };
+    const row = el.querySelector(`[data-fb="${k}"][data-tid="${tid}"]`), o = items[tid] || {}, dr = tdraft(st.id, k, tid), now = new Date().toISOString();
+    items[tid] = { ...o, grade: row.querySelector('select').value, comment: row.querySelector('textarea').value.trim(),
+      marks: (o.marks || []).concat((dr.marks || []).map(({ draft, ...m }) => m)), sentAt: now };
+    const doc = { ...(tfb[st.id].fbs[k] || {}), items, at: now };
     const ok = await Store.saveFeedback(st.id, k, doc);
     if (!ok) { toast('Не удалось отправить, попробуйте ещё раз'); return; }
-    tfb[st.id].fbs[k] = doc; await clearTdraft(st.id, k);
+    tfb[st.id].fbs[k] = doc; await clearTdraftTask(st.id, k, tid);
     toast('Отправлено: ученик увидит уровень и комментарии в «Мои задания»'); renderStudent(el, st);
   });
   el.querySelectorAll('.tmarks[data-k] [data-tmdel]').forEach(b => b.onclick = async () => {
@@ -3274,7 +3280,7 @@ function renderHome() {
   const live = TOPICS.filter(t => !t.soon), soon = TOPICS.filter(t => t.soon);
   main.innerHTML = `
     <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span> <span class="title-flag"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 6v54"/> <rect x="13" y="8" width="45" height="27.5" fill="#fff" stroke="#9fb7d6" stroke-width="1"/> <rect x="25.5" y="8" width="7.5" height="27.5" fill="#002f6c" stroke="none"/> <rect x="13" y="18" width="45" height="7.5" fill="#002f6c" stroke="none"/> </svg></span></h1></div>
-    <section class="ex"><div class="ex-head"><h3>${name ? `Hei, ${esc(name)}! Вы вошли в личный кабинет` : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
+    <section class="ex"><div class="ex-head"><h3${name ? ' class="greet"' : ''}>${name ? `Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет` : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
       ${name ? `<div class="row" style="margin-top:4px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
         : `<p class="note" style="margin-top:0">Задания открыты для всех. Зарегистрируйтесь или войдите, чтобы ваши результаты сохранялись.</p><div id="homeAuth"></div>
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
