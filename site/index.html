@@ -99,7 +99,8 @@
 .board-h .note{font-family:var(--f-body)}
 .oldw{color:var(--sage-ink);font-size:.75rem}
 .who-me{cursor:pointer;gap:8px;padding:3px 12px 3px 4px;font:inherit}
-.who-me.on{border-color:var(--sage-ink);background:var(--sage)}
+.who-me.on{border-color:var(--sage-ink);background:var(--sage);color:var(--on-accent)}
+.who-me .avatar{box-shadow:0 0 0 1.5px var(--sheet)}
 .avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:rgba(40,45,35,.55);object-fit:cover;flex:0 0 auto;overflow:hidden}
 .prof-head{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .prof-av .avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 6px var(--sage)}
@@ -3109,14 +3110,18 @@ const AV_INK = { '#b9e094': ['#4e7d2f', '#3f6328'], '#f7c2b5': ['#c25d72', '#9e4
   '#a8d8e0': ['#3d8a96', '#2c6872'], '#f3e08b': ['#9c8420', '#6e5d14'], '#c9c1b4': ['#7a6f60', '#5a5145'], '#8fb6e8': ['#3e6fb0', '#2d5288'], '#f9d3e2': ['#b5517f', '#8a3a60'] };
 // any colour from the colour wheel: darker shades are mixed from it
 const avInk = c => AV_INK[c] || [`color-mix(in srgb,${c} 50%,#1c1c1c)`, `color-mix(in srgb,${c} 32%,#121212)`];
+// relative luminance: dark colours get white text and lighter accents
+function isDarkColor(c) {
+  const m = /^#([0-9a-f]{6})$/i.exec(c || ''); if (!m) return false;
+  const n = parseInt(m[1], 16), ch = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+  return .2126 * ch(n >> 16 & 255) + .7152 * ch(n >> 8 & 255) + .0722 * ch(n & 255) < .18;
+}
 function applyProfileTheme() {
   let el = document.getElementById('profTheme');
   if (!el) { el = document.createElement('style'); el.id = 'profTheme'; document.head.appendChild(el); }
   const c = profDoc().color || AV_COLORS[0]; let [ink, head] = avInk(c);
   // a dark chosen colour (black, navy…): white text on it, and lighter accents so nothing merges
-  const lum = (() => { const m = /^#([0-9a-f]{6})$/i.exec(c); if (!m) return 1; const n = parseInt(m[1], 16), ch = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
-    return .2126 * ch(n >> 16 & 255) + .7152 * ch(n >> 8 & 255) + .0722 * ch(n & 255); })();
-  const dark = lum < .18, onAcc = dark ? '#ffffff' : head;
+  const dark = isDarkColor(c), onAcc = dark ? '#ffffff' : head;
   if (dark) { ink = c; head = c; }
   const tapeMix = dark ? 16 : 40;
   const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 5%,#fcfaf5);--sheet:color-mix(in srgb,${c} 2%,#fffefc);
@@ -3132,7 +3137,7 @@ function applyProfileTheme() {
 function avatarHTML(size, doc) {
   const d = doc || profDoc(); const c = d.color || AV_COLORS[0];
   if (d.img) return `<img class="avatar" src="${esc(d.img)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
-  return `<span class="avatar" style="width:${size}px;height:${size}px;background:${esc(c)}" aria-hidden="true"><svg viewBox="0 0 24 24" width="${Math.round(size * .62)}" height="${Math.round(size * .62)}"><circle cx="12" cy="8.2" r="4.2" fill="currentColor"/><path d="M3.6 21c.6-4.6 4.1-7.4 8.4-7.4s7.8 2.8 8.4 7.4z" fill="currentColor"/></svg></span>`;
+  return `<span class="avatar" style="width:${size}px;height:${size}px;background:${esc(c)}${isDarkColor(c) ? ';color:rgba(255,255,255,.8)' : ''}" aria-hidden="true"><svg viewBox="0 0 24 24" width="${Math.round(size * .62)}" height="${Math.round(size * .62)}"><circle cx="12" cy="8.2" r="4.2" fill="currentColor"/><path d="M3.6 21c.6-4.6 4.1-7.4 8.4-7.4s7.8 2.8 8.4 7.4z" fill="currentColor"/></svg></span>`;
 }
 async function saveProf(patch) {
   const doc = { ...profDoc(), ...patch, at: new Date().toISOString() };
