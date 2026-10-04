@@ -423,6 +423,9 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 /* YKI reading */
 .yki-text{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 16px;max-width:70ch}
 .yki-text .kind{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.vframe{position:relative;width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#111}
+.vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.yki-text.listen{max-width:720px}
 .yki-text h4{font-family:var(--f-body);font-size:1.12rem;margin:2px 0 8px}
 .yki-text p{margin:0 0 .7em}
 .q{margin:0 0 14px}
@@ -1065,6 +1068,17 @@ const TOPICS = [
         { kind: 'open', q: 'Mitä ensimmäinen vastaaja neuvoo? Mainitse kaksi asiaa.', keys: [['kirjalli', 'kirjoit', 'isännöitsij', 'valitus'], ['muilta', 'muut', 'asukk', 'naapur', 'päivämäär', 'kellonaj']], model: 'Tehdä kirjallinen valitus isännöitsijälle ja kysyä muilta asukkailta.' }
       ]}
     ]},
+    { id: 'a-kuullun', type: 'listening', practice: true, title: 'Kuullun ymmärtäminen', task: 'Katso videot. Tehtävät tulossa pian.',
+      videos: [
+        { id: '1-78608932', len: '1 min', title: 'Miksi sekä vuokrat että asuntojen hinnat laskevat?', url: 'https://yle.fi/v/video/91-20246571' },
+        { id: '1-78610212', len: '1 min', title: 'Miksi tekoäly nostaa asuntolainani korkoja?', url: 'https://yle.fi/v/video/91-20246851' },
+        { id: '1-78615337', len: '1 min', title: 'Venni Aho: ensiasunnoksi ei kannata ostaa pikkuyksiötä', url: 'https://yle.fi/a/74-20245281' },
+        { id: '1-78615236', len: '1 min', title: 'Venni Aho: taloyhtiön hallitus on paras vaikuttamisen paikka', url: 'https://yle.fi/a/74-20245281' },
+        { id: '1-78612488', len: '36 s', title: 'Kunnat purkavat vanhoja vuokrataloja', url: 'https://yle.fi/a/74-20247004' },
+        { id: '1-78610639', len: '45 s', title: 'Helsingin tonttivuokrien alennukset loppuvat', url: 'https://yle.fi/a/74-20246994' },
+        { id: '1-78529852', len: '42 s', title: 'Rovaniemen asuntopula', url: 'https://yle.fi/a/74-20243489' },
+        { id: '1-78603379', len: '39 s', tag: 'numerot', title: 'Nuorten asuminen on muuttunut (luvut ja numerot)', url: 'https://yle.fi/a/74-20245000' }
+      ]},
     { id: 'a-kirjoittaminen', type: 'writing', min: 55, title: 'Kirjoittaminen', minutes: 55, task: '',
       tasks: [
       { id: 'w1', min: 15, kind: 'Epämuodollinen viesti', words: [50, 80], title: 'Viesti naapurille',
@@ -1314,19 +1328,20 @@ const fmtDate = iso => { try { return new Date(iso).toLocaleString('ru-RU', { da
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2600); }
 function scoreClass(s, m) { const p = m ? s / m : 0; return p >= .8 ? 'ok' : p >= .5 ? 'mid' : 'low'; }
 // an exercise counts as finished once it is checked or sent; cards once every word is marked
-const exDone = (ex, r) => !!r && (
+const exDone = (ex, r) => !!r && !ex.practice && (
   ex.type === 'cards' ? r.score >= r.max
   : ex.type === 'reading' ? !r.checked || r.checked.length >= ex.texts.length
   : ex.type === 'writing' ? ex.tasks.every(t => ((r.raw || {})[t.id] || '').trim())
   : true);
+const counted = block => block.exercises.filter(ex => !ex.practice);
 function blockScore(topic, block, res) {
   let s = 0, m = 0, done = 0, started = 0;
-  block.exercises.forEach(ex => {
+  counted(block).forEach(ex => {
     const r = res[key(topic.id, ex.id)]; if (!r) return;
     started++; if (exDone(ex, r)) done++;
     if (r.max && ex.type !== 'cards') { s += r.score; m += r.max; }
   });
-  return { s, m, done, started, total: block.exercises.length };
+  return { s, m, done, started, total: counted(block).length };
 }
 const sigOf = sc => sc.done === sc.total ? '●' : sc.started ? '◐' : '○';
 const DOT = { '●': 'full', '◐': 'half', '○': 'empty' };
@@ -1529,11 +1544,21 @@ function renderLearn() {
     bl.exercises.forEach((ex, i) => {
       const sec = document.createElement('section'); sec.className = 'ex' + (isFolded('e:' + ex.id) ? ' collapsed' : ''); sec.id = 'ex-' + ex.id;
       list.appendChild(sec);
-      ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting })[ex.type](sec, ex, i + 1);
+      ({ cards: renderCards, input: renderInput, reading: renderReading, writing: renderWriting, listening: renderListening })[ex.type](sec, ex, i + 1);
     });
   });
 }
 
+// listening: Yle videos played in Yle's own player; questions come later
+function renderListening(sec, ex, n) {
+  sec.innerHTML = exHead(ex, n, null) + (ex.note ? `<p class="note">${esc(ex.note)}</p>` : '') +
+    ex.videos.map((v, i) => `<div class="yki-text listen">
+      <div class="kind">Video ${i + 1}${v.len ? ' · ' + esc(v.len) : ''}${v.tag ? ' · ' + esc(v.tag) : ''}</div>
+      <h4>${esc(v.title)}</h4>
+      <div class="vframe"><iframe src="https://player-v2.yle.fi/video.html?${esc(v.id)}" title="${esc(v.title)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <p class="note" style="margin:6px 0 0"><a href="${esc(v.url)}" target="_blank" rel="noopener">Avaa Yle.fi:ssä ↗</a></p>
+    </div>`).join('');
+}
 function exHead(ex, n, r) {
   const sc = r && r.max && ex.type !== 'cards' ? `<span class="score ${scoreClass(r.score, r.max)}">${r.score}/${r.max}</span>`
     : ex.type === 'writing' && r ? `<span class="score ok">отправлено</span>` : '';
@@ -1556,7 +1581,7 @@ async function submit(ex, doc) {
   // fireworks only when a whole part (Sanasto / Kielioppi / YKI-testi) gets finished;
   // when the part is gone through again, they come back on its last task
   const nowDone = blockDone();
-  const lastOfBlock = b.exercises[b.exercises.length - 1] === ex;
+  const cb = counted(b); const lastOfBlock = cb[cb.length - 1] === ex;
   if (nowDone && (!wasDone || lastOfBlock)) setTimeout(() => { toast((wasDone ? 'Раздел «' + b.fi + '» снова пройден!' : 'Раздел «' + b.fi + '» закончен!') + ' Hienoa!'); fireworks(true); }, 400);
   if (!state.profile && Store.mode !== 'supa') { toast('Зарегистрируйтесь вверху страницы, чтобы результат сохранился'); return; }
   const cloud = await Store.saveResult(key(t.id, ex.id), full);
@@ -3181,7 +3206,7 @@ function renderProfile() {
   const graded = rows.filter(x => x.ex.type !== 'cards' && x.ex.type !== 'writing' && x.r.max);
   const S = graded.reduce((a, x) => a + x.r.score, 0), M = graded.reduce((a, x) => a + x.r.max, 0);
   const tries = rows.filter(x => x.ex.type !== 'cards').reduce((a, x) => a + x.tries, 0);
-  const allTotal = TOPICS.reduce((a, t) => a + t.blocks.reduce((c, b) => c + b.exercises.length, 0), 0);
+  const allTotal = TOPICS.reduce((a, t) => a + t.blocks.reduce((c, b) => c + counted(b).length, 0), 0);
   const doneN = rows.filter(x => exDone(x.ex, x.r)).length;
   const dw = dictWords();
   const last = rows.map(x => x.r.at).sort().pop();
