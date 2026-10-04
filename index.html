@@ -3043,7 +3043,6 @@ function renderProgress() {
   }).join('');
   const learned = dw.filter(isLearned).length, waiting = dw.filter(w => !isLearned(w) && !isDue(w)).length;
   sec.innerHTML = `<div class="ex-head"><h3>Tilasto</h3></div>
-    <p class="ex-task">Сколько слов выучено по каждой теме.</p>
     ${rows}
     <div class="prow"><div class="prow-h"><b>Мой словарь</b><span class="note">выучено <b>${learned}</b> из ${dw.length}${waiting ? ` · ждут повторения: ${waiting}` : ''}</span></div>${bar(learned, dw.length)}</div>`;
 }
