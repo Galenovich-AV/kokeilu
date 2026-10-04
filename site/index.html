@@ -387,7 +387,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
-.who-me{position:relative}
+#mytasksBtn{position:relative}
 .ping{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:#e0322b;border:2px solid var(--paper);animation:ping 1.3s ease-in-out infinite}
 @keyframes ping{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.45}}
 @media (prefers-reduced-motion:reduce){.ping{animation:none}}
@@ -1318,12 +1318,12 @@ function renderWho() {
   const cloud = Store.online();
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
-    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span>${newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
+    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
     <button class="btn small ${state.view === 'learn' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
-    ${name ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}</button>` : ''}
+    ${name ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}${state.view !== 'mytasks' && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
