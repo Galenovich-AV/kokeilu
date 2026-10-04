@@ -10,8 +10,8 @@ out = root / 'site'
 out.mkdir(exist_ok=True)
 (out / 'index.html').write_text(head + page + '\n</body>\n</html>\n', encoding='utf-8')
 shutil.copy(root / 'config.js', out / 'config.js')
-# keep the site out of search engines
-(out / 'robots.txt').write_text('User-agent: *\nDisallow: /\n', encoding='utf-8')
+# search engines are welcome: new students can find the site
+(out / 'robots.txt').write_text('User-agent: *\nAllow: /\n', encoding='utf-8')
 # Cloudflare Pages reads headers from this file: always check for a fresh page
 (out / '_headers').write_text('/*\n  Cache-Control: no-cache\n', encoding='utf-8')
 print('built', out / 'index.html')
