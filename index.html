@@ -379,6 +379,10 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
+.prof-card{position:relative}
+.gear{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--sage-ink);background:var(--sheet);color:var(--sage-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:transform .3s}
+.gear:hover{transform:rotate(30deg)}
+.gear.on{background:var(--sage);color:var(--on-accent);transform:rotate(60deg)}
 .ex.fb-alert{background:var(--sage);border-color:var(--sage-ink);color:var(--on-accent)}
 .ex.fb-alert::before{display:none}
 .ex.fb-alert h3{color:var(--on-accent)}
@@ -3136,11 +3140,13 @@ function renderProfile() {
   }).join('');
   main.innerHTML = `
     <section class="ex prof-card">
+      <button class="gear ${state.profEdit ? 'on' : ''}" type="button" id="profGear" aria-expanded="${!!state.profEdit}" aria-controls="profEdit" title="Настройки профиля" aria-label="Настройки профиля"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       <div class="prof-head">
         <div class="prof-av">${avatarHTML(96)}</div>
         <div class="prof-id">
           <h1 class="topic-title" style="font-size:2.6rem">${esc(name || 'Профиль')}</h1>
           <p class="note">${last ? 'последнее задание ' + fmtDate(last) : 'Заданий пока нет'}</p>
+          <div class="prof-edit" id="profEdit" ${state.profEdit ? '' : 'hidden'}>
           <div class="row" style="margin-top:8px">
             <button class="btn small" type="button" id="avMenuBtn" aria-expanded="false">${d.img ? 'Сменить фото' : 'Загрузить фото'}</button>
             ${d.img ? '<button class="btn small" type="button" id="avDel">Убрать фото</button>' : ''}
@@ -3155,6 +3161,7 @@ function renderProfile() {
           <div class="pastebox" id="avPasteBox" contenteditable="true" hidden role="textbox" aria-label="Поле для вставки картинки">Вставьте сюда картинку: Ctrl+V (на Mac ⌘+V) или долгое нажатие → «Вставить»</div>
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
+          </div>
         </div>
       </div>
       <div class="stats">
@@ -3178,6 +3185,8 @@ function renderProfile() {
       <div class="ex-head"><h3>Мои задания</h3></div>
       ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
     </section>`;
+  const gear = main.querySelector('#profGear');
+  if (gear) gear.onclick = () => { state.profEdit = !state.profEdit; const pe = main.querySelector('#profEdit'); pe.hidden = !state.profEdit; gear.classList.toggle('on', state.profEdit); gear.setAttribute('aria-expanded', String(state.profEdit)); };
   main.querySelectorAll('[data-hview2]').forEach(b => b.onclick = () => { state.view = b.dataset.hview2; renderAll(); window.scrollTo(0, 0); });
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
   main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
