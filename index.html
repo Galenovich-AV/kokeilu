@@ -352,7 +352,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .contact{margin:48px 0 24px;padding:16px 0 0;border-top:1px dashed var(--rule)}
 .contact h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 4px;color:var(--head)}
 .contact .row{gap:8px;margin-top:8px}
-.dict-mode .contact,.teacher-mode .contact,.chat-mode .contact{display:none}
+.dict-mode .contact,.teacher-mode .contact,.chat-mode .contact,.home-mode .contact{display:none}
 
 /* YKI reading */
 .yki-text{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 16px;max-width:70ch}
@@ -3187,6 +3187,11 @@ function renderHome() {
       <li><span><b>YKI-harjoitukset</b> · чтение и письмо</span></li>
       <li><span><b>Muistiinpanot ja chat</b> · заметки к любому тексту и вопросы преподавателю</span></li>
     </ul></section>
+
+    <section class="ex home-teacher"><div class="ex-head"><h3>Opettaja</h3></div>
+      <p style="margin-top:0">Hei! Olen <b>Anna</b>, suomen kielen opettaja. Olen opettanut suomea yli viisi vuotta. Työskentelen myös kaunokirjallisuuden kääntäjänä, ja suomalainen kulttuuri on minulle sydämen asia.</p>
+      ${CONTACTS.length ? `<div class="row" style="margin-top:10px">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>` : ''}
+    </section>
 
     <section class="ex"><div class="ex-head"><h3>Sivukartta · Карта сайта</h3></div>
       <ul class="sitemap">
