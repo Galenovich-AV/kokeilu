@@ -1,4 +1,4 @@
-"""Build the Netlify site (site/) from index.html, the claude.ai page source."""
+"""Build the site (site/) for Netlify or Cloudflare Pages from index.html, the claude.ai page source."""
 import pathlib, shutil, subprocess, sys
 root = pathlib.Path(__file__).parent
 subprocess.run([sys.executable, str(root / 'gen_lexicon.py')], check=True)
@@ -10,4 +10,6 @@ out = root / 'site'
 out.mkdir(exist_ok=True)
 (out / 'index.html').write_text(head + page + '\n</body>\n</html>\n', encoding='utf-8')
 shutil.copy(root / 'config.js', out / 'config.js')
+# Cloudflare Pages reads headers from this file: always check for a fresh page
+(out / '_headers').write_text('/*\n  Cache-Control: no-cache\n', encoding='utf-8')
 print('built', out / 'index.html')
