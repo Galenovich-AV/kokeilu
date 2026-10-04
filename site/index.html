@@ -3084,9 +3084,9 @@ function applyProfileTheme() {
   let el = document.getElementById('profTheme');
   if (!el) { el = document.createElement('style'); el.id = 'profTheme'; document.head.appendChild(el); }
   const c = profDoc().color || AV_COLORS[0]; const [ink, head] = avInk(c);
-  const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 10%,#fbf8f2);--sheet:color-mix(in srgb,${c} 4%,#fffefb);
-    --tile:color-mix(in srgb,${c} 20%,#fbf8f2);--tile-line:color-mix(in srgb,${c} 38%,#fbf8f2);--dot:color-mix(in srgb,${c} 25%,#e9e3d6);--rule:color-mix(in srgb,${c} 25%,#efe9de);
-    --tape:color-mix(in srgb,${c} 55%,transparent);--kraft:color-mix(in srgb,${c} 45%,#f3e6cc);--ok-bg:color-mix(in srgb,${c} 18%,#fffdf8);--on-accent:${head}`;
+  const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 5%,#fcfaf5);--sheet:color-mix(in srgb,${c} 2%,#fffefc);
+    --tile:color-mix(in srgb,${c} 9%,#fcfaf5);--tile-line:color-mix(in srgb,${c} 22%,#fcfaf5);--dot:color-mix(in srgb,${c} 16%,#ece7dc);--rule:color-mix(in srgb,${c} 14%,#f1ece3);
+    --tape:color-mix(in srgb,${c} 40%,transparent);--kraft:color-mix(in srgb,${c} 32%,#f5ead4);--ok-bg:color-mix(in srgb,${c} 10%,#fffdf9);--on-accent:${head}`;
   const dark = `--sage:${c};--sage-ink:color-mix(in srgb,${c} 75%,#fff);--head:color-mix(in srgb,${c} 45%,#fff);--paper:color-mix(in srgb,${c} 7%,#1f2020);--sheet:color-mix(in srgb,${c} 9%,#29292a);
     --tile:color-mix(in srgb,${c} 14%,#2c2c2d);--tile-line:color-mix(in srgb,${c} 24%,#3a3a3b);--dot:color-mix(in srgb,${c} 18%,#333);--rule:color-mix(in srgb,${c} 18%,#3a3a3a);
     --tape:color-mix(in srgb,${c} 30%,transparent);--kraft:color-mix(in srgb,${c} 25%,#4a4030);--ok-bg:color-mix(in srgb,${c} 18%,#2a2a2a);--on-accent:#1f1f1f`;
