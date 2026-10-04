@@ -1287,11 +1287,9 @@ function renderWho() {
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
     ${name && !Store.isOwner ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
-    ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
-  const xb = $('#exportBtn'); if (xb) xb.onclick = exportMine;
   const tcb = $('#tchatBtn'); if (tcb) tcb.onclick = () => { state.view = state.view === 'tchat' ? 'learn' : 'tchat'; renderAll(); window.scrollTo(0, 0); };
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
