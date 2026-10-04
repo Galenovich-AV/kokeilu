@@ -3203,7 +3203,7 @@ function renderHome() {
       ${CONTACTS.length ? `<div class="row" style="margin-top:10px">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>` : ''}
     </section>
 
-    <section class="ex"><div class="ex-head"><h3>Sivukartta · Карта сайта</h3></div>
+    <section class="ex"><div class="ex-head"><h3>Sivukartta</h3></div>
       <ul class="sitemap">
         ${live.map(t => `<li><b>${esc(t.fi)}</b> <span class="note">· ${esc(t.ru)}</span>
           <ul>${t.blocks.map((b, i) => `<li><a data-hjump="${t.id}:${b.id}">${i + 1}. ${esc(b.fi)}</a></li>`).join('')}</ul></li>`).join('')}
