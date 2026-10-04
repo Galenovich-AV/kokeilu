@@ -336,6 +336,7 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
+.tlabel{font-size:.82rem;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--tape);color:var(--head)}
 .contact{margin:48px 0 24px;padding:16px 0 0;border-top:1px dashed var(--rule)}
 .contact h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 4px;color:var(--head)}
 .contact .row{gap:8px;margin-top:8px}
@@ -2031,13 +2032,39 @@ async function renderTeacher() {
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
-    d.innerHTML = `<summary>${esc(st.name || 'Без имени')}${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
-      ${st.canDelete ? `<div class="row st-tools"><button class="btn mini danger" type="button" data-delst>Удалить ученика</button></div>` : ''}<div class="st-body note">Загрузка…</div>`;
+    d.innerHTML = `<summary>${esc(st.name || 'Без имени')}${tLabel(st.id) ? ` <span class="tlabel">${esc(tLabel(st.id))}</span>` : ''}${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
+      <div class="row st-tools"><button class="btn mini" type="button" data-tlabel>${tLabel(st.id) ? 'Изменить пометку' : 'Пометка (видите только вы)'}</button>${st.canDelete ? `<button class="btn mini danger" type="button" data-delst>Удалить ученика</button>` : ''}</div><div class="st-body note">Загрузка…</div>`;
     wrap.appendChild(d);
     d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
+    d.querySelector('[data-tlabel]').onclick = () => editTLabel(st);
     const del = d.querySelector('[data-delst]');
     if (del) del.onclick = () => confirmDeleteStudent(st, d);
   });
+}
+// teacher's private notes next to student names (e.g. to tell namesakes apart): kept in the teacher's own results, students never see them
+const TLABEL_KEY = '_tlabels';
+const tLabel = uid => ((state.results[TLABEL_KEY] || {}).labels || {})[uid] || '';
+function editTLabel(st) {
+  let m = document.getElementById('tlModal');
+  if (!m) { m = document.createElement('div'); m.id = 'tlModal'; m.className = 'modal'; document.body.appendChild(m); }
+  m.hidden = false;
+  m.innerHTML = `<div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="tlT">
+    <h3 id="tlT">Пометка: ${esc(st.name || '')}</h3>
+    <p class="note">Видите только вы. Например: «из группы вторника» или «Анна К.».</p>
+    <input class="field" id="tlIn" maxlength="60" value="${esc(tLabel(st.id))}" style="width:100%;margin-top:6px">
+    <div class="row" style="margin-top:12px"><button class="btn main" type="button" data-save>Сохранить</button><button class="btn" type="button" data-no>Отмена</button></div></div>`;
+  const inp = m.querySelector('#tlIn'); inp.focus();
+  m.querySelector('[data-no]').onclick = () => { m.hidden = true; };
+  const save = async () => {
+    const labels = { ...((state.results[TLABEL_KEY] || {}).labels || {}) };
+    const v = inp.value.trim(); if (v) labels[st.id] = v; else delete labels[st.id];
+    const doc = { labels, at: new Date().toISOString() };
+    state.results[TLABEL_KEY] = doc; m.hidden = true;
+    await Store.saveResult(TLABEL_KEY, doc);
+    renderAll();
+  };
+  m.querySelector('[data-save]').onclick = save;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
 }
 const fmtRegDay = iso => { try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
 function confirmDeleteStudent(st, row) {
@@ -2086,7 +2113,7 @@ async function renderTeacherChatView() {
 function renderTeacherChats(list, all, chats) {
   const sec = $('#notesSec'); if (!sec) return;
   let seen = ''; try { seen = localStorage.getItem(LS_KEY + ':notesSeen') || ''; } catch (e) {}
-  const names = Object.fromEntries(list.map(st => [st.id, st.name || 'Без имени']));
+  const names = Object.fromEntries(list.map(st => [st.id, (st.name || 'Без имени') + (tLabel(st.id) ? ' (' + tLabel(st.id) + ')' : '')]));
   const rows = [];
   Object.entries(all).forEach(([uid, o]) => (o.items || []).filter(n => n.sent).forEach(n => {
     const msgs = threadOf(n, chats[uid]);
