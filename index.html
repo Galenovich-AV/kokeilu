@@ -156,7 +156,7 @@ h1{font-size:clamp(2rem,6vw,3rem);margin:0}
 .home-mode .index{display:none}
 .home-hero{margin:18px 0 26px}
 .home-hero .sub{font-family:var(--f-script);font-size:1.5rem;color:var(--ink-soft);margin:4px 0 0}
-.home-about{display:grid;grid-template-columns:1fr 1fr;gap:16px 28px}
+.home-about{display:grid;grid-template-columns:1fr;gap:16px 28px;max-width:75ch}
 @media (max-width:700px){.home-about{grid-template-columns:1fr}}
 .home-about h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 6px;color:var(--head)}
 .home-about p{margin:0 0 .6em}
@@ -3169,11 +3169,9 @@ function renderHome() {
     <section class="ex"><div class="home-about">
       <div lang="fi"><h3>Tervetuloa!</h3>
         <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
-        <p>Tehtävät tarkistetaan automaattisesti. Kirjoitustehtävät lukee ja kommentoi opettaja. Taso on noin A2–B1.</p></div>
-      <div lang="ru"><h3>Добро пожаловать!</h3>
-        <p>Muistikirja — сайт для изучения финского языка и подготовки к YKI-тесту. Каждая тема — это лексика, грамматика и задания в формате YKI: чтение по настоящим финским текстам и письмо.</p>
-        <p>Упражнения проверяются автоматически, а письменные работы читает и комментирует преподаватель. Уровень — примерно A2–B1.</p></div>
-    </div>
+        <p>Tehtävät tarkistetaan automaattisesti. Kirjoitustehtävät lukee ja kommentoi opettaja.</p>
+        <p>Tällä hetkellä sivustolla on tehtäviä tasoille A2–B1 eli valmistautumiseen YKI-testin keskitasolle. Pian lisäämme myös osion <b>Suomea edistyneille</b>.</p></div>
+        </div>
     <ul class="home-feats">
       <li><span><b>Sanakortit ja oma sanakirja</b> · карточки и личный словарь: выделите любое слово на странице, и оно попадёт в ваш словарь с переводом</span></li>
       <li><span><b>Kielioppi</b> · грамматика с автоматической проверкой</span></li>
@@ -3185,7 +3183,7 @@ function renderHome() {
       <ul class="sitemap">
         ${live.map(t => `<li><b>${esc(t.fi)}</b> <span class="note">· ${esc(t.ru)}</span>
           <ul>${t.blocks.map((b, i) => `<li><a data-hjump="${t.id}:${b.id}">${i + 1}. ${esc(b.fi)}</a></li>`).join('')}</ul></li>`).join('')}
-        ${soon.length ? `<li class="soon"><b>Tulossa · скоро:</b> ${soon.map(t => esc(t.fi)).join(', ')}</li>` : ''}
+        <li class="soon"><b>Tulossa · скоро:</b> ${soon.map(t => esc(t.fi)).concat(['Suomea edistyneille']).join(', ')}</li>
         <li><b>Oma sanakirja</b> <span class="note">· мой словарь и тренировка слов</span> <ul><li><a data-hview="dict">Avaa · открыть</a></li></ul></li>
         ${name ? `<li><b>Profiili</b> <span class="note">· статистика, история заданий, фото</span> <ul><li><a data-hview="profile">Avaa · открыть</a></li></ul></li>` : ''}
       </ul></section>
