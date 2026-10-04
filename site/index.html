@@ -109,6 +109,8 @@
 .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .sw{width:28px;height:28px;border-radius:50%;border:2px solid var(--sheet);box-shadow:0 0 0 1.5px var(--tile-line);cursor:pointer;padding:0}
 .sw.on{box-shadow:0 0 0 2.5px var(--sage-ink)}
+.sw-custom{position:relative;overflow:hidden;background:conic-gradient(red,#ff0,lime,cyan,blue,#f0f,red)}
+.sw-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
 .stat{background:var(--tile);border:1px solid var(--tile-line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .stat-n{font-size:1.9rem;font-weight:800;color:var(--head);font-variant-numeric:tabular-nums;line-height:1.1}
@@ -3071,15 +3073,17 @@ function renderProgress() {
    Stored with the results under "_profil": { color, img }
    ========================================================= */
 const PROF_KEY = '_profil';
-const AV_COLORS = ['#b9e094', '#f7c2b5', '#d8c8ef', '#fad4a6', '#a8d8e0', '#f3e08b', '#c9c1b4', '#8fb6e8'];
+const AV_COLORS = ['#b9e094', '#f9d3e2', '#f7c2b5', '#d8c8ef', '#fad4a6', '#a8d8e0', '#f3e08b', '#c9c1b4', '#8fb6e8'];
 const profDoc = () => state.results[PROF_KEY] || {};
 // the profile page takes its colours from the chosen avatar colour
 const AV_INK = { '#b9e094': ['#4e7d2f', '#3f6328'], '#f7c2b5': ['#c25d72', '#9e4860'], '#d8c8ef': ['#7a5ca3', '#5e4683'], '#fad4a6': ['#b8732a', '#8a5420'],
-  '#a8d8e0': ['#3d8a96', '#2c6872'], '#f3e08b': ['#9c8420', '#6e5d14'], '#c9c1b4': ['#7a6f60', '#5a5145'], '#8fb6e8': ['#3e6fb0', '#2d5288'] };
+  '#a8d8e0': ['#3d8a96', '#2c6872'], '#f3e08b': ['#9c8420', '#6e5d14'], '#c9c1b4': ['#7a6f60', '#5a5145'], '#8fb6e8': ['#3e6fb0', '#2d5288'], '#f9d3e2': ['#b5517f', '#8a3a60'] };
+// any colour from the colour wheel: darker shades are mixed from it
+const avInk = c => AV_INK[c] || [`color-mix(in srgb,${c} 50%,#1c1c1c)`, `color-mix(in srgb,${c} 32%,#121212)`];
 function applyProfileTheme() {
   let el = document.getElementById('profTheme');
   if (!el) { el = document.createElement('style'); el.id = 'profTheme'; document.head.appendChild(el); }
-  const c = profDoc().color || AV_COLORS[0]; const [ink, head] = AV_INK[c] || AV_INK['#b9e094'];
+  const c = profDoc().color || AV_COLORS[0]; const [ink, head] = avInk(c);
   const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 10%,#fbf8f2);--sheet:color-mix(in srgb,${c} 4%,#fffefb);
     --tile:color-mix(in srgb,${c} 20%,#fbf8f2);--tile-line:color-mix(in srgb,${c} 38%,#fbf8f2);--dot:color-mix(in srgb,${c} 25%,#e9e3d6);--rule:color-mix(in srgb,${c} 25%,#efe9de);
     --tape:color-mix(in srgb,${c} 55%,transparent);--kraft:color-mix(in srgb,${c} 45%,#f3e6cc);--ok-bg:color-mix(in srgb,${c} 18%,#fffdf8);--on-accent:${head}`;
@@ -3175,7 +3179,7 @@ function renderProfile() {
             <button class="btn small" type="button" id="avPaste">Из буфера обмена</button>
             <button class="btn small" type="button" id="avUrlBtn">По ссылке (URL)</button>
           </div>
-          ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
+          ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}<label class="sw sw-custom ${AV_COLORS.includes(d.color || AV_COLORS[0]) ? '' : 'on'}" title="Свой цвет" aria-label="Выбрать свой цвет"><input type="color" id="avColorPick" value="${/^#[0-9a-f]{6}$/i.test(d.color || '') ? d.color : '#f9d3e2'}"></label></div>`}
           <div class="pastebox" id="avPasteBox" contenteditable="true" hidden role="textbox" aria-label="Поле для вставки картинки">Вставьте сюда картинку: Ctrl+V (на Mac ⌘+V) или долгое нажатие → «Вставить»</div>
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
           ${Store.mode === 'supa' && Store.uid ? `<div class="acc-list">
@@ -3218,6 +3222,11 @@ function renderProfile() {
   if (gear) gear.onclick = () => { state.profEdit = !state.profEdit; const pe = main.querySelector('#profEdit'); pe.hidden = !state.profEdit; gear.classList.toggle('on', state.profEdit); gear.setAttribute('aria-expanded', String(state.profEdit)); };
   main.querySelectorAll('[data-hview2]').forEach(b => b.onclick = () => { state.view = b.dataset.hview2; renderAll(); window.scrollTo(0, 0); });
   main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
+  const pick = main.querySelector('#avColorPick');
+  if (pick) {
+    pick.oninput = () => { state.results[PROF_KEY] = { ...profDoc(), color: pick.value }; applyProfileTheme(); renderWho(); };
+    pick.onchange = async () => { const c = pick.value; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); };
+  }
   main.querySelectorAll('[data-color]').forEach(b => b.onclick = async () => { const c = b.dataset.color; state.results[PROF_KEY] = { ...profDoc(), color: c }; applyProfileTheme(); renderWho(); renderProfile(); await saveProf({ color: c }); });
   $('#avFile').onchange = e => { const f = e.target.files[0]; if (f) setAvatarFile(f); };
   const del = $('#avDel'); if (del) del.onclick = async () => { await saveProf({ img: null }); renderWho(); renderProfile(); };
