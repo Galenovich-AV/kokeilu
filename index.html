@@ -1324,7 +1324,7 @@ function renderWho() {
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
     ${name ? `<button class="btn small ${state.view === 'mytasks' || newFeedback() ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}${state.view !== 'mytasks' && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
-    <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
+    <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja'}</button>
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
   const tb = $('#teacherBtn'); if (tb) tb.onclick = () => { state.view = state.view === 'teacher' ? 'learn' : 'teacher'; renderAll(); window.scrollTo(0, 0); };
@@ -3341,12 +3341,12 @@ function renderHome() {
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
-  document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
+  document.documentElement.classList.toggle('profile-mode', state.view === 'profile' || state.view === 'mytasks');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   document.documentElement.classList.toggle('home-mode', state.view === 'home');
   document.documentElement.classList.toggle('mytasks-mode', state.view === 'mytasks' || state.view === 'tpreview');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
-  if (state.view === 'profile') applyProfileTheme();
+  if (state.view === 'profile' || state.view === 'mytasks') applyProfileTheme();
   renderWho(); renderTopics();
   if (state.view === 'home') renderHome();
   renderRegister(); renderContact();
