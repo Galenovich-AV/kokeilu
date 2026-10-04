@@ -1318,12 +1318,12 @@ function renderWho() {
   const cloud = Store.online();
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
-    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span>${!Store.isOwner && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
+    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span>${newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
     <button class="btn small ${state.view === 'learn' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
-    ${name && !Store.isOwner ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}</button>` : ''}
+    ${name ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
   const lb = $('#logoutBtn'); if (lb) lb.onclick = async () => { await Store.sb.auth.signOut(); };
@@ -3290,7 +3290,7 @@ function renderHome() {
   main.innerHTML = `
     <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span> <span class="title-flag"><svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#0b3d7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 6v54"/> <rect x="13" y="8" width="45" height="27.5" fill="#fff" stroke="#9fb7d6" stroke-width="1"/> <rect x="25.5" y="8" width="7.5" height="27.5" fill="#002f6c" stroke="none"/> <rect x="13" y="18" width="45" height="7.5" fill="#002f6c" stroke="none"/> </svg></span></h1></div>
     <section class="ex"><div class="ex-head"><h3${name ? ' class="greet"' : ''}>${name ? `Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет` : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
-      ${name ? `<div class="row" style="margin-top:4px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
+      ${name ? `<div class="row" style="margin-top:4px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${true ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
         : `<p class="note" style="margin-top:0">Задания открыты для всех. Зарегистрируйтесь или войдите, чтобы ваши результаты сохранялись.</p><div id="homeAuth"></div>
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
     </section>
