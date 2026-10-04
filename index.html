@@ -1272,6 +1272,7 @@ function renderWho() {
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
     ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
+    <button class="btn small ${state.view === 'learn' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
@@ -1286,6 +1287,7 @@ function renderWho() {
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   const mtb = $('#mytasksBtn'); if (mtb) mtb.onclick = () => { state.view = state.view === 'mytasks' ? 'learn' : 'mytasks'; renderAll(); window.scrollTo(0, 0); };
+  $('#learnBtn').onclick = () => { state.view = 'learn'; renderAll(); window.scrollTo(0, 0); };
   $('#homeBtn').onclick = () => { state.view = 'home'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
