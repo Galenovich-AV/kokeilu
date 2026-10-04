@@ -1344,7 +1344,7 @@ function renderAuth(el) {
         <h3 id="regTitle">${mode === 'signup' ? 'Регистрация' : 'Вход'}</h3>
         <button class="btn small" type="button" id="authSwitch">${mode === 'signup' ? 'У меня уже есть аккаунт' : 'Зарегистрироваться'}</button>
       </div>
-      <p>${mode === 'signup' ? 'Зарегистрируйтесь, чтобы результаты по каждому блоку сохранялись и преподаватель мог их проверить.' : 'Войдите, чтобы продолжить с того места, где остановились.'}</p>
+      <p>${mode === 'signup' ? 'Зарегистрируйтесь, чтобы ваши результаты сохранялись.' : 'Войдите, чтобы продолжить с того места, где остановились.'}</p>
       <form class="row" id="authForm" style="margin-top:10px">
         ${mode === 'signup' ? '<input class="field" id="authName" autocomplete="given-name" placeholder="Имя" maxlength="60" required>' : ''}
         <input class="field" id="authEmail" type="email" autocomplete="email" placeholder="Email" required>
@@ -3180,25 +3180,26 @@ function renderHome() {
     <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
       ${name ? `<p>Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет.</p>
         <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
-        : `<p class="note" style="margin-top:0">Задания открыты для всех. Чтобы результаты сохранялись, а преподаватель видел ваши ответы и мог их прокомментировать, зарегистрируйтесь или войдите.</p><div id="homeAuth"></div>
+        : `<p class="note" style="margin-top:0">Задания открыты для всех. Зарегистрируйтесь или войдите, чтобы ваши результаты сохранялись.</p><div id="homeAuth"></div>
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
     </section>
 
     <section class="ex"><div class="home-about">
       <div lang="fi"><h3>Tervetuloa!</h3>
         <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
-        <p>Tehtävät tarkistetaan automaattisesti. Kirjoitustehtävät lukee ja kommentoi opettaja.</p>
+        <p>Tehtävät tarkistetaan automaattisesti.</p>
         <p>Tällä hetkellä sivustolla on tehtäviä tasoille A2–B1 eli valmistautumiseen YKI-testin keskitasolle. Pian lisäämme myös osion <b>Suomea edistyneille</b>.</p></div>
         </div>
     <ul class="home-feats">
       <li><span><b>Sanakortit ja oma sanakirja</b> · карточки и личный словарь: выделите любое слово на странице, и оно попадёт в ваш словарь с переводом</span></li>
       <li><span><b>Kielioppi</b> · грамматика с автоматической проверкой</span></li>
       <li><span><b>YKI-harjoitukset</b> · чтение и письмо</span></li>
-      <li><span><b>Muistiinpanot ja chat</b> · заметки к любому тексту и вопросы преподавателю</span></li>
+      <li><span><b>Muistiinpanot</b> · заметки к любому тексту</span></li>
+      <li><span><b>Omille opiskelijoilleni</b> · для моих учеников: проверка письменных заданий с комментариями и чат со мной</span></li>
     </ul></section>
 
-    <section class="ex home-teacher"><div class="ex-head"><h3>Opettaja</h3></div>
-      <p style="margin-top:0">Hei! Olen <b>Anna</b>, suomen kielen opettaja. Olen opettanut suomea yli viisi vuotta. Työskentelen myös kaunokirjallisuuden kääntäjänä, ja suomalainen kulttuuri on minulle sydämen asia.</p>
+    <section class="ex home-teacher"><div class="ex-head"><h3>Kuka olen?</h3></div>
+      <p style="margin-top:0">Hei! Olen <b>Anna</b>. Olen opettanut suomea yli viisi vuotta. Työskentelen myös kaunokirjallisuuden kääntäjänä, ja suomalainen kulttuuri on minulle sydämen asia.</p>
       ${CONTACTS.length ? `<div class="row" style="margin-top:10px">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>` : ''}
     </section>
 
