@@ -345,7 +345,9 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
-.tlabel{font-size:.82rem;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--tape);color:var(--head)}
+.tlabel{font:inherit;font-size:.82rem;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--tape);color:var(--head);border:1px solid transparent;cursor:pointer}
+.tlabel.empty{background:transparent;border:1px dashed var(--sage-ink);color:var(--ink-soft);font-weight:600}
+.tlabel:hover{border-color:var(--sage-ink)}
 .contact{margin:48px 0 24px;padding:16px 0 0;border-top:1px dashed var(--rule)}
 .contact h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 4px;color:var(--head)}
 .contact .row{gap:8px;margin-top:8px}
@@ -2046,11 +2048,11 @@ async function renderTeacher() {
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
-    d.innerHTML = `<summary>${esc(st.name || 'Без имени')}${tLabel(st.id) ? ` <span class="tlabel">${esc(tLabel(st.id))}</span>` : ''}${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
-      <div class="row st-tools"><button class="btn mini" type="button" data-tlabel>${tLabel(st.id) ? 'Изменить пометку' : 'Пометка (видите только вы)'}</button>${st.canDelete ? `<button class="btn mini danger" type="button" data-delst>Удалить ученика</button>` : ''}</div><div class="st-body note">Загрузка…</div>`;
+    d.innerHTML = `<summary>${esc(st.name || 'Без имени')} <button class="tlabel ${tLabel(st.id) ? '' : 'empty'}" type="button" data-tlabel title="Ваша пометка — ученик её не видит">${tLabel(st.id) ? esc(tLabel(st.id)) : '+ пометка'}</button>${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
+      ${st.canDelete ? `<div class="row st-tools"><button class="btn mini danger" type="button" data-delst>Удалить ученика</button></div>` : ''}<div class="st-body note">Загрузка…</div>`;
     wrap.appendChild(d);
     d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
-    d.querySelector('[data-tlabel]').onclick = () => editTLabel(st);
+    d.querySelector('[data-tlabel]').onclick = e => { e.preventDefault(); e.stopPropagation(); editTLabel(st); };
     const del = d.querySelector('[data-delst]');
     if (del) del.onclick = () => confirmDeleteStudent(st, d);
   });
