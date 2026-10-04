@@ -159,7 +159,24 @@ body{transition:background-color .4s;background:var(--paper);background-image:ra
 .wrap{max-width:1020px;margin:0 auto;padding-inline:16px;padding-block:20px 80px}
 h1,h2,h3,.hand{font-family:var(--f-body);font-weight:800;line-height:1.15;text-wrap:balance;color:var(--head)}
 h1{font-size:clamp(2rem,6vw,3rem);margin:0}
-.brand{font-weight:800;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-ink)}
+.brand{font-weight:800;font-size:.95rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sage-ink);background:none;border:0;padding:0;cursor:pointer;font-family:inherit}
+/* start page */
+.home-mode .index{display:none}
+.home-hero{margin:18px 0 26px}
+.home-hero .sub{font-family:var(--f-script);font-size:1.5rem;color:var(--ink-soft);margin:4px 0 0}
+.home-about{display:grid;grid-template-columns:1fr 1fr;gap:16px 28px}
+@media (max-width:700px){.home-about{grid-template-columns:1fr}}
+.home-about h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 6px;color:var(--head)}
+.home-about p{margin:0 0 .6em}
+.home-feats{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.home-feats li{display:flex;gap:10px;align-items:baseline}
+.home-feats li::before{content:"";flex:0 0 auto;width:.6rem;height:.6rem;border-radius:50%;background:var(--sage);border:2px solid var(--sage-ink);transform:translateY(-1px)}
+.sitemap{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+.sitemap > li > b{font-size:1.05rem}
+.sitemap ul{list-style:none;padding:0;margin:4px 0 0;display:flex;flex-wrap:wrap;gap:6px 18px}
+.sitemap a{color:var(--ink);text-decoration:none;border-bottom:1px dashed var(--ink-soft);cursor:pointer}
+.sitemap a:hover{border-bottom-color:var(--sage-ink);color:var(--head)}
+.sitemap .soon{color:var(--ink-soft)}
 .topic-title{font-family:var(--f-script);font-weight:700;font-size:clamp(2.6rem,7vw,3.4rem);line-height:1}
 .linkbtn{background:none;border:0;padding:2px 0;cursor:pointer;color:var(--ink-soft);font-size:.9rem;font-weight:600;border-bottom:1px dashed currentColor}
 .linkbtn:hover{color:var(--sage-ink)}
@@ -485,7 +502,7 @@ mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
 <div class="wrap">
   <header class="top">
     <div>
-      <span class="brand">Muistikirja</span>
+      <button class="brand" type="button" id="homeBtn" title="Etusivu · Главная">Muistikirja</button>
     </div>
     <div class="who" id="who"></div>
   </header>
@@ -1073,7 +1090,7 @@ const Store = {
   },
   async afterAuth(session) {
     await this.setSession(session);
-    if (!this.uid) { lsWrite({}); try { localStorage.removeItem(LS_KEY + ':pending'); } catch (e) {} state.view = 'learn'; }
+    if (!this.uid) { lsWrite({}); try { localStorage.removeItem(LS_KEY + ':pending'); } catch (e) {} state.view = 'home'; }
     await loadMine();
   },
   async call(fn, fallback) {
@@ -1274,6 +1291,7 @@ function renderWho() {
   const tcb = $('#tchatBtn'); if (tcb) tcb.onclick = () => { state.view = state.view === 'tchat' ? 'learn' : 'tchat'; renderAll(); window.scrollTo(0, 0); };
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
+  $('#homeBtn').onclick = () => { state.view = 'home'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
 
@@ -1356,7 +1374,10 @@ function renderAuth(el) {
 }
 
 function renderRegister() {
-  const el = $('#register');
+  // on the start page the login form sits inside the page, elsewhere above the tasks
+  const home = state.view === 'home' && $('#homeAuth');
+  if (home) $('#register').innerHTML = '';
+  const el = home || $('#register');
   if (Store.mode === 'supa') { if (Store.uid && !Store.recovery) { el.innerHTML = ''; return; } renderAuth(el); return; }
   const blocked = Store.mode === 'cloud' && Store.cloudBlocked;
   if (state.profile && !blocked) { el.innerHTML = ''; return; }
@@ -3101,20 +3122,71 @@ function renderContact() {
     <p class="note" style="margin:0">Вопросы по заданиям, индивидуальные занятия или подготовка к YKI — напишите мне.</p>
     <div class="row">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>`;
 }
+/* ---------- START PAGE ---------- */
+function renderHome() {
+  const main = $('#main');
+  const name = state.profile && state.profile.name;
+  const live = TOPICS.filter(t => !t.soon), soon = TOPICS.filter(t => t.soon);
+  main.innerHTML = `
+    <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span></h1>
+      <p class="sub">suomen kielen vihko · тетрадь по финскому языку</p></div>
+    <section class="ex"><div class="home-about">
+      <div lang="fi"><h3>Tervetuloa!</h3>
+        <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
+        <p>Tehtävät tarkistetaan automaattisesti. Kirjoitustehtävät lukee ja kommentoi opettaja. Taso on noin A2–B1.</p></div>
+      <div lang="ru"><h3>Добро пожаловать!</h3>
+        <p>Muistikirja — сайт для изучения финского языка и подготовки к YKI-тесту. Каждая тема — это лексика, грамматика и задания в формате YKI: чтение по настоящим финским текстам и письмо.</p>
+        <p>Упражнения проверяются автоматически, а письменные работы читает и комментирует преподаватель. Уровень — примерно A2–B1.</p></div>
+    </div>
+    <ul class="home-feats">
+      <li><span><b>Sanakortit ja oma sanakirja</b> · карточки и личный словарь: выделите любое слово на странице, и оно попадёт в ваш словарь с переводом</span></li>
+      <li><span><b>Kielioppi</b> · грамматика с автоматической проверкой</span></li>
+      <li><span><b>YKI-harjoitukset</b> · чтение и письмо как на экзамене, с таймером</span></li>
+      <li><span><b>Muistiinpanot ja chat</b> · заметки к любому тексту и вопросы преподавателю</span></li>
+    </ul></section>
+
+    <section class="ex"><div class="ex-head"><h3>Sivukartta · Карта сайта</h3></div>
+      <ul class="sitemap">
+        ${live.map(t => `<li><b>${esc(t.fi)}</b> <span class="note">· ${esc(t.ru)}</span>
+          <ul>${t.blocks.map((b, i) => `<li><a data-hjump="${t.id}:${b.id}">${i + 1}. ${esc(b.fi)}</a></li>`).join('')}</ul></li>`).join('')}
+        ${soon.length ? `<li class="soon"><b>Tulossa · скоро:</b> ${soon.map(t => esc(t.fi)).join(', ')}</li>` : ''}
+        <li><b>Oma sanakirja</b> <span class="note">· мой словарь и тренировка слов</span> <ul><li><a data-hview="dict">Avaa · открыть</a></li></ul></li>
+        ${name ? `<li><b>Profiili</b> <span class="note">· статистика, история заданий, фото</span> <ul><li><a data-hview="profile">Avaa · открыть</a></li></ul></li>` : ''}
+      </ul></section>
+
+    <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
+      ${name ? `<p>Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет.</p>
+        <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button></div>`
+        : `<p class="note" style="margin-top:0">Задания открыты для всех. Чтобы результаты сохранялись, а преподаватель видел ваши ответы и мог их прокомментировать, зарегистрируйтесь или войдите.</p><div id="homeAuth"></div>
+        <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
+    </section>`;
+  main.querySelectorAll('[data-hjump]').forEach(a => a.onclick = () => {
+    const [tid, bid] = a.dataset.hjump.split(':'); state.topic = tid; state.view = 'learn'; saveTab(); renderAll();
+    setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) { blk.classList.remove('collapsed'); blk.scrollIntoView({ block: 'start' }); }
+  });
+  main.querySelectorAll('[data-hview]').forEach(a => a.onclick = () => { state.view = a.dataset.hview; renderAll(); window.scrollTo(0, 0); });
+  main.querySelectorAll('[data-hcontinue]').forEach(a => a.onclick = () => { state.view = 'learn'; renderAll(); window.scrollTo(0, 0); });
+}
+
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
+  document.documentElement.classList.toggle('home-mode', state.view === 'home');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
   if (state.view === 'profile') applyProfileTheme();
-  renderWho(); renderTopics(); renderRegister(); renderContact();
-  if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
+  renderWho(); renderTopics();
+  if (state.view === 'home') renderHome();
+  renderRegister(); renderContact();
+  if (state.view === 'home') { /* drawn above, before the login form */ }
+  else if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
 
 state.results = lsRead().results || {};
 state.doneBlocks = doneBlockIds();
 state.profile = lsRead().profile || null;
+if (!state.profile) state.view = 'home';  // new visitors start on the start page
 if (!topicObj().blocks.some(b => b.id === state.block)) state.block = topicObj().blocks[0].id;
 renderAll();
 
