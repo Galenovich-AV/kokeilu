@@ -3164,8 +3164,7 @@ function renderHome() {
   const name = state.profile && state.profile.name;
   const live = TOPICS.filter(t => !t.soon), soon = TOPICS.filter(t => t.soon);
   main.innerHTML = `
-    <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span></h1>
-      <p class="sub">suomen kielen vihko · тетрадь по финскому языку</p></div>
+    <div class="home-hero"><h1 class="topic-title"><span class="tape">Muistikirja</span></h1></div>
     <section class="ex"><div class="home-about">
       <div lang="fi"><h3>Tervetuloa!</h3>
         <p>Muistikirja on harjoitussivusto suomen kielen opiskelijoille ja YKI-testiin valmistautuville. Jokainen kappale käsittelee yhtä aihetta: ensin sanasto, sitten kielioppi ja lopuksi YKI-testin tyyppiset tehtävät.</p>
