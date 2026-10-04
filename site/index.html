@@ -381,6 +381,10 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger{border-color:#b5513e;color:#b5513e}
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
+.who-me{position:relative}
+.ping{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:#e0322b;border:2px solid var(--paper);animation:ping 1.3s ease-in-out infinite}
+@keyframes ping{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.45}}
+@media (prefers-reduced-motion:reduce){.ping{animation:none}}
 .tlabel{font:inherit;font-size:.82rem;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--tape);color:var(--head);border:1px solid transparent;cursor:pointer}
 .tlabel.empty{background:transparent;border:1px dashed var(--sage-ink);color:var(--ink-soft);font-weight:600}
 .tlabel:hover{border-color:var(--sage-ink)}
@@ -1308,7 +1312,7 @@ function renderWho() {
   const cloud = Store.online();
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
-    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
+    ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span>${!Store.isOwner && newFeedback() ? '<span class="ping" title="Новый отзыв преподавателя" aria-label="Новый отзыв преподавателя"></span>' : ''}</button>` : ''}
     <button class="btn small ${state.view === 'learn' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
@@ -3097,15 +3101,15 @@ function renderProfile() {
         <div class="stat"><span class="stat-n">${dw.filter(isLearned).length}<small>/${dw.length}</small></span><span class="note">слов выучено в словаре</span></div>
       </div>
     </section>
-    <section class="ex">
-      <div class="ex-head"><h3>Статистика по разделам</h3></div>
-      ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
-    </section>
     ${(() => { const ws = myWritings(); if (!ws.length) return ''; const done = ws.filter(w => w.f);
       return `<section class="ex"><div class="ex-head"><h3>Отзывы преподавателя</h3>${newFeedback() ? `<span class="newb">новых: ${newFeedback()}</span>` : ''}</div>
         <p style="margin-top:0">Проверено письменных работ: <b>${done.length} из ${ws.length}</b>.</p>
         ${done.length ? `<ul class="hist">${done.map(w => `<li><b>${esc(w.task.title)}</b> <span class="note">${esc(w.t.fi)}${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span></li>`).join('')}</ul>` : ''}
         <div class="row" style="margin-top:10px"><button class="btn small main" type="button" data-hview2="mytasks">Открыть отзывы и комментарии</button></div></section>`; })()}
+    <section class="ex">
+      <div class="ex-head"><h3>Статистика по разделам</h3></div>
+      ${blocks.join('') || '<p class="note">Проверьте хотя бы одно задание, и здесь появится процент правильных ответов.</p>'}
+    </section>
     <section class="ex">
       <div class="ex-head"><h3>Мои задания</h3></div>
       ${list ? `<ul class="hist">${list}</ul>` : '<p class="note">Пока пусто.</p>'}
