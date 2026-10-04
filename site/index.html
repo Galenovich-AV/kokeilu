@@ -311,7 +311,7 @@ button.chip{font-family:var(--f-body);font-weight:700;font-size:.9rem;color:var(
 /* exercise card */
 .ex{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);padding:34px 28px 24px;margin:0 0 40px;position:relative}
 .ex::before{content:"";position:absolute;top:-16px;left:48px;width:min(220px,40%);height:34px;transform:rotate(-3deg);opacity:.9;
-  background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,color-mix(in srgb,var(--sage) 55%,var(--sheet)) 12px 24px);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  background:repeating-linear-gradient(-45deg,var(--stripe,var(--sage)) 0 12px,color-mix(in srgb,var(--stripe,var(--sage)) 55%,var(--sheet)) 12px 24px);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .ex:nth-child(even)::before{left:auto;right:40px;width:min(210px,38%);transform:rotate(3deg);background:var(--kraft)}
 .ex-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
 .ex-head .sig{color:var(--head);margin-right:2px}
@@ -3083,16 +3083,22 @@ const avInk = c => AV_INK[c] || [`color-mix(in srgb,${c} 50%,#1c1c1c)`, `color-m
 function applyProfileTheme() {
   let el = document.getElementById('profTheme');
   if (!el) { el = document.createElement('style'); el.id = 'profTheme'; document.head.appendChild(el); }
-  const c = profDoc().color || AV_COLORS[0]; const [ink, head] = avInk(c);
+  const c = profDoc().color || AV_COLORS[0]; let [ink, head] = avInk(c);
+  // a dark chosen colour (black, navy…): white text on it, and lighter accents so nothing merges
+  const lum = (() => { const m = /^#([0-9a-f]{6})$/i.exec(c); if (!m) return 1; const n = parseInt(m[1], 16), ch = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+    return .2126 * ch(n >> 16 & 255) + .7152 * ch(n >> 8 & 255) + .0722 * ch(n & 255); })();
+  const dark = lum < .18, onAcc = dark ? '#ffffff' : head;
+  if (dark) { ink = c; head = c; }
+  const tapeMix = dark ? 16 : 40;
   const light = `--sage:${c};--sage-ink:${ink};--head:${head};--paper:color-mix(in srgb,${c} 5%,#fcfaf5);--sheet:color-mix(in srgb,${c} 2%,#fffefc);
     --tile:color-mix(in srgb,${c} 9%,#fcfaf5);--tile-line:color-mix(in srgb,${c} 22%,#fcfaf5);--dot:color-mix(in srgb,${c} 16%,#ece7dc);--rule:color-mix(in srgb,${c} 14%,#f1ece3);
-    --tape:color-mix(in srgb,${c} 40%,transparent);--kraft:color-mix(in srgb,${c} 32%,#f5ead4);--ok-bg:color-mix(in srgb,${c} 10%,#fffdf9);--on-accent:${head}`;
-  const dark = `--sage:${c};--sage-ink:color-mix(in srgb,${c} 75%,#fff);--head:color-mix(in srgb,${c} 45%,#fff);--paper:color-mix(in srgb,${c} 7%,#1f2020);--sheet:color-mix(in srgb,${c} 9%,#29292a);
+    --tape:color-mix(in srgb,${c} ${tapeMix}%,transparent);--kraft:color-mix(in srgb,${c} ${dark ? 14 : 32}%,#f5ead4);--ok-bg:color-mix(in srgb,${c} ${dark ? 6 : 10}%,#fffdf9);--on-accent:${onAcc};--stripe:${dark ? `color-mix(in srgb,${c} 28%,#fff)` : c}`;
+  const darkV = `--sage:${dark ? `color-mix(in srgb,${c} 55%,#fff)` : c};--sage-ink:color-mix(in srgb,${c} ${dark ? 30 : 75}%,#fff);--head:color-mix(in srgb,${c} 45%,#fff);--paper:color-mix(in srgb,${c} 7%,#1f2020);--sheet:color-mix(in srgb,${c} 9%,#29292a);
     --tile:color-mix(in srgb,${c} 14%,#2c2c2d);--tile-line:color-mix(in srgb,${c} 24%,#3a3a3b);--dot:color-mix(in srgb,${c} 18%,#333);--rule:color-mix(in srgb,${c} 18%,#3a3a3a);
-    --tape:color-mix(in srgb,${c} 30%,transparent);--kraft:color-mix(in srgb,${c} 25%,#4a4030);--ok-bg:color-mix(in srgb,${c} 18%,#2a2a2a);--on-accent:#1f1f1f`;
+    --tape:color-mix(in srgb,${c} 30%,transparent);--kraft:color-mix(in srgb,${c} 25%,#4a4030);--ok-bg:color-mix(in srgb,${c} 18%,#2a2a2a);--on-accent:${dark ? '#111' : '#1f1f1f'}`;
   el.textContent = `:root.profile-mode{${light}}
-@media (prefers-color-scheme: dark){:root.profile-mode:not([data-theme="light"]){${dark};color-scheme:dark}}
-:root.profile-mode[data-theme="dark"]{${dark};color-scheme:dark}`;
+@media (prefers-color-scheme: dark){:root.profile-mode:not([data-theme="light"]){${darkV};color-scheme:dark}}
+:root.profile-mode[data-theme="dark"]{${darkV};color-scheme:dark}`;
 }
 function avatarHTML(size, doc) {
   const d = doc || profDoc(); const c = d.color || AV_COLORS[0];
