@@ -3184,7 +3184,7 @@ function renderHome() {
           <ul>${t.blocks.map((b, i) => `<li><a data-hjump="${t.id}:${b.id}">${i + 1}. ${esc(b.fi)}</a></li>`).join('')}</ul></li>`).join('')}
         <li class="soon"><b>Tulossa · скоро:</b> ${soon.map(t => esc(t.fi)).concat(['Suomea edistyneille']).join(', ')}</li>
         <li><a data-hview="dict"><b>Oma sanakirja</b></a> <span class="note">· мой словарь и тренировка слов</span></li>
-        ${name ? `<li><a data-hview="profile"><b>Profiili</b></a> <span class="note">· статистика, история заданий, фото</span></li>` : ''}
+        ${name ? `<li><a data-hview="profile"><b>Profiili</b></a> <span class="note">· статистика, история заданий</span></li>` : ''}
       </ul></section>
 
     <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
