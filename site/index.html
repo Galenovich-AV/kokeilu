@@ -101,7 +101,7 @@
 .who-me{cursor:pointer;gap:8px;padding:3px 12px 3px 4px;font:inherit}
 .who-me.on{border-color:var(--sage-ink);background:var(--sage)}
 .avatar{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:rgba(40,45,35,.55);object-fit:cover;flex:0 0 auto;overflow:hidden}
-.prof-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.prof-head{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
 .prof-av .avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 6px var(--sage)}
 .prof-av img.avatar{box-shadow:0 0 0 4px var(--sheet),0 0 0 9px var(--sage)}
 .prof-id{min-width:0;flex:1 1 260px}
@@ -389,6 +389,14 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn.danger:hover{background:rgba(181,81,62,.08)}
 .st-tools{margin:8px 0 4px}
 .prof-card{position:relative}
+.acc-form{display:grid;gap:6px;margin-top:10px;max-width:360px}
+.acc-list{margin-top:12px;display:grid;gap:6px;max-width:460px}
+.acc-row{display:grid;grid-template-columns:5.5em 1fr auto;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--tile-line);border-radius:10px;background:var(--tile)}
+.acc-k{font-size:.85rem;color:var(--ink-soft);font-weight:700}
+.acc-v{overflow-wrap:anywhere}
+.acc-pw{filter:blur(2.5px);letter-spacing:.15em;user-select:none}
+.acc-form .field{flex:none;width:100%}
+.acc-form .btn{justify-self:start}
 .gear{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--sage-ink);background:var(--sheet);color:var(--sage-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:transform .3s}
 .gear:hover{transform:rotate(30deg)}
 .gear.on{background:var(--sage);color:var(--on-accent);transform:rotate(60deg)}
@@ -1121,6 +1129,7 @@ const Store = {
   },
   async setSession(session) {
     this.uid = session ? session.user.id : null;
+    this.email = session ? session.user.email || '' : '';
     this.isOwner = false;
     if (!this.uid) return;
     const { data: teacher } = await this.sb.rpc('is_teacher');
@@ -3169,6 +3178,17 @@ function renderProfile() {
           ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}</div>`}
           <div class="pastebox" id="avPasteBox" contenteditable="true" hidden role="textbox" aria-label="Поле для вставки картинки">Вставьте сюда картинку: Ctrl+V (на Mac ⌘+V) или долгое нажатие → «Вставить»</div>
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
+          ${Store.mode === 'supa' && Store.uid ? `<div class="acc-list">
+            <div class="acc-row"><span class="acc-k">Почта</span><span class="acc-v">${esc(Store.email || '')}</span><button class="btn small" type="button" id="mailEdit">Изменить</button></div>
+            <div class="acc-row"><span class="acc-k">Пароль</span><span class="acc-v acc-pw" aria-label="пароль скрыт">••••••••••</span><button class="btn small" type="button" id="pwEdit">Изменить</button></div>
+          </div>
+          <form class="acc-form" id="pwForm" hidden>
+            <input class="field" id="pw1" type="password" minlength="6" autocomplete="new-password" placeholder="Новый пароль (от 6 символов)" required>
+            <input class="field" id="pw2" type="password" minlength="6" autocomplete="new-password" placeholder="Повторите пароль" required>
+            <button class="btn small main" type="submit">Сохранить пароль</button><p class="note" id="pwMsg" style="margin:0"></p></form>
+          <form class="acc-form" id="mailForm" hidden>
+            <input class="field" id="mailIn" type="email" autocomplete="email" placeholder="Новая почта" required>
+            <button class="btn small main" type="submit">Сменить почту</button><p class="note" id="mailMsg" style="margin:0"></p></form>` : ''}
           <form class="row" id="nameForm" hidden style="margin-top:8px"><input class="field" id="nameIn" value="${esc(name)}" maxlength="60" required><button class="btn small main" type="submit">Сохранить</button></form>
           </div>
         </div>
@@ -3231,6 +3251,20 @@ function renderProfile() {
     toast('В буфере нет картинки. Скопируйте саму картинку (правый клик → «Копировать изображение») и вставьте снова');
   });
   box.addEventListener('beforeinput', e => { if (e.inputType !== 'insertFromPaste') e.preventDefault(); });
+  const pwE = $('#pwEdit'); if (pwE) pwE.onclick = () => { $('#pwForm').hidden = !$('#pwForm').hidden; $('#mailForm').hidden = true; if (!$('#pwForm').hidden) $('#pw1').focus(); };
+  const mE = $('#mailEdit'); if (mE) mE.onclick = () => { $('#mailForm').hidden = !$('#mailForm').hidden; $('#pwForm').hidden = true; if (!$('#mailForm').hidden) $('#mailIn').focus(); };
+  const pwF = $('#pwForm'); if (pwF) pwF.onsubmit = async e => {
+    e.preventDefault(); const a = $('#pw1').value, b = $('#pw2').value, msg = $('#pwMsg');
+    if (a !== b) { msg.textContent = 'Пароли не совпадают'; return; }
+    const { error } = await Store.sb.auth.updateUser({ password: a });
+    msg.textContent = error ? AUTH_ERR(error.message) : '';
+    if (!error) { pwF.hidden = true; pwF.reset(); toast('Пароль изменён'); }
+  };
+  const mF = $('#mailForm'); if (mF) mF.onsubmit = async e => {
+    e.preventDefault(); const v = $('#mailIn').value.trim(), msg = $('#mailMsg');
+    const { error } = await Store.sb.auth.updateUser({ email: v }, { emailRedirectTo: location.origin + location.pathname });
+    msg.innerHTML = error ? esc(AUTH_ERR(error.message)) : `Мы отправили письмо на <b>${esc(v)}</b>. Откройте его и подтвердите новую почту — до этого вход по-прежнему по старой.`;
+  };
   $('#nameEdit').onclick = () => { $('#nameForm').hidden = false; $('#nameIn').focus(); };
   $('#nameForm').onsubmit = async e => { e.preventDefault(); const v = $('#nameIn').value.trim(); if (!v) return; await Store.saveProfile(v); state.profile = { ...(state.profile || {}), name: v }; toast('Имя сохранено'); renderAll(); };
 }
