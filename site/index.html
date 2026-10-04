@@ -2220,6 +2220,7 @@ function renderTeacherChats(list, all, chats) {
     ${shownRows.length ? shownRows.map(({ uid, n, msgs, prof, lastS }) => `<div class="thread-card" data-uid="${uid}" data-nid="${esc(n.id)}">
       <div class="thread-top">${avatarHTML(34, prof)}<div><b>${esc(names[uid] || 'Ученик')}</b>${!seen || lastS > seen ? ' <span class="newb">новый</span>' : ''}<div class="note">${esc(exTitleOf(n.ex))}</div></div></div>
       <blockquote class="nquote plain"><mark class="hl hl-${n.style || 'fill'}" style="${hlVars(n)}">${esc(n.exact)}</mark></blockquote>
+      ${n.tnote ? `<p class="note" style="margin:0">Ответ на ваш комментарий: «${esc(n.tnote)}»</p>` : ''}
       <div class="thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: 'Вы', av: me } : { name: names[uid] || 'Ученик', av: prof }, m.from === 't')).join('')}</div>
       <form class="row reply-form"><textarea class="field" rows="1" placeholder="Ответить…" required></textarea><button class="btn small main" type="submit">Ответить</button></form>
     </div>`).join('') : '<p class="note">Пока никто не отправил заметку. Ученики выделяют текст в заданиях и нажимают «Заметка».</p>'}`;
@@ -2247,13 +2248,40 @@ function markedHTML(text, marks) {
   });
   spots.sort((x, y) => x.a - y.a);
   let out = '', pos = 0;
-  spots.forEach(x => { out += esc(text.slice(pos, x.a)) + `<mark class="tmark${x.m.draft ? ' draft' : ''}" data-n="${x.n}" data-tnote="${esc(x.m.note)}" tabindex="0">${esc(text.slice(x.a, x.b))}</mark>`; pos = x.b; });
+  spots.forEach(x => { out += esc(text.slice(pos, x.a)) + `<mark class="tmark${x.m.draft ? ' draft' : ''}" data-n="${x.n}" data-mid="${esc(x.m.id || '')}" data-tnote="${esc(x.m.note)}" tabindex="0">${esc(text.slice(x.a, x.b))}</mark>`; pos = x.b; });
   return out + esc(text.slice(pos));
 }
-function marksListHTML(marks, editable) {
+function marksListHTML(marks, editable, reply) {
   if (!marks || !marks.length) return '';
-  return `<ol class="tmarks">${marks.map((m, i) => `<li><span class="tm-q">«${esc(m.exact)}»</span> — ${esc(m.note)}${m.draft ? ' <span class="draft-tag">не отправлено</span>' : ''}${editable ? ` <button class="btn small" type="button" data-tmdel="${esc(m.id)}">Удалить</button>` : ''}</li>`).join('')}</ol>`;
+  if (reply) marks.forEach(m => { TMARKS[m.id] = { m, ...reply }; });
+  return `<ol class="tmarks">${marks.map((m, i) => `<li><span class="tm-q">«${esc(m.exact)}»</span> — ${esc(m.note)}${m.draft ? ' <span class="draft-tag">не отправлено</span>' : ''}${editable ? ` <button class="btn small" type="button" data-tmdel="${esc(m.id)}">Удалить</button>` : ''}${reply ? ` <button class="btn mini" type="button" data-treply="${esc(m.id)}">Ответить</button>` : ''}</li>`).join('')}</ol>`;
 }
+// a student answers one of the teacher's comments: it becomes a chat thread about that passage
+const TMARKS = {};
+function openMarkReply(id) {
+  const r = TMARKS[id]; if (!r) return;
+  const m = r.m; let sh = $('#wsheet');
+  if (!sh) { sh = document.createElement('div'); sh.id = 'wsheet'; sh.className = 'wsheet'; document.body.appendChild(sh); }
+  sh.hidden = false;
+  sh.innerHTML = `<form class="wsheet-in" id="mrform">
+    <div class="row" style="justify-content:space-between"><h3>Ответ преподавателю</h3><button class="btn small" type="button" id="mrclose">Отмена</button></div>
+    <blockquote class="nquote plain"><mark class="tmark">${esc(m.exact)}</mark></blockquote>
+    <p class="note" style="margin:0">Комментарий преподавателя: «${esc(m.note)}»</p>
+    <textarea class="field" id="mrtext" rows="3" required placeholder="Ваш вопрос или ответ"></textarea>
+    <button class="btn main" type="submit">Отправить в чат</button></form>`;
+  $('#mrclose').onclick = () => { sh.hidden = true; };
+  $('#mrform').onsubmit = async e => {
+    e.preventDefault(); const text = $('#mrtext').value.trim(); if (!text) return;
+    const now = new Date().toISOString();
+    const n = { id: 'n' + Date.now().toString(36), ex: r.ex, topic: r.topic, exact: m.exact, prefix: m.prefix, suffix: m.suffix, note: text, color: '#ffe3a8', style: 'fill', at: now,
+      sent: true, sentAt: now, changed: false, msgs: [{ text, at: now }], readAt: now, tnote: m.note };
+    const cloud = await saveNotes(notes().concat([n]));
+    sh.hidden = true; toast(cloud ? 'Отправлено. Ответ преподавателя появится в «Чате»' : 'Сохранено и отправится, когда появится интернет');
+    state.view = 'chat'; state.chatOpen = n.id; renderAll(); window.scrollTo(0, 0);
+  };
+  setTimeout(() => $('#mrtext').focus(), 50);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-treply]'); if (b) { e.preventDefault(); const p = $('#tmPop'); if (p) p.hidden = true; openMarkReply(b.dataset.treply); } });
 // teacher's unsent feedback: comments, level and remarks wait in the teacher's own results until "Отправить ученику"
 const TDRAFT_KEY = '_tdrafts';
 const tdrafts = () => (state.results[TDRAFT_KEY] || {}).d || {};
@@ -2648,7 +2676,7 @@ document.addEventListener('click', e => {
   if (pop && !pop.hidden && (!m || pop.dataset.for === m.dataset.n + m.textContent)) { pop.hidden = true; if (!m) return; return; }
   if (!m) return;
   let p = pop; if (!p) { p = document.createElement('div'); p.id = 'tmPop'; p.className = 'notepop tmpop'; p.setAttribute('role', 'tooltip'); document.body.appendChild(p); }
-  p.innerHTML = `<span class="np-meta">Комментарий преподавателя · ${esc(m.dataset.n)}</span><span class="np-text">${esc(m.dataset.tnote)}</span>`;
+  p.innerHTML = `<span class="np-meta">Комментарий преподавателя · ${esc(m.dataset.n)}</span><span class="np-text">${esc(m.dataset.tnote)}</span>${m.dataset.mid && TMARKS[m.dataset.mid] && state.view === 'mytasks' ? `<button class="btn mini" type="button" data-treply="${esc(m.dataset.mid)}" style="justify-self:start;margin-top:4px">Ответить</button>` : ''}`;
   p.dataset.for = m.dataset.n + m.textContent; p.hidden = false;
   const rect = m.getBoundingClientRect(), bw = p.offsetWidth, bh = p.offsetHeight;
   const left = Math.max(8, Math.min(rect.left + rect.width / 2 - bw / 2, document.documentElement.clientWidth - bw - 8));
@@ -2679,6 +2707,7 @@ function renderChatThread(main, id) {
     <section class="ex">
       <div class="thread-top">${avatarHTML(40, t)}<div><b>${esc(t.name || 'Преподаватель')}</b><div class="note">${esc(exTitleOf(old.ex))}</div></div></div>
       <blockquote class="nquote plain" style="margin-top:10px"><mark class="hl hl-${old.style || 'fill'}" style="${hlVars(old)}">${esc(old.exact)}</mark></blockquote>
+      ${old.tnote ? `<p class="note" style="margin:0 0 6px">Ответ на комментарий преподавателя: «${esc(old.tnote)}»</p>` : ''}
       <div class="thread page-thread">${msgs.map(m => bubbleHTML(m, m.from === 't' ? { name: t.name || 'Преподаватель', av: t } : me, m.from === 's')).join('')}</div>
       ${msgs.some(m => m.from === 't') ? '' : '<p class="note">Преподаватель ещё не ответил.</p>'}
       <form class="row" id="cform" style="margin-top:12px"><textarea class="field" id="ctext" rows="2" placeholder="Написать сообщение…" required style="flex:1 1 220px"></textarea><button class="btn main" type="submit">Отправить</button></form>
@@ -3188,10 +3217,11 @@ function renderProfile() {
           ${d.img ? '<p class="note" style="margin:10px 0 0">Цвет рамки и кабинета:</p>' : ''}${`<div class="swatches" role="radiogroup" aria-label="Цвет аватарки">${AV_COLORS.map(c => `<button type="button" class="sw ${(d.color || AV_COLORS[0]) === c ? 'on' : ''}" style="background:${c}" data-color="${c}" role="radio" aria-checked="${(d.color || AV_COLORS[0]) === c}" aria-label="Цвет ${c}"></button>`).join('')}<label class="sw sw-custom ${AV_COLORS.includes(d.color || AV_COLORS[0]) ? '' : 'on'}" title="Свой цвет" aria-label="Выбрать свой цвет"><input type="color" id="avColorPick" value="${/^#[0-9a-f]{6}$/i.test(d.color || '') ? d.color : '#f9d3e2'}"></label></div>`}
           <div class="pastebox" id="avPasteBox" contenteditable="true" hidden role="textbox" aria-label="Поле для вставки картинки">Вставьте сюда картинку: Ctrl+V (на Mac ⌘+V) или долгое нажатие → «Вставить»</div>
           <form class="row" id="avUrlForm" hidden style="margin-top:8px"><input class="field" id="avUrl" type="url" placeholder="https://… ссылка на картинку" required><button class="btn small main" type="submit">Поставить</button></form>
-          ${Store.mode === 'supa' && Store.uid ? `<div class="acc-list">
-            <div class="acc-row"><span class="acc-k">Почта</span><span class="acc-v">${esc(Store.email || '')}</span><button class="btn small" type="button" id="mailEdit">Изменить</button></div>
+          <div class="acc-list">
+            <div class="acc-row"><span class="acc-k">Почта</span><span class="acc-v">${esc(Store.email || '') || '—'}</span><button class="btn small" type="button" id="mailEdit">Изменить</button></div>
             <div class="acc-row"><span class="acc-k">Пароль</span><span class="acc-v acc-pw" aria-label="пароль скрыт">••••••••••</span><button class="btn small" type="button" id="pwEdit">Изменить</button></div>
           </div>
+          ${Store.mode === 'supa' && Store.uid ? `
           <form class="acc-form" id="pwForm" hidden>
             <input class="field" id="pw1" type="password" minlength="6" autocomplete="new-password" placeholder="Новый пароль (от 6 символов)" required>
             <input class="field" id="pw2" type="password" minlength="6" autocomplete="new-password" placeholder="Повторите пароль" required>
@@ -3266,8 +3296,10 @@ function renderProfile() {
     toast('В буфере нет картинки. Скопируйте саму картинку (правый клик → «Копировать изображение») и вставьте снова');
   });
   box.addEventListener('beforeinput', e => { if (e.inputType !== 'insertFromPaste') e.preventDefault(); });
-  const pwE = $('#pwEdit'); if (pwE) pwE.onclick = () => { $('#pwForm').hidden = !$('#pwForm').hidden; $('#mailForm').hidden = true; if (!$('#pwForm').hidden) $('#pw1').focus(); };
-  const mE = $('#mailEdit'); if (mE) mE.onclick = () => { $('#mailForm').hidden = !$('#mailForm').hidden; $('#pwForm').hidden = true; if (!$('#mailForm').hidden) $('#mailIn').focus(); };
+  const noAcc = () => toast('Почта и пароль меняются на сайте, когда вы вошли по почте');
+  if (!(Store.mode === 'supa' && Store.uid)) { const a1 = $('#pwEdit'), a2 = $('#mailEdit'); if (a1) a1.onclick = noAcc; if (a2) a2.onclick = noAcc; }
+  const pwE = $('#pwForm') && $('#pwEdit'); if (pwE) pwE.onclick = () => { $('#pwForm').hidden = !$('#pwForm').hidden; $('#mailForm').hidden = true; if (!$('#pwForm').hidden) $('#pw1').focus(); };
+  const mE = $('#mailForm') && $('#mailEdit'); if (mE) mE.onclick = () => { $('#mailForm').hidden = !$('#mailForm').hidden; $('#pwForm').hidden = true; if (!$('#mailForm').hidden) $('#mailIn').focus(); };
   const pwF = $('#pwForm'); if (pwF) pwF.onsubmit = async e => {
     e.preventDefault(); const a = $('#pw1').value, b = $('#pw2').value, msg = $('#pwMsg');
     if (a !== b) { msg.textContent = 'Пароли не совпадают'; return; }
@@ -3338,7 +3370,7 @@ function renderMyTasks(preview) {
       ${w.f && w.f.comment ? `<div class="teacher-fb"><b>Комментарий преподавателя</b><div style="white-space:pre-wrap">${esc(w.f.comment)}</div></div>` : ''}
       <div class="note" style="margin-top:10px">${w.f && w.f.marks && w.f.marks.length ? 'Ваш текст с пометками преподавателя (пояснения — под текстом):' : 'Ваш текст:'}</div>
       <div class="essay">${w.f && w.f.marks && w.f.marks.length ? markedHTML(w.text, w.f.marks) : esc(w.text)}</div>
-      ${w.f && w.f.marks && w.f.marks.length ? marksListHTML(w.f.marks, false) : ''}
+      ${w.f && w.f.marks && w.f.marks.length ? marksListHTML(w.f.marks, false, preview ? null : { ex: w.ex.id, topic: w.t.id }) : ''}
       <div class="row" style="margin-top:10px"><button class="btn small" type="button" data-goto="${w.t.id}:${w.ex.id}">Открыть задание</button></div>
     </section>`).join('')}`;
   if (preview) { main.querySelectorAll('[data-goto]').forEach(b => b.remove()); const bk = main.querySelector('[data-tpback]'); if (bk) bk.onclick = () => { state.view = 'teacher'; renderAll(); window.scrollTo(0, 0); }; return; }
