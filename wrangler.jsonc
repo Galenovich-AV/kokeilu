@@ -1,0 +1,6 @@
+// Cloudflare Workers: serve the built site/ folder as a static site (no code, no build)
+{
+  "name": "muistikirja",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./site" }
+}
