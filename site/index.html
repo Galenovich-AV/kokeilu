@@ -84,7 +84,7 @@
   --sage:#f0a99a;--sage-ink:#f4a7b5;--head:#f8cfd6;--tape:rgba(240,169,154,.25);--kraft:rgba(240,190,140,.3);
   --ok-bg:#45333a;--on-accent:#3a1620}
 .teacher-mode .ex::before{background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,var(--kraft) 12px 24px)}
-.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index,.chat-mode .index,.chat-mode #register{display:none}
+.mytasks-mode .index,.mytasks-mode #register,.mytasks-mode .contact,.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index,.chat-mode .index,.chat-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .dict-hero p{margin:6px 0 0}
 .totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
@@ -1282,6 +1282,7 @@ function renderWho() {
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
+    ${name && !Store.isOwner ? `<button class="btn small ${state.view === 'mytasks' ? 'main' : ''}" id="mytasksBtn" type="button">${state.view === 'mytasks' ? '← к заданиям' : 'Мои задания' + (newFeedback() ? ' · ' + newFeedback() : '')}</button>` : ''}
     <button class="btn small ${state.view === 'dict' ? 'main' : ''}" id="dictBtn" type="button">${state.view === 'dict' ? '← к заданиям' : 'Sanakirja · ' + dictWords().length}</button>
     ${name ? `<button class="btn small" id="exportBtn" type="button">Копировать мои ответы</button>` : ''}
     ${Store.mode === 'supa' && Store.uid ? `<button class="btn small" id="logoutBtn" type="button">Выйти</button>` : ''}`;
@@ -1291,6 +1292,7 @@ function renderWho() {
   const tcb = $('#tchatBtn'); if (tcb) tcb.onclick = () => { state.view = state.view === 'tchat' ? 'learn' : 'tchat'; renderAll(); window.scrollTo(0, 0); };
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
+  const mtb = $('#mytasksBtn'); if (mtb) mtb.onclick = () => { state.view = state.view === 'mytasks' ? 'learn' : 'mytasks'; renderAll(); window.scrollTo(0, 0); };
   $('#homeBtn').onclick = () => { state.view = 'home'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
@@ -3122,6 +3124,49 @@ function renderContact() {
     <p class="note" style="margin:0">Вопросы по заданиям, индивидуальные занятия или подготовка к YKI — напишите мне.</p>
     <div class="row">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>`;
 }
+/* ---------- MY TASKS: the student's written work with the teacher's feedback ---------- */
+const FB_SEEN = LS_KEY + ':fbSeen';
+function myWritings() {
+  const out = [];
+  TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach(ex => {
+    if (ex.type !== 'writing') return;
+    const k = key(t.id, ex.id), r = state.results[k], fb = state.feedback[k];
+    const raw = (r && r.raw) || {};
+    ex.tasks.forEach((task, i) => {
+      const text = (raw[task.id] || '').trim(); if (!text) return;
+      const f = fb && fb.items && fb.items[task.id];
+      const has = !!(f && (f.grade || f.comment || (f.marks && f.marks.length)));
+      out.push({ t, ex, task, i, text, f: has ? f : null, fbAt: has ? (fb.at || '') : '', savedAt: ((r.savedAt || {})[task.id]) || r.at });
+    });
+  })));
+  return out;
+}
+function newFeedback() {
+  let seen = ''; try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
+  return myWritings().filter(w => w.f && (!seen || w.fbAt > seen)).length;
+}
+function renderMyTasks() {
+  const main = $('#main'); const list = myWritings();
+  let seen = ''; try { seen = localStorage.getItem(FB_SEEN) || ''; } catch (e) {}
+  const checked = list.filter(w => w.f).length;
+  main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Мои задания</span></h1>
+    <p class="note">Ваши письменные работы и отзывы преподавателя: уровень, общий комментарий и пометки прямо в тексте.</p></div>
+    ${!list.length ? `<section class="ex"><p style="margin:0">Вы ещё не сохранили ни одного письменного задания.</p><p class="note">Письменные задания — в разделе YKI-testi каждой темы. Нажмите «Tallenna», и работа появится здесь, а когда преподаватель её проверит — и отзыв.</p></section>` : ''}
+    ${list.length ? `<p class="note">Проверено ${checked} из ${list.length}.</p>` : ''}
+    ${list.map(w => `<section class="ex mytask">
+      <div class="ex-head"><h3><span class="sig">${esc(w.t.fi)} ·</span> ${esc(w.task.title)}</h3>
+        <div class="row">${w.f ? `<span class="ex-state done">● проверено${w.f.grade ? ' · уровень ' + esc(w.f.grade) : ''}</span>${!seen || w.fbAt > seen ? ' <span class="newb">новый отзыв</span>' : ''}` : '<span class="ex-state">○ ждёт проверки</span>'}</div></div>
+      <p class="note" style="margin-top:0">${esc(w.task.kind)} · сохранено ${fmtDate(w.savedAt)}</p>
+      ${w.f && w.f.comment ? `<div class="teacher-fb"><b>Комментарий преподавателя</b><div style="white-space:pre-wrap">${esc(w.f.comment)}</div></div>` : ''}
+      <div class="note" style="margin-top:10px">${w.f && w.f.marks && w.f.marks.length ? 'Ваш текст с пометками преподавателя (пояснения — под текстом):' : 'Ваш текст:'}</div>
+      <div class="essay">${w.f && w.f.marks && w.f.marks.length ? markedHTML(w.text, w.f.marks) : esc(w.text)}</div>
+      ${w.f && w.f.marks && w.f.marks.length ? marksListHTML(w.f.marks, false) : ''}
+      <div class="row" style="margin-top:10px"><button class="btn small" type="button" data-goto="${w.t.id}:${w.ex.id}">Открыть задание</button></div>
+    </section>`).join('')}`;
+  main.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => { const [t, e] = b.dataset.goto.split(':'); goToExercise(t, e); });
+  try { localStorage.setItem(FB_SEEN, new Date().toISOString()); } catch (e) {}
+}
+
 /* ---------- START PAGE ---------- */
 function renderHome() {
   const main = $('#main');
@@ -3156,7 +3201,7 @@ function renderHome() {
 
     <section class="ex"><div class="ex-head"><h3>${name ? 'Oma tili · Личный кабинет' : 'Kirjaudu · Вход в личный кабинет'}</h3></div>
       ${name ? `<p>Hei, <b>${esc(name)}</b>! Вы вошли в личный кабинет.</p>
-        <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button></div>`
+        <div class="row" style="margin-top:10px"><button class="btn main" type="button" data-hcontinue>Jatka tehtäviä · продолжить задания</button><button class="btn" type="button" data-hview="profile">Profiili · профиль</button>${!Store.isOwner ? `<button class="btn" type="button" data-hview="mytasks">Мои задания${newFeedback() ? ' · ' + newFeedback() : ''}</button>` : ''}</div>`
         : `<p class="note" style="margin-top:0">Задания открыты для всех. Чтобы результаты сохранялись, а преподаватель видел ваши ответы и мог их прокомментировать, зарегистрируйтесь или войдите.</p><div id="homeAuth"></div>
         <div class="row" style="margin-top:10px"><button class="btn" type="button" data-hcontinue>Посмотреть задания без входа</button></div>`}
     </section>`;
@@ -3174,12 +3219,14 @@ function renderAll() {
   document.documentElement.classList.toggle('profile-mode', state.view === 'profile');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   document.documentElement.classList.toggle('home-mode', state.view === 'home');
+  document.documentElement.classList.toggle('mytasks-mode', state.view === 'mytasks');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
   if (state.view === 'profile') applyProfileTheme();
   renderWho(); renderTopics();
   if (state.view === 'home') renderHome();
   renderRegister(); renderContact();
   if (state.view === 'home') { /* drawn above, before the login form */ }
+  else if (state.view === 'mytasks') renderMyTasks();
   else if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
 
