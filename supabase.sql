@@ -64,3 +64,29 @@ create policy "feedback update" on public.feedback for update using (public.is_t
 -- AFTER you have registered on the site yourself, make yourself the teacher
 -- (replace the email and run this line on its own):
 -- insert into public.teachers (user_id) select id from auth.users where email = 'YOUR_EMAIL';
+
+-- ---------------------------------------------------------------
+-- Teacher tools (run this part once more if you set up the database earlier):
+-- the student list with e-mail and registration date, and deleting a student
+-- ---------------------------------------------------------------
+create or replace function public.teacher_students()
+returns table (id uuid, name text, email text, created_at timestamptz, updated_at timestamptz)
+language sql stable security definer set search_path = public as $$
+  select u.id, coalesce(p.name, u.raw_user_meta_data->>'name', ''), u.email::text, u.created_at, p.updated_at
+  from auth.users u left join public.profiles p on p.id = u.id
+  where public.is_teacher() and u.id not in (select user_id from public.teachers)
+  order by u.created_at desc;
+$$;
+
+create or replace function public.delete_student(uid uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_teacher() then raise exception 'only the teacher can delete students'; end if;
+  if exists (select 1 from public.teachers where user_id = uid) then raise exception 'a teacher cannot be deleted here'; end if;
+  delete from auth.users where id = uid;  -- profiles, results and feedback go with it (on delete cascade)
+end $$;
+
+revoke all on function public.teacher_students() from public, anon;
+revoke all on function public.delete_student(uuid) from public, anon;
+grant execute on function public.teacher_students() to authenticated;
+grant execute on function public.delete_student(uuid) to authenticated;

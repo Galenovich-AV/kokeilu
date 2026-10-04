@@ -333,6 +333,13 @@ ol.items>li::before{content:counter(it)".";font-family:var(--f-script);font-size
 .btn:disabled{opacity:.5;cursor:default;transform:none}
 .btn.small{padding:4px 14px;font-size:.9rem;border-width:1.5px}
 .btn.mini{padding:2px 10px;font-size:.78rem;border-width:1.5px}
+.btn.danger{border-color:#b5513e;color:#b5513e}
+.btn.danger:hover{background:rgba(181,81,62,.08)}
+.st-tools{margin:8px 0 4px}
+.contact{margin:48px 0 24px;padding:16px 0 0;border-top:1px dashed var(--rule)}
+.contact h3{font-family:var(--f-script);font-size:1.6rem;margin:0 0 4px;color:var(--head)}
+.contact .row{gap:8px;margin-top:8px}
+.dict-mode .contact,.teacher-mode .contact,.chat-mode .contact{display:none}
 
 /* YKI reading */
 .yki-text{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;margin:0 0 16px;max-width:70ch}
@@ -488,6 +495,7 @@ mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
 
   <div id="register"></div>
   <main id="main"></main>
+  <footer class="contact" id="contact" hidden></footer>
 </div>
 <div class="toast" id="toast" hidden></div>
 <button class="totop" id="toTop" type="button" aria-label="Наверх" title="Наверх" hidden></button>
@@ -1152,12 +1160,20 @@ const Store = {
   async students() {
     await this.ready;
     if (this.mode === 'supa') {
+      // teacher_students() (supabase.sql) also gives e-mail and registration date; older databases fall back to profiles
+      const rpc = await this.sb.rpc('teacher_students');
+      if (!rpc.error && rpc.data) return rpc.data.map(r => ({ id: r.id, name: r.name, email: r.email, createdAt: r.created_at, updatedAt: r.updated_at || r.created_at, canDelete: true }));
       const { data } = await this.sb.from('profiles').select('id, name, updated_at').order('updated_at', { ascending: false });
       return (data || []).map(r => ({ id: r.id, name: r.name, updatedAt: r.updated_at }));
     }
     if (this.mode !== 'cloud') return [];
     const q = await this.call(() => this.db.collection('results').get());
     return q ? q.docs.map(d => ({ id: d.id, ...d.data() })) : [];
+  },
+  async deleteStudent(uid) {
+    if (this.mode !== 'supa') return 'Удаление работает только на сайте';
+    const { error } = await this.sb.rpc('delete_student', { uid });
+    return error ? error.message : null;
   },
   async studentResults(uid) {
     if (this.mode === 'supa') {
@@ -2015,10 +2031,29 @@ async function renderTeacher() {
   const wrap = $('#stList');
   list.forEach(st => {
     const d = document.createElement('details'); d.className = 'st';
-    d.innerHTML = `<summary>${esc(st.name || 'Без имени')} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary><div class="st-body note">Загрузка…</div>`;
+    d.innerHTML = `<summary>${esc(st.name || 'Без имени')}${st.email ? ` <span class="note">${esc(st.email)}</span>` : ''}${st.createdAt ? ` <span class="note">зарегистрирован(а) ${fmtRegDay(st.createdAt)}</span>` : ''} <span class="note">последняя активность ${fmtDate(st.updatedAt)}</span></summary>
+      ${st.canDelete ? `<div class="row st-tools"><button class="btn mini danger" type="button" data-delst>Удалить ученика</button></div>` : ''}<div class="st-body note">Загрузка…</div>`;
     wrap.appendChild(d);
     d.addEventListener('toggle', async () => { if (d.open && !d.dataset.loaded) { d.dataset.loaded = 1; await renderStudent(d.querySelector('.st-body'), st); } });
+    const del = d.querySelector('[data-delst]');
+    if (del) del.onclick = () => confirmDeleteStudent(st, d);
   });
+}
+const fmtRegDay = iso => { try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
+function confirmDeleteStudent(st, row) {
+  let m = document.getElementById('delModal');
+  if (!m) { m = document.createElement('div'); m.id = 'delModal'; m.className = 'modal'; document.body.appendChild(m); }
+  m.hidden = false;
+  m.innerHTML = `<div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="dmT">
+    <h3 id="dmT">Удалить ученика ${esc(st.name || '')}?</h3>
+    <p>Аккаунт, все ответы, оценки, заметки и переписка будут удалены навсегда. Вернуть их будет нельзя.</p>
+    <div class="row" style="margin-top:12px"><button class="btn danger" type="button" data-yes>Да, удалить</button><button class="btn" type="button" data-no>Нет</button></div></div>`;
+  m.querySelector('[data-no]').onclick = () => { m.hidden = true; };
+  m.querySelector('[data-yes]').onclick = async () => {
+    const err = await Store.deleteStudent(st.id); m.hidden = true;
+    if (err) { toast('Не удалось удалить: ' + err); return; }
+    row.remove(); toast('Ученик удалён');
+  };
 }
 
 // teacher: all chats with students, in their own view
@@ -3026,6 +3061,19 @@ function renderProfile() {
 /* =========================================================
    BOOT
    ========================================================= */
+/* ---------- contact the teacher: fill CONTACTS to show the block at the bottom of the page ---------- */
+const CONTACTS = [
+  // ['Telegram', 'https://t.me/username'],
+  // ['WhatsApp', 'https://wa.me/358401234567'],
+  // ['Sähköposti', 'mailto:nimi@example.com'],
+];
+function renderContact() {
+  const el = $('#contact'); if (!el) return;
+  el.hidden = !CONTACTS.length; if (!CONTACTS.length) return;
+  el.innerHTML = `<h3>Kirjoita minulle</h3>
+    <p class="note" style="margin:0">Вопросы по заданиям, индивидуальные занятия или подготовка к YKI — напишите мне.</p>
+    <div class="row">${CONTACTS.map(([label, href]) => `<a class="btn small" href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('')}</div>`;
+}
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
@@ -3033,7 +3081,7 @@ function renderAll() {
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
   if (state.view === 'profile') applyProfileTheme();
-  renderWho(); renderTopics(); renderRegister();
+  renderWho(); renderTopics(); renderRegister(); renderContact();
   if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
 
