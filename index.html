@@ -1583,7 +1583,7 @@ function renderListening(sec, ex, n) {
       <div class="kind">Video ${i + 1}${v.len ? ' · ' + esc(v.len) : ''}${v.tag ? ' · ' + esc(v.tag) : ''}</div>
       <h4>${esc(v.title)}</h4>
       <div class="vframe"><iframe src="https://player-v2.yle.fi/video.html?${esc(v.id)}" title="${esc(v.title)}" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
-      <p class="note" style="margin:6px 0 0"><a href="${esc(v.url)}" target="_blank" rel="noopener">Avaa Yle.fi:ssä ↗</a></p>
+      <div class="row" style="margin-top:8px"><a class="btn small" href="${esc(v.url)}" target="_blank" rel="noopener">Katso Yle.fi:ssä ↗ · если видео не запускается</a></div>
     </div>`).join('');
 }
 function exHead(ex, n, r) {
