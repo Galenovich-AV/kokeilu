@@ -86,6 +86,31 @@
 .teacher-mode .ex::before{background:repeating-linear-gradient(-45deg,var(--sage) 0 12px,var(--kraft) 12px 24px)}
 .mytasks-mode .index,.mytasks-mode #register,.mytasks-mode .contact,.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index,.chat-mode .index,.chat-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
+.kappaleet-mode .index,.kappaleet-mode #register{display:none}
+.kap-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-bottom:24px}
+.kap{position:relative;background:var(--sheet);border:1.5px solid var(--tile-line);border-radius:14px;padding:18px 18px 14px;box-shadow:var(--shadow)}
+.kap::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;border-radius:12px 12px 0 0;background:repeating-linear-gradient(-45deg,var(--stripe,var(--sage)) 0 12px,var(--kraft) 12px 24px)}
+.kap h2{margin:4px 0 0;font-family:var(--f-script);font-size:2rem;line-height:1.1;color:var(--head)}
+.kap h2 button{all:unset;cursor:pointer}
+.kap h2 button:hover{text-decoration:underline;text-decoration-thickness:2px}
+.kap .ru{margin:0 0 10px;color:var(--ink-soft);font-size:.92rem}
+.kap ul{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.kap li a{cursor:pointer;text-decoration:none;color:var(--ink);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.kap li a:hover{color:var(--sage-ink);text-decoration:underline}
+.kap li .toc-count{margin-left:8px;font-size:.8rem}
+.kap.soon{opacity:.6;box-shadow:none;border-style:dashed}
+.kap.soon::before{background:var(--rule)}
+.kap-bar{height:8px;border-radius:99px;background:var(--tile);border:1px solid var(--tile-line);overflow:hidden;margin:0 0 12px}
+.kap-bar i{display:block;height:100%;background:var(--sage)}
+/* in Harjoitukset the header stays on top while scrolling; the round button bottom-right hides it */
+.pin-top .top{position:sticky;top:0;z-index:23;background:var(--paper);padding:8px 0 10px;margin-left:-6px;margin-right:-6px;padding-left:6px;padding-right:6px;box-shadow:0 8px 12px -10px rgba(40,50,30,.35)}
+.pin-top #timerRow{top:calc(var(--toph,64px) + 6px)}
+.pin-top .bank[open]{top:calc(var(--toph,64px) + 8px)}
+.pin-btn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(144px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
+  background:var(--sheet);border:2px solid var(--sage-ink);color:var(--sage-ink);box-shadow:0 6px 16px rgba(40,50,30,.22);display:flex;align-items:center;justify-content:center;padding:0}
+.pin-btn svg{width:22px;height:22px}
+.pin-btn[aria-pressed="true"]{background:var(--sage);color:var(--on-accent)}
+
 .dict-hero p{margin:6px 0 0}
 .totop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:22;width:48px;height:48px;border-radius:50%;cursor:pointer;
   background:var(--sage);border:2px solid var(--sage-ink);color:var(--on-accent);box-shadow:0 6px 16px rgba(40,50,30,.22);display:flex;align-items:center;justify-content:center;padding:0}
@@ -262,10 +287,10 @@ button.chip{font-family:var(--f-body);font-weight:700;font-size:.9rem;color:var(
 .toc .toc-head .chev{margin-left:12px}
 .index .toc .toc-count{font-size:1.1rem;font-weight:400}
 .index .toc-topic.soon .toc-head,.index .toc-topic.soon .note,.index .toc-legend{font-weight:400}
-.index .sig{display:inline-flex;align-items:center;justify-content:flex-start;width:1.5em;flex:0 0 auto;vertical-align:-1px}
-.index .sig i{display:block;width:.8rem;height:.8rem;border-radius:50%;border:2px solid var(--sage-ink);box-sizing:border-box}
-.index .sig i.dot-full{background:var(--sage-ink)}
-.index .sig i.dot-half{background:linear-gradient(90deg,var(--sage-ink) 50%,transparent 50%)}
+.index .sig,.kap-wrap .sig{display:inline-flex;align-items:center;justify-content:flex-start;width:1.5em;flex:0 0 auto;vertical-align:-1px}
+.index .sig i,.kap-wrap .sig i{display:block;width:.8rem;height:.8rem;border-radius:50%;border:2px solid var(--sage-ink);box-sizing:border-box}
+.index .sig i.dot-full,.kap-wrap .sig i.dot-full{background:var(--sage-ink)}
+.index .sig i.dot-half,.kap-wrap .sig i.dot-half{background:linear-gradient(90deg,var(--sage-ink) 50%,transparent 50%)}
 .toc-legend .sig{width:1.2em}
 .wtask-head{align-items:center}
 .wtask-head .fold{margin-left:auto}
@@ -580,6 +605,7 @@ mark.hl:hover{outline:1.5px solid rgba(0,0,0,.25)}
   <footer class="contact" id="contact" hidden></footer>
 </div>
 <div class="toast" id="toast" hidden></div>
+<button class="pin-btn" id="pinBtn" type="button" hidden></button>
 <button class="totop" id="toTop" type="button" aria-label="Наверх" title="Наверх" hidden></button>
 
 <script src="config.js"></script>
@@ -1356,7 +1382,7 @@ function renderWho() {
   const name = state.profile ? state.profile.name : '';
   el.innerHTML = `
     ${name ? `<button class="chip who-me ${state.view === 'profile' ? 'on' : ''}" type="button" id="profBtn" title="Мой профиль">${avatarHTML(26)}<span>${esc(name)}</span></button>` : ''}
-    <button class="btn small ${state.view === 'learn' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
+    <button class="btn small ${state.view === 'learn' || state.view === 'kappaleet' ? 'main' : ''}" id="learnBtn" type="button">Harjoitukset</button>
     ${Store.isOwner ? `<button class="btn small ${state.view === 'teacher' ? 'main' : ''}" id="teacherBtn" type="button">${state.view === 'teacher' ? '← к заданиям' : 'Ответы учеников'}</button>` : ''}
     ${Store.isOwner ? `<button class="btn small ${state.view === 'tchat' ? 'main' : ''}" id="tchatBtn" type="button">${state.view === 'tchat' ? '← к заданиям' : 'Чат' + (teacherUnread() ? ' · ' + teacherUnread() : '')}</button>` : ''}
     ${!Store.isOwner && notes().some(n => n.sent) ? `<button class="btn small ${state.view === 'chat' ? 'main' : ''}" id="chatBtn" type="button">${state.view === 'chat' ? '← к заданиям' : 'Чат' + (unreadTotal() ? ' · ' + unreadTotal() : '')}</button>` : ''}
@@ -1369,7 +1395,7 @@ function renderWho() {
   const cb = $('#chatBtn'); if (cb) cb.onclick = () => { state.chatOpen = null; state.view = state.view === 'chat' ? 'learn' : 'chat'; renderAll(); window.scrollTo(0, 0); };
   const pb = $('#profBtn'); if (pb) pb.onclick = () => { state.view = state.view === 'profile' ? 'learn' : 'profile'; renderAll(); window.scrollTo(0, 0); };
   const mtb = $('#mytasksBtn'); if (mtb) mtb.onclick = () => { state.view = state.view === 'mytasks' ? 'learn' : 'mytasks'; renderAll(); window.scrollTo(0, 0); };
-  $('#learnBtn').onclick = () => { state.view = 'learn'; renderAll(); window.scrollTo(0, 0); };
+  $('#learnBtn').onclick = openHarjoitukset;
   $('#homeBtn').onclick = () => { state.view = 'home'; renderAll(); window.scrollTo(0, 0); };
   $('#dictBtn').onclick = () => { state.view = state.view === 'dict' ? 'learn' : 'dict'; renderAll(); window.scrollTo(0, 0); };
 }
@@ -3455,23 +3481,86 @@ function renderHome() {
     setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) { blk.classList.remove('collapsed'); blk.scrollIntoView({ block: 'start' }); }
   });
   main.querySelectorAll('[data-hview]').forEach(a => a.onclick = () => { state.view = a.dataset.hview; renderAll(); window.scrollTo(0, 0); });
-  main.querySelectorAll('[data-hcontinue]').forEach(a => a.onclick = () => { state.view = 'learn'; renderAll(); window.scrollTo(0, 0); });
+  main.querySelectorAll('[data-hcontinue]').forEach(a => a.onclick = openHarjoitukset);
 }
+
+/* ---------- HARJOITUKSET: the list of chapters (Kappaleet) ---------- */
+// the exercise the student answered most recently
+function lastExercise() {
+  let best = null;
+  TOPICS.forEach(t => t.blocks.forEach(b => b.exercises.forEach(ex => {
+    const r = state.results[key(t.id, ex.id)];
+    if (r && r.at && (!best || r.at > best.at)) best = { t: t.id, ex: ex.id, at: r.at };
+  })));
+  return best;
+}
+// first click: back to the last exercise (if there is one); from there, the next click opens the chapter list
+function openHarjoitukset() {
+  const last = lastExercise();
+  if (state.view !== 'learn' && state.view !== 'kappaleet' && last) { goToExercise(last.t, last.ex); return; }
+  state.view = 'kappaleet'; renderAll(); window.scrollTo(0, 0);
+}
+function renderKappaleet() {
+  const main = $('#main'); const last = lastExercise();
+  const lastT = last && TOPICS.find(t => t.id === last.t);
+  const lastEx = lastT && lastT.blocks.flatMap(b => b.exercises).find(e => e.id === last.ex);
+  main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Harjoitukset</span></h1>
+      <p class="note">Kappaleet · выберите тему</p>
+      ${lastEx ? `<div class="row" style="margin-top:10px"><button class="btn main" type="button" data-klast>Jatka: ${esc(lastT.fi)} · ${esc(lastEx.title || '')}</button></div>` : ''}</div>
+    <div class="kap-wrap"><div class="kap-grid">${TOPICS.map(t => {
+      if (t.soon) return `<section class="kap soon"><h2>${esc(t.fi)}</h2><p class="ru">${esc(t.ru || '')} · tulossa</p></section>`;
+      const scs = t.blocks.map(bl => blockScore(t, bl, state.results));
+      const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
+      return `<section class="kap"><h2><button type="button" data-ktopic="${t.id}">${esc(t.fi)}</button></h2><p class="ru">${esc(t.ru || '')} · ${done}/${total} tehtävää</p>
+        <div class="kap-bar" aria-hidden="true"><i style="width:${pct(done, total)}%"></i></div>
+        <ul>${t.blocks.map((bl, i) => { const sc = scs[i];
+          return `<li><a data-kjump="${t.id}:${bl.id}">${dotHTML(sigOf(sc))}${i + 1}. ${esc(bl.fi)}</a><span class="toc-count">${sc.done}/${sc.total}</span></li>`; }).join('')}</ul>
+        <button class="btn small main" type="button" data-ktopic="${t.id}">Avaa · открыть</button></section>`;
+    }).join('')}</div>
+    <p class="toc-legend note">${dotHTML('○')}не начато · ${dotHTML('◐')}в процессе · ${dotHTML('●')}закончено</p></div>`;
+  const kl = main.querySelector('[data-klast]'); if (kl) kl.onclick = () => goToExercise(last.t, last.ex);
+  main.querySelectorAll('[data-ktopic]').forEach(b => b.onclick = () => { state.topic = b.dataset.ktopic; state.view = 'learn'; saveTab(); renderAll(); window.scrollTo(0, 0); });
+  main.querySelectorAll('[data-kjump]').forEach(a => a.onclick = () => {
+    const [tid, bid] = a.dataset.kjump.split(':'); state.topic = tid; state.view = 'learn'; saveTab();
+    setFold('b:' + bid, false); renderAll();
+    const blk = document.getElementById('block-' + bid); if (blk) blk.scrollIntoView({ block: 'start' });
+  });
+}
+
+/* ---------- pinned header in Harjoitukset ---------- */
+const PIN_KEY = LS_KEY + ':pinTop';
+let pinOn = (() => { try { return localStorage.getItem(PIN_KEY) !== '0'; } catch (e) { return true; } })();
+function updatePin() {
+  const learn = state.view === 'learn', b = $('#pinBtn');
+  document.documentElement.classList.toggle('pin-top', learn && pinOn);
+  b.hidden = !learn;
+  b.setAttribute('aria-pressed', String(pinOn));
+  b.title = pinOn ? 'Скрыть верхнюю панель' : 'Закрепить верхнюю панель';
+  b.setAttribute('aria-label', b.title);
+  b.innerHTML = pinOn
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M7 15l5-5 5 5"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M7 10l5 5 5-5"/></svg>';
+  const top = document.querySelector('.top'); if (top) document.documentElement.style.setProperty('--toph', top.offsetHeight + 'px');
+}
+$('#pinBtn').onclick = () => { pinOn = !pinOn; try { localStorage.setItem(PIN_KEY, pinOn ? '1' : '0'); } catch (e) {} updatePin(); toast(pinOn ? 'Панель закреплена' : 'Панель скрыта'); };
+window.addEventListener('resize', () => { const top = document.querySelector('.top'); if (top) document.documentElement.style.setProperty('--toph', top.offsetHeight + 'px'); });
 
 function renderAll() {
   document.documentElement.classList.toggle('dict-mode', state.view === 'dict');
   document.documentElement.classList.toggle('teacher-mode', (state.view === 'teacher' || state.view === 'tchat') && Store.isOwner);
-  document.documentElement.classList.toggle('profile-mode', state.view === 'profile' || state.view === 'mytasks');
+  document.documentElement.classList.toggle('profile-mode', state.view === 'profile' || state.view === 'mytasks' || state.view === 'kappaleet');
+  document.documentElement.classList.toggle('kappaleet-mode', state.view === 'kappaleet');
   document.documentElement.classList.toggle('chat-mode', state.view === 'chat');
   document.documentElement.classList.toggle('home-mode', state.view === 'home');
   document.documentElement.classList.toggle('mytasks-mode', state.view === 'mytasks' || state.view === 'tpreview');
   document.documentElement.classList.toggle('topic-asuminen', state.view === 'learn' && state.topic === 'asuminen');
-  if (state.view === 'profile' || state.view === 'mytasks') applyProfileTheme();
-  renderWho(); renderTopics();
+  if (state.view === 'profile' || state.view === 'mytasks' || state.view === 'kappaleet') applyProfileTheme();
+  renderWho(); renderTopics(); updatePin();
   if (state.view === 'home') renderHome();
   renderRegister(); renderContact();
   if (state.view === 'home') { /* drawn above, before the login form */ }
   else if (state.view === 'mytasks') renderMyTasks();
+  else if (state.view === 'kappaleet') renderKappaleet();
   else if (state.view === 'tpreview' && Store.isOwner && state.tpreview) renderMyTasks(state.tpreview);
   else if (state.view === 'teacher' && Store.isOwner) renderTeacher(); else if (state.view === 'dict') renderDict(); else if (state.view === 'profile') renderProfile(); else if (state.view === 'chat') renderChats(); else if (state.view === 'tchat' && Store.isOwner) renderTeacherChatView(); else renderLearn();
 }
