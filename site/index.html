@@ -87,6 +87,10 @@
 .mytasks-mode .index,.mytasks-mode #register,.mytasks-mode .contact,.dict-mode .index,.dict-mode #register,.teacher-mode .index,.teacher-mode #register,.profile-mode .index,.chat-mode .index,.chat-mode #register{display:none}
 .dict-hero{margin:14px 0 22px}
 .kappaleet-mode .index,.kappaleet-mode #register{display:none}
+.kap-sec{font-family:var(--f-script);font-size:2rem;color:var(--head);margin:8px 0 12px;border-bottom:2px solid var(--rule);padding-bottom:4px}
+.kap-sec span{font-family:var(--f-body);font-size:.95rem;font-weight:600;color:var(--ink-soft)}
+.sec-crumb{margin:0 0 4px;font-size:.9rem;color:var(--ink-soft);font-weight:600}
+.sec-crumb a{cursor:pointer}
 .kap-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-bottom:24px}
 .kap{position:relative;background:var(--sheet);border:1.5px solid var(--tile-line);border-radius:14px;padding:18px 18px 14px;box-shadow:var(--shadow)}
 .kap::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;border-radius:12px 12px 0 0;background:repeating-linear-gradient(-45deg,var(--stripe,var(--sage)) 0 12px,var(--kraft) 12px 24px)}
@@ -1342,6 +1346,10 @@ const Store = {
 const state = { topic: 'terveys', block: 'sanasto', view: 'learn', profile: null, results: {}, feedback: {}, cardGroup: 0, flips: {} };
 try { const t = localStorage.getItem(LS_KEY + ':tab'); if (t) Object.assign(state, JSON.parse(t)); } catch (e) {}
 const saveTab = () => { try { localStorage.setItem(LS_KEY + ':tab', JSON.stringify({ topic: state.topic, block: state.block })); } catch (e) {} };
+// Harjoitukset has sections: Sanasto (vocabulary + its grammar), Kielioppi (grammar only, coming), YKI-testi.
+// A topic page shows only the blocks of the current section.
+const secOf = bid => bid === 'yki' ? 'yki' : 'lex';
+const inSection = bl => secOf(bl.id) === (state.section || 'lex');
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1535,11 +1543,11 @@ function renderTopics() {
   el.querySelectorAll('[data-ttopic]').forEach(b => b.onclick = () => {
     const id = b.dataset.ttopic;
     toc.topics = toc.topics.includes(id) ? toc.topics.filter(x => x !== id) : toc.topics.concat([id]); saveToc();
-    if (state.topic !== id || state.view !== 'learn') { state.topic = id; state.view = 'learn'; saveTab(); renderAll(); } else renderTopics();
+    if (state.topic !== id || state.view !== 'learn' || state.section === 'yki') { state.topic = id; state.section = 'lex'; state.view = 'learn'; saveTab(); renderAll(); } else renderTopics();
   });
   el.querySelectorAll('[data-jump]').forEach(a => a.onclick = e => {
     e.preventDefault(); const [tid, bid] = a.dataset.jump.split(':');
-    if (state.topic !== tid || state.view !== 'learn') { state.topic = tid; state.view = 'learn'; saveTab(); renderAll(); }
+    if (state.topic !== tid || state.view !== 'learn' || (state.section || 'lex') !== secOf(bid)) { state.topic = tid; state.section = secOf(bid); state.view = 'learn'; saveTab(); renderAll(); }
     setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) blk.classList.remove('collapsed');
     if (blk) blk.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
@@ -1549,23 +1557,25 @@ function renderTopics() {
    LEARN VIEW
    ========================================================= */
 function renderLearn() {
-  const t = topicObj();
+  const t = topicObj(), yki = state.section === 'yki';
+  const blocks = t.blocks.filter(inSection);
   const main = $('#main');
   main.innerHTML = `
-    <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1>
+    <div class="row" style="justify-content:space-between;align-items:flex-end;margin:10px 0 6px"><div><p class="sec-crumb"><a data-tosec>Harjoitukset</a> · ${yki ? 'YKI-testi' : 'Sanasto'}</p><h1 class="topic-title"><span class="tape">${esc(t.fi)}</span></h1></div>
       <div class="row"><button class="btn mini" type="button" data-allfold="1">Свернуть всё</button><button class="btn mini" type="button" data-allfold="0">Развернуть всё</button></div></div>
     ${hideHelp('tip') ? '' : `<div class="help-note tip-note"><p class="note" style="margin:0">Совет: выделите любое слово на странице и нажмите «+ В словарь» рядом с ним, чтобы добавить его в свой словарь.</p>
       <label class="note row" style="gap:6px;margin-top:4px"><input type="checkbox" data-hidehelp="tip"> Больше не показывать</label></div>`}
-    ${t.blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
+    ${blocks.map((bl, i) => `<section class="block ${isFolded('b:' + bl.id) ? 'collapsed' : ''}" id="block-${bl.id}">
       <div class="block-head"><h2 class="block-title"><span class="tape">${i + 1}. ${esc(bl.fi)}<span class="block-done" data-bdone="${bl.id}" title="Раздел пройден" aria-label="Раздел пройден" ${(() => { const sc = blockScore(t, bl, state.results); return sc.total && sc.done === sc.total ? '' : 'hidden'; })()}> ✓</span></span></h2>
       <button class="fold" type="button" data-fold="b:${bl.id}" aria-expanded="${!isFolded('b:' + bl.id)}" aria-label="Свернуть или развернуть раздел"></button></div>
       <div data-exlist="${bl.id}"></div></section>`).join('')}`;
   main.querySelectorAll('[data-allfold]').forEach(b => b.onclick = () => {
     const fold = b.dataset.allfold === '1';
-    t.blocks.forEach(bl => { setFold('b:' + bl.id, fold); bl.exercises.forEach(ex => setFold('e:' + ex.id, false)); });
+    blocks.forEach(bl => { setFold('b:' + bl.id, fold); bl.exercises.forEach(ex => setFold('e:' + ex.id, false)); });
     renderLearn();
   });
-  t.blocks.forEach(bl => {
+  main.querySelector('[data-tosec]').onclick = () => { state.view = 'kappaleet'; renderAll(); window.scrollTo(0, 0); };
+  blocks.forEach(bl => {
     const list = main.querySelector(`[data-exlist="${bl.id}"]`);
     bl.exercises.forEach((ex, i) => {
       const sec = document.createElement('section'); sec.className = 'ex' + (isFolded('e:' + ex.id) ? ' collapsed' : ''); sec.id = 'ex-' + ex.id;
@@ -3215,7 +3225,7 @@ async function setAvatarFile(file) {
 function goToExercise(topicId, exId) {
   const t = TOPICS.find(x => x.id === topicId); if (!t) return;
   const b = t.blocks.find(bl => bl.exercises.some(e => e.id === exId));
-  state.topic = topicId; state.view = 'learn'; saveTab();
+  state.topic = topicId; state.view = 'learn'; if (b) state.section = secOf(b.id); saveTab();
   if (b) setFold('b:' + b.id, false); setFold('e:' + exId, false);
   renderAll();
   const el = document.getElementById('ex-' + exId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3477,7 +3487,7 @@ function renderHome() {
 
 `;
   main.querySelectorAll('[data-hjump]').forEach(a => a.onclick = () => {
-    const [tid, bid] = a.dataset.hjump.split(':'); state.topic = tid; state.view = 'learn'; saveTab(); renderAll();
+    const [tid, bid] = a.dataset.hjump.split(':'); state.topic = tid; state.section = secOf(bid); state.view = 'learn'; saveTab(); renderAll();
     setFold('b:' + bid, false); const blk = document.getElementById('block-' + bid); if (blk) { blk.classList.remove('collapsed'); blk.scrollIntoView({ block: 'start' }); }
   });
   main.querySelectorAll('[data-hview]').forEach(a => a.onclick = () => { state.view = a.dataset.hview; renderAll(); window.scrollTo(0, 0); });
@@ -3504,24 +3514,39 @@ function renderKappaleet() {
   const main = $('#main'); const last = lastExercise();
   const lastT = last && TOPICS.find(t => t.id === last.t);
   const lastEx = lastT && lastT.blocks.flatMap(b => b.exercises).find(e => e.id === last.ex);
+  const exSig = (t, ex) => { const r = state.results[key(t.id, ex.id)]; return exDone(ex, r) ? '●' : r ? '◐' : '○'; };
+  const card = (t, sec) => {
+    if (t.soon) return `<section class="kap soon"><h2>${esc(t.fi)}</h2><p class="ru">${esc(t.ru || '')} · tulossa</p></section>`;
+    const bls = t.blocks.filter(bl => secOf(bl.id) === sec);
+    if (!bls.length) return '';
+    const scs = bls.map(bl => blockScore(t, bl, state.results));
+    const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
+    const list = sec === 'yki'
+      ? bls[0].exercises.map(ex => `<li><a data-kex="${t.id}:${ex.id}">${dotHTML(exSig(t, ex))}${esc(ex.title)}</a>${ex.practice ? '<span class="toc-count">tulossa</span>' : ''}</li>`).join('')
+      : bls.map((bl, i) => `<li><a data-kjump="${t.id}:${bl.id}">${dotHTML(sigOf(scs[i]))}${i + 1}. ${esc(bl.fi)}</a><span class="toc-count">${scs[i].done}/${scs[i].total}</span></li>`).join('');
+    return `<section class="kap"><h2><button type="button" data-ktopic="${t.id}:${sec}">${esc(t.fi)}</button></h2><p class="ru">${esc(t.ru || '')} · ${done}/${total} tehtävää</p>
+      <div class="kap-bar" aria-hidden="true"><i style="width:${pct(done, total)}%"></i></div>
+      <ul>${list}</ul>
+      <button class="btn small main" type="button" data-ktopic="${t.id}:${sec}">Avaa · открыть</button></section>`;
+  };
   main.innerHTML = `<div class="dict-hero"><h1 class="topic-title"><span class="tape">Harjoitukset</span></h1>
-      <p class="note">Kappaleet · выберите тему</p>
+      <p class="note">Выберите раздел и тему</p>
       ${lastEx ? `<div class="row" style="margin-top:10px"><button class="btn main" type="button" data-klast>Jatka: ${esc(lastT.fi)} · ${esc(lastEx.title || '')}</button></div>` : ''}</div>
-    <div class="kap-wrap"><div class="kap-grid">${TOPICS.map(t => {
-      if (t.soon) return `<section class="kap soon"><h2>${esc(t.fi)}</h2><p class="ru">${esc(t.ru || '')} · tulossa</p></section>`;
-      const scs = t.blocks.map(bl => blockScore(t, bl, state.results));
-      const done = scs.reduce((a, x) => a + x.done, 0), total = scs.reduce((a, x) => a + x.total, 0);
-      return `<section class="kap"><h2><button type="button" data-ktopic="${t.id}">${esc(t.fi)}</button></h2><p class="ru">${esc(t.ru || '')} · ${done}/${total} tehtävää</p>
-        <div class="kap-bar" aria-hidden="true"><i style="width:${pct(done, total)}%"></i></div>
-        <ul>${t.blocks.map((bl, i) => { const sc = scs[i];
-          return `<li><a data-kjump="${t.id}:${bl.id}">${dotHTML(sigOf(sc))}${i + 1}. ${esc(bl.fi)}</a><span class="toc-count">${sc.done}/${sc.total}</span></li>`; }).join('')}</ul>
-        <button class="btn small main" type="button" data-ktopic="${t.id}">Avaa · открыть</button></section>`;
-    }).join('')}</div>
-    <p class="toc-legend note">${dotHTML('○')}не начато · ${dotHTML('◐')}в процессе · ${dotHTML('●')}закончено</p></div>`;
+    <div class="kap-wrap">
+      <h2 class="kap-sec" id="sec-lex">Sanasto <span>· лексика по темам</span></h2>
+      <div class="kap-grid">${TOPICS.map(t => card(t, 'lex')).join('')}</div>
+      <h2 class="kap-sec" id="sec-kielioppi">Kielioppi <span>· грамматика</span></h2>
+      <div class="kap-grid"><section class="kap soon"><h2>Tulossa</h2><p class="ru">Здесь будут задания только по грамматике. Скоро появятся.</p></section></div>
+      <h2 class="kap-sec" id="sec-yki">YKI-testi <span>· чтение, аудирование, письмо</span></h2>
+      <div class="kap-grid">${TOPICS.filter(t => !t.soon).map(t => card(t, 'yki')).join('')}</div>
+      <p class="toc-legend note">${dotHTML('○')}не начато · ${dotHTML('◐')}в процессе · ${dotHTML('●')}закончено</p></div>`;
   const kl = main.querySelector('[data-klast]'); if (kl) kl.onclick = () => goToExercise(last.t, last.ex);
-  main.querySelectorAll('[data-ktopic]').forEach(b => b.onclick = () => { state.topic = b.dataset.ktopic; state.view = 'learn'; saveTab(); renderAll(); window.scrollTo(0, 0); });
+  main.querySelectorAll('[data-ktopic]').forEach(b => b.onclick = () => {
+    const [tid, sec] = b.dataset.ktopic.split(':'); state.topic = tid; state.section = sec; state.view = 'learn'; saveTab(); renderAll(); window.scrollTo(0, 0);
+  });
+  main.querySelectorAll('[data-kex]').forEach(a => a.onclick = () => { const [tid, exid] = a.dataset.kex.split(':'); goToExercise(tid, exid); });
   main.querySelectorAll('[data-kjump]').forEach(a => a.onclick = () => {
-    const [tid, bid] = a.dataset.kjump.split(':'); state.topic = tid; state.view = 'learn'; saveTab();
+    const [tid, bid] = a.dataset.kjump.split(':'); state.topic = tid; state.section = secOf(bid); state.view = 'learn'; saveTab();
     setFold('b:' + bid, false); renderAll();
     const blk = document.getElementById('block-' + bid); if (blk) blk.scrollIntoView({ block: 'start' });
   });
